@@ -1,0 +1,142 @@
+# ===================================
+# Python
+# ===================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===================================
+# Virtual Environments
+# ===================================
+venv/
+env/
+ENV/
+.venv
+.env
+.venv/
+ENV.bak/
+venv.bak/
+
+# ===================================
+# FastAPI / Backend
+# ===================================
+*.log
+*.sqlite3
+*.db
+backend/storage/documentos/*
+backend/storage/generados/*
+backend/storage/chroma_db/*
+!backend/storage/.gitkeep
+!backend/storage/documentos/.gitkeep
+!backend/storage/generados/.gitkeep
+
+# ===================================
+# Node.js / React
+# ===================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+.npm
+.eslintcache
+
+# ===================================
+# React Build
+# ===================================
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# ===================================
+# Database
+# ===================================
+database/backups/
+*.sql.backup
+*.dump
+
+# ===================================
+# IDE
+# ===================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# ===================================
+# OS
+# ===================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===================================
+# Docker
+# ===================================
+docker-compose.override.yml
+*.dockerfile.bak
+
+# ===================================
+# Archivos sensibles
+# ===================================
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+secrets/
+credentials/
+
+# ===================================
+# Testing
+# ===================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# ===================================
+# Jupyter Notebooks
+# ===================================
+.ipynb_checkpoints
+
+# ===================================
+# Temporales
+# ===================================
+*.tmp
+*.temp
+*.bak
+*.swp

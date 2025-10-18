@@ -1,0 +1,38 @@
+# Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Base de datos
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Validación
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# IA y procesamiento
+google-generativeai==0.3.2
+langchain==0.1.0
+langchain-google-genai==0.0.6
+chromadb==0.4.22
+sentence-transformers==2.3.1
+
+# Procesamiento de documentos
+python-docx==1.1.0
+pypdf2==3.0.1
+openpyxl==3.1.2
+Pillow==10.2.0
+pytesseract==0.3.10
+python-magic==0.4.27
+
+# Utilidades
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+aiofiles==23.2.1
+httpx==0.26.0
+
+# CORS
+fastapi-cors==0.0.6

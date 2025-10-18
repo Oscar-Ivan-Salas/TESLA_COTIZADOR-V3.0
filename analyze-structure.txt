@@ -1,0 +1,244 @@
+# ============================================
+# AUDITORIA COMPLETA PROFESIONAL
+# TESLA COTIZADOR V3
+# NO ELIMINA NADA - SOLO ANALIZA
+# ============================================
+
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "   AUDITORIA PROFESIONAL COMPLETA      " -ForegroundColor Cyan
+Write-Host "   (Sin eliminar ni modificar nada)    " -ForegroundColor Cyan
+Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$reportFile = "auditoria-completa-$timestamp.txt"
+
+# Función para escribir en reporte y consola
+function Write-Report {
+    param(
+        [string]$Message,
+        [string]$Color = "White"
+    )
+    Write-Host $Message -ForegroundColor $Color
+    Add-Content -Path $reportFile -Value $Message
+}
+
+# Iniciar reporte
+Write-Report "========================================" "Cyan"
+Write-Report "AUDITORIA COMPLETA - TESLA COTIZADOR V3" "Cyan"
+Write-Report "Fecha: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" "Cyan"
+Write-Report "========================================" "Cyan"
+Write-Report ""
+
+# ============================================
+# 1. ESTRUCTURA COMPLETA DEL PROYECTO
+# ============================================
+
+Write-Report "========================================" "Cyan"
+Write-Report "1. ESTRUCTURA COMPLETA DEL PROYECTO" "Cyan"
+Write-Report "========================================" "Cyan"
+Write-Report ""
+
+function Get-TreeStructure {
+    param(
+        [string]$Path = ".",
+        [int]$Depth = 0,
+        [int]$MaxDepth = 10,
+        [string]$Prefix = "",
+        [switch]$LastItem
+    )
+    
+    if ($Depth -gt $MaxDepth) { return }
+    
+    # Obtener items excluyendo carpetas pesadas
+    $items = Get-ChildItem -Path $Path -Force -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -notmatch '^(node_modules|\.git|__pycache__|\.pytest_cache|\.next)$'
+    } | Sort-Object { $_.PSIsContainer }, Name
+    
+    $totalItems = $items.Count
+    $currentIndex = 0
+    
+    foreach ($item in $items) {
+        $currentIndex++
+        $isLast = ($currentIndex -eq $totalItems)
+        
+        # Símbolos del árbol
+        if ($isLast) {
+            $branch = "`-- "
+            $extension = "    "
+        } else {
+            $branch = "|-- "
+            $extension = "|   "
+        }
+        
+        # Determinar icono según tipo
+        $icon = if ($item.PSIsContainer) { 
+            "[DIR]" 
+        } elseif ($item.Extension -match '\.(py|js|jsx|ts|tsx)$') {
+            "[CODE]"
+        } elseif ($item.Extension -match '\.(json|yml|yaml|toml|ini|env)$') {
+            "[CONF]"
+        } elseif ($item.Extension -match '\.(md|txt|pdf|docx)$') {
+            "[DOC]"
+        } elseif ($item.Extension -match '\.(sql)$') {
+            "[SQL]"
+        } else {
+            "[FILE]"
+        }
+        
+        # Construir línea
+        $line = "$Prefix$branch$icon $($item.Name)"
+        
+        # Agregar tamaño si es archivo
+        if (-not $item.PSIsContainer) {
+            $size = if ($item.Length -gt 1MB) {
+                "{0:N2} MB" -f ($item.Length / 1MB)
+            } elseif ($item.Length -gt 1KB) {
+                "{0:N2} KB" -f ($item.Length / 1KB)
+            } else {
+                "$($item.Length) bytes"
+            }
+            $line += " ($size)"
+        }
+        
+        Write-Report $line "Gray"
+        
+        # Recursión para carpetas
+        if ($item.PSIsContainer) {
+            $newPrefix = "$Prefix$extension"
+            Get-TreeStructure -Path $item.FullName -Depth ($Depth + 1) -MaxDepth $MaxDepth -Prefix $newPrefix
+        }
+    }
+}
+
+Write-Report "TESLA-COTIZADOR-V3/" "Cyan"
+Get-TreeStructure -MaxDepth 10
+
+# ============================================
+# 2. INVENTARIO DETALLADO DE ARCHIVOS
+# ============================================
+
+Write-Report ""
+Write-Report "========================================" "Cyan"
+Write-Report "2. INVENTARIO DETALLADO DE ARCHIVOS" "Cyan"
+Write-Report "========================================" "Cyan"
+Write-Report ""
+
+# Obtener TODOS los archivos
+$allFiles = Get-ChildItem -Path . -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+    $_.DirectoryName -notmatch 'node_modules|\.git|__pycache__|venv\\|\.venv'
+}
+
+# Agrupar por extensión
+$filesByExtension = $allFiles | Group-Object Extension | Sort-Object Count -Descending
+
+Write-Report "Total de archivos encontrados: $($allFiles.Count)" "Yellow"
+Write-Report ""
+Write-Report "Archivos por tipo:" "Yellow"
+
+foreach ($group in $filesByExtension) {
+    $ext = if ($group.Name) { $group.Name } else { "(sin extension)" }
+    Write-Report "  $ext : $($group.Count) archivos" "Gray"
+}
+
+# ============================================
+# 3. ANÁLISIS DE CARPETAS PRINCIPALES
+# ============================================
+
+Write-Report ""
+Write-Report "========================================" "Cyan"
+Write-Report "3. ANALISIS DE CARPETAS PRINCIPALES" "Cyan"
+Write-Report "========================================" "Cyan"
+Write-Report ""
+
+$mainFolders = @("backend", "frontend", "database")
+
+foreach ($folder in $mainFolders) {
+    if (Test-Path $folder) {
+        Write-Report "[$folder]" "Green"
+        
+        # Contar archivos
+        $files = Get-ChildItem -Path $folder -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            $_.DirectoryName -notmatch 'node_modules|venv|\.git|__pycache__'
+        }
+        
+        Write-Report "  Total archivos: $($files.Count)" "Gray"
+        
+        # Agrupar por extensión
+        $extensions = $files | Group-Object Extension | Sort-Object Count -Descending
+        foreach ($ext in $extensions) {
+            $extName = if ($ext.Name) { $ext.Name } else { "(sin ext)" }
+            Write-Report "    $extName : $($ext.Count)" "Gray"
+        }
+        
+        Write-Report ""
+    } else {
+        Write-Report "[$folder] - NO EXISTE" "Red"
+        Write-Report ""
+    }
+}
+
+# ============================================
+# 4. ARCHIVOS CRÍTICOS - VERIFICACIÓN
+# ============================================
+
+Write-Report ""
+Write-Report "========================================" "Cyan"
+Write-Report "4. VERIFICACION DE ARCHIVOS CRITICOS" "Cyan"
+Write-Report "========================================" "Cyan"
+Write-Report ""
+
+$criticalFiles = @{
+    # Raíz
+    "docker-compose.yml" = "Orquestacion Docker"
+    ".gitignore" = "Control de versiones"
+    ".env.example" = "Template variables entorno"
+    "README.md" = "Documentacion principal"
+    
+    # Backend - Configuración
+    "backend\requirements.txt" = "Dependencias Python"
+    "backend\.env" = "Variables de entorno backend"
+    "backend\.env.example" = "Template env backend"
+    "backend\Dockerfile" = "Imagen Docker backend"
+    
+    # Backend - Aplicación
+    "backend\app\__init__.py" = "Paquete Python app"
+    "backend\app\main.py" = "Entry point FastAPI"
+    "backend\app\core\__init__.py" = "Paquete core"
+    "backend\app\core\config.py" = "Configuracion app"
+    "backend\app\core\database.py" = "Conexion BD"
+    
+    # Backend - Modelos
+    "backend\app\models\__init__.py" = "Paquete models"
+    "backend\app\models\cotizacion.py" = "Modelo Cotizacion"
+    "backend\app\models\proyecto.py" = "Modelo Proyecto"
+    "backend\app\models\documento.py" = "Modelo Documento"
+    
+    # Backend - Schemas
+    "backend\app\schemas\__init__.py" = "Paquete schemas"
+    "backend\app\schemas\cotizacion.py" = "Schema Cotizacion"
+    
+    # Backend - Services
+    "backend\app\services\__init__.py" = "Paquete services"
+    "backend\app\services\gemini_service.py" = "Servicio Gemini AI"
+    "backend\app\services\word_generator.py" = "Generador Word"
+    "backend\app\services\pdf_generator.py" = "Generador PDF"
+    
+    # Backend - Routers
+    "backend\app\routers\__init__.py" = "Paquete routers"
+    "backend\app\routers\cotizaciones.py" = "Endpoints cotizaciones"
+    "backend\app\routers\proyectos.py" = "Endpoints proyectos"
+    "backend\app\routers\chat.py" = "Endpoints chat IA"
+    
+    # Backend - Utils
+    "backend\app\utils\__init__.py" = "Paquete utils"
+    "backend\app\utils\ocr.py" = "Utilidad OCR"
+    "backend\app\utils\helpers.py" = "Funciones helper"
+    
+    # Frontend - Configuración
+    "frontend\package.json" = "Dependencias Node"
+    "frontend\.env.local" = "Variables entorno frontend"
+    "frontend\.env.example" = "Template env frontend"
+    "frontend\Dockerfile" = "Imagen Docker frontend"
+    "frontend\tailwind.config.js" = "Config Tailwind"
+    "frontend\postcss.config.js" = "

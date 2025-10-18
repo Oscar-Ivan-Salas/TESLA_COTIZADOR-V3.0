@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: tesla_cotizador_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tesla_cotizador
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - tesla_network
+
+  # Backend FastAPI
+  backend:
+    build: .
+    container_name: tesla_cotizador_backend
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/tesla_cotizador
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    volumes:
+      - .:/app
+      - ./storage:/app/storage
+    depends_on:
+      - db
+    networks:
+      - tesla_network
+
+  # ChromaDB (Vector Database para RAG)
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: tesla_cotizador_chromadb
+    restart: always
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - tesla_network
+
+volumes:
+  postgres_data:
+  chroma_data:
+
+networks:
+  tesla_network:
+    driver: bridge
