@@ -2,9 +2,9 @@
 Router: Cotizaciones
 Endpoints para CRUD de cotizaciones
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from app.core.database import get_db
 from app.models.cotizacion import Cotizacion
 from app.models.item import Item
@@ -14,6 +14,7 @@ from app.schemas.cotizacion import (
     CotizacionResponse
 )
 from datetime import datetime
+from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,6 @@ def generar_numero_cotizacion(db: Session) -> str:
     ).order_by(Cotizacion.numero.desc()).first()
     
     if ultima:
-        # Extraer número secuencial
         try:
             ultimo_num = int(ultima.numero.split('-')[-1])
             nuevo_num = ultimo_num + 1
@@ -251,13 +251,31 @@ def eliminar_cotizacion(
             detail=f"Error al eliminar cotización: {str(e)}"
         )
 
+# ============================================
+# GENERACIÓN DE DOCUMENTOS (WORD Y PDF)
+# ============================================
+
 @router.post("/{cotizacion_id}/generar-word")
-def generar_word(
+async def generar_word(
     cotizacion_id: int,
+    opciones: Optional[Dict[str, bool]] = Body(None),
+    logo_base64: Optional[str] = Body(None),
     db: Session = Depends(get_db)
 ):
     """
     Generar documento Word de la cotización
+    
+    Body (JSON):
+    {
+        "opciones": {
+            "mostrarPreciosUnitarios": true,
+            "mostrarPreciosTotales": true,
+            "mostrarIGV": true,
+            "mostrarSubtotal": true,
+            "mostrarLogo": true
+        },
+        "logo_base64": "data:image/png;base64,..."
+    }
     """
     from app.services.word_generator import word_generator
     
@@ -270,10 +288,13 @@ def generar_word(
         )
     
     try:
-        # Generar documento
-        ruta_archivo = word_generator.generar_cotizacion(cotizacion.to_dict())
+        # Generar documento con opciones y logo
+        ruta_archivo = word_generator.generar_cotizacion(
+            cotizacion=cotizacion.to_dict(),
+            opciones=opciones,
+            logo_base64=logo_base64
+        )
         
-        from pathlib import Path
         nombre_archivo = Path(ruta_archivo).name
         
         return {
@@ -292,12 +313,26 @@ def generar_word(
         )
 
 @router.post("/{cotizacion_id}/generar-pdf")
-def generar_pdf(
+async def generar_pdf(
     cotizacion_id: int,
+    opciones: Optional[Dict[str, bool]] = Body(None),
+    logo_base64: Optional[str] = Body(None),
     db: Session = Depends(get_db)
 ):
     """
     Generar documento PDF de la cotización
+    
+    Body (JSON):
+    {
+        "opciones": {
+            "mostrarPreciosUnitarios": true,
+            "mostrarPreciosTotales": true,
+            "mostrarIGV": true,
+            "mostrarSubtotal": true,
+            "mostrarLogo": true
+        },
+        "logo_base64": "data:image/png;base64,..."
+    }
     """
     from app.services.pdf_generator import pdf_generator
     
@@ -310,10 +345,13 @@ def generar_pdf(
         )
     
     try:
-        # Generar documento
-        ruta_archivo = pdf_generator.generar_cotizacion(cotizacion.to_dict())
+        # Generar documento con opciones y logo
+        ruta_archivo = pdf_generator.generar_cotizacion(
+            cotizacion=cotizacion.to_dict(),
+            opciones=opciones,
+            logo_base64=logo_base64
+        )
         
-        from pathlib import Path
         nombre_archivo = Path(ruta_archivo).name
         
         return {
@@ -330,6 +368,10 @@ def generar_pdf(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al generar PDF: {str(e)}"
         )
+
+# ============================================
+# ENDPOINTS ADICIONALES
+# ============================================
 
 @router.get("/{cotizacion_id}/items")
 def obtener_items_cotizacion(

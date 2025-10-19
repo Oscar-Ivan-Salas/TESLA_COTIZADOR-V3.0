@@ -2,9 +2,10 @@
 Router: Documentos
 Endpoints para upload, procesamiento y búsqueda de documentos
 """
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Body
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict
 from app.core.database import get_db
 from app.models.documento import Documento
 from app.schemas.documento import (
@@ -18,9 +19,11 @@ from app.services.rag_service import rag_service
 from app.services.gemini_service import gemini_service
 from app.core.config import settings
 from pathlib import Path
+from datetime import datetime
 import shutil
 import uuid
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -426,4 +429,246 @@ def estadisticas_rag():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener estadísticas: {str(e)}"
+        )
+
+# ════════════════════════════════════════════════════════════════
+# ✅ NUEVOS ENDPOINTS - GENERACIÓN DE INFORMES DE ANÁLISIS
+# ════════════════════════════════════════════════════════════════
+
+@router.post("/{documento_id}/generar-informe-analisis-word")
+async def generar_informe_analisis_word(
+    documento_id: int,
+    incluir_contenido_completo: bool = Body(False),
+    incluir_metadata: bool = Body(True),
+    opciones: Optional[Dict[str, bool]] = Body(None),
+    logo_base64: Optional[str] = Body(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Generar informe de análisis del documento en formato Word
+    
+    MODO COMPLEJO - Para análisis detallado de documentos
+    
+    Incluye:
+    - Información del documento
+    - Análisis realizado por IA (Gemini)
+    - Extracción de datos clave
+    - Conclusiones y recomendaciones
+    - Metadata del archivo
+    - Logo personalizado
+    
+    Args:
+        documento_id: ID del documento
+        incluir_contenido_completo: Si incluir todo el texto extraído
+        incluir_metadata: Si incluir metadata del archivo
+        opciones: Opciones de visualización
+        logo_base64: Logo en base64
+    
+    Returns:
+        Archivo Word para descarga
+    """
+    
+    try:
+        # Obtener documento
+        documento = db.query(Documento).filter(Documento.id == documento_id).first()
+        
+        if not documento:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Documento no encontrado"
+            )
+        
+        if not documento.contenido_texto:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El documento no tiene contenido procesado. Ejecuta /reprocesar primero."
+            )
+        
+        logger.info(f"Generando informe de análisis Word para: {documento.nombre_original}")
+        
+        # Analizar con IA
+        analisis_ia = gemini_service.analizar_documento(
+            texto_documento=documento.contenido_texto,
+            tipo_analisis="completo"
+        )
+        
+        # Preparar datos del informe
+        datos_informe = {
+            # Información del documento
+            "numero": f"DOC-{documento.id:04d}",
+            "cliente": "Sistema Tesla",  # Placeholder
+            "proyecto": f"Análisis de {documento.nombre_original}",
+            
+            # Metadata del documento
+            "nombre_archivo": documento.nombre_original,
+            "tipo_archivo": documento.tipo_mime,
+            "tamano_mb": round(documento.tamano / (1024 * 1024), 2),
+            "fecha_subida": documento.fecha_subida.strftime("%d/%m/%Y %H:%M") if documento.fecha_subida else "N/A",
+            "estado_procesamiento": "Procesado" if documento.procesado == 1 else "Error",
+            
+            # Análisis de IA
+            "descripcion": analisis_ia.get('resumen', 'Análisis completado con IA Gemini'),
+            "analisis_completo": analisis_ia,
+            
+            # Contenido
+            "contenido_extracto": documento.contenido_texto[:2000] if documento.contenido_texto else "",
+            "contenido_completo": documento.contenido_texto if incluir_contenido_completo else None,
+            
+            # Metadata extraída
+            "metadata_extraida": documento.metadata_extraida if incluir_metadata else {},
+            
+            # Items para tabla (si hay)
+            "items": []
+        }
+        
+        # Si el análisis incluye items/puntos clave, agregarlos
+        if analisis_ia.get('puntos_clave'):
+            for i, punto in enumerate(analisis_ia.get('puntos_clave', []), 1):
+                datos_informe["items"].append({
+                    "descripcion": punto,
+                    "cantidad": 1,
+                    "precio_unitario": 0,
+                })
+        
+        # Generar documento Word
+        from app.services.word_generator import word_generator
+        
+        nombre_archivo = f"analisis_{documento.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+        ruta_salida = os.path.join(settings.GENERATED_DIR, nombre_archivo)
+        
+        # Usar el generador estándar adaptado
+        word_generator.generar_cotizacion(
+            datos=datos_informe,
+            ruta_salida=ruta_salida,
+            opciones=opciones or {
+                'mostrar_precios': False,
+                'mostrar_igv': False,
+                'mostrar_observaciones': True,
+                'mostrar_logo': True
+            },
+            logo_base64=logo_base64
+        )
+        
+        if not os.path.exists(ruta_salida):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No se pudo generar el informe"
+            )
+        
+        logger.info(f"✅ Informe de análisis generado: {nombre_archivo}")
+        
+        return FileResponse(
+            path=ruta_salida,
+            filename=nombre_archivo,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al generar informe Word: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar informe: {str(e)}"
+        )
+
+@router.post("/{documento_id}/generar-informe-analisis-pdf")
+async def generar_informe_analisis_pdf(
+    documento_id: int,
+    incluir_contenido_completo: bool = Body(False),
+    incluir_metadata: bool = Body(True),
+    opciones: Optional[Dict[str, bool]] = Body(None),
+    logo_base64: Optional[str] = Body(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Generar informe de análisis del documento en formato PDF
+    
+    MODO COMPLEJO - Para análisis detallado de documentos
+    
+    Similar al Word pero genera PDF (no editable)
+    
+    Args:
+        documento_id: ID del documento
+        incluir_contenido_completo: Si incluir todo el texto extraído
+        incluir_metadata: Si incluir metadata del archivo
+        opciones: Opciones de visualización
+        logo_base64: Logo en base64
+    
+    Returns:
+        Archivo PDF para descarga
+    """
+    
+    try:
+        # Obtener documento
+        documento = db.query(Documento).filter(Documento.id == documento_id).first()
+        
+        if not documento:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Documento no encontrado"
+            )
+        
+        if not documento.contenido_texto:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El documento no tiene contenido procesado"
+            )
+        
+        logger.info(f"Generando informe de análisis PDF para: {documento.nombre_original}")
+        
+        # Analizar con IA
+        analisis_ia = gemini_service.analizar_documento(
+            texto_documento=documento.contenido_texto,
+            tipo_analisis="completo"
+        )
+        
+        # Preparar datos
+        datos_informe = {
+            "numero": f"DOC-{documento.id:04d}",
+            "cliente": "Sistema Tesla",
+            "proyecto": f"Análisis de {documento.nombre_original}",
+            "descripcion": analisis_ia.get('resumen', 'Análisis con IA'),
+            "items": []
+        }
+        
+        # Generar PDF
+        from app.services.pdf_generator import pdf_generator
+        
+        nombre_archivo = f"analisis_{documento.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        ruta_salida = os.path.join(settings.GENERATED_DIR, nombre_archivo)
+        
+        pdf_generator.generar_cotizacion(
+            datos=datos_informe,
+            ruta_salida=ruta_salida,
+            opciones=opciones or {
+                'mostrar_precios': False,
+                'mostrar_igv': False,
+                'mostrar_observaciones': True,
+                'mostrar_logo': True
+            },
+            logo_base64=logo_base64
+        )
+        
+        if not os.path.exists(ruta_salida):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No se pudo generar el PDF"
+            )
+        
+        logger.info(f"✅ PDF de análisis generado: {nombre_archivo}")
+        
+        return FileResponse(
+            path=ruta_salida,
+            filename=nombre_archivo,
+            media_type="application/pdf"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al generar PDF: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar PDF: {str(e)}"
         )
