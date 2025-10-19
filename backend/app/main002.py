@@ -8,8 +8,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.core.database import engine, Base, get_db
-from sqlalchemy.orm import Session
+from app.core.database import engine, Base
 from pathlib import Path
 import logging
 
@@ -42,7 +41,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition"],
 )
 
 # ============================================

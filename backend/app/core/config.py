@@ -41,9 +41,9 @@ class Settings(BaseSettings):
     # ========================================
     # ARCHIVOS Y STORAGE
     # ========================================
-    UPLOAD_DIR: str = str(BASE_DIR / "storage" / "documentos")
-    GENERATED_DIR: str = str(BASE_DIR / "storage" / "generados")
-    TEMPLATES_DIR: str = str(BASE_DIR / "templates")
+    UPLOAD_DIR: str = str(BASE_DIR / "backend" / "storage" / "documentos")
+    GENERATED_DIR: str = str(BASE_DIR / "backend" / "storage" / "generados")
+    TEMPLATES_DIR: str = str(BASE_DIR / "backend" / "templates")
     
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
     ALLOWED_EXTENSIONS: List[str] = [
@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     # ========================================
     # CHROMADB (Vector Database para RAG)
     # ========================================
-    CHROMA_PERSIST_DIRECTORY: str = str(BASE_DIR / "storage" / "chroma_db")
+    CHROMA_PERSIST_DIRECTORY: str = str(BASE_DIR / "backend" / "storage" / "chroma_db")
     CHROMA_COLLECTION_NAME: str = "documentos_cotizador"
     
     # ========================================

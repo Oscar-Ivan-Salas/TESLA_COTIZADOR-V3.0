@@ -48,7 +48,7 @@ class Proyecto(Base):
     # Relaciones
     cotizaciones = relationship(
         "Cotizacion",
-        back_populates="proyecto",
+        back_populates="proyecto_rel",
         cascade="all, delete-orphan"
     )
     documentos = relationship(

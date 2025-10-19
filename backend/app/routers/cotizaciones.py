@@ -288,22 +288,39 @@ async def generar_word(
         )
     
     try:
+        # Preparar ruta de salida
+        from app.core.config import settings
+        import os
+        
+        nombre_archivo = f"cotizacion_{cotizacion.numero}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+        ruta_salida = os.path.join(settings.GENERATED_DIR, nombre_archivo)
+        
+        logger.info(f"Generando Word para cotización {cotizacion_id} en {ruta_salida}")
+
         # Generar documento con opciones y logo
         ruta_archivo = word_generator.generar_cotizacion(
-            cotizacion=cotizacion.to_dict(),
+            datos=cotizacion.to_dict(),
+            ruta_salida=ruta_salida,
             opciones=opciones,
             logo_base64=logo_base64
         )
         
-        nombre_archivo = Path(ruta_archivo).name
+        logger.info(f"Archivo Word generado en {ruta_archivo}")
+
+        # Retornar archivo directamente
+        from fastapi.responses import FileResponse
+        return FileResponse(
+            path=ruta_archivo,
+            filename=nombre_archivo,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
         
-        return {
-            "success": True,
-            "message": "Documento Word generado exitosamente",
-            "ruta_archivo": ruta_archivo,
-            "nombre_archivo": nombre_archivo,
-            "url_descarga": f"/api/descargas/{nombre_archivo}"
-        }
+    except Exception as e:
+        logger.error(f"Error al generar Word para cotización {cotizacion_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar Word: {str(e)}"
+        )
         
     except Exception as e:
         logger.error(f"Error al generar Word: {str(e)}")

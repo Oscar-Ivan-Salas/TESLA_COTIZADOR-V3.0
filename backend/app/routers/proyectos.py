@@ -237,7 +237,7 @@ async def obtener_estadisticas_proyectos(
     }
 
 # ════════════════════════════════════════════════════════════════
-# ✅ NUEVOS ENDPOINTS - GENERACIÓN DE INFORMES DE PROYECTO
+# ✅ ENDPOINTS MEJORADOS CON ANÁLISIS IA - INTEGRACIÓN report_generator
 # ════════════════════════════════════════════════════════════════
 
 @router.post("/{proyecto_id}/generar-informe-word")
@@ -246,6 +246,7 @@ async def generar_informe_proyecto_word(
     incluir_cotizaciones: bool = Body(True),
     incluir_documentos: bool = Body(True),
     incluir_estadisticas: bool = Body(True),
+    incluir_analisis_ia: bool = Body(True),  # ⭐ NUEVO
     opciones: Optional[Dict[str, bool]] = Body(None),
     logo_base64: Optional[str] = Body(None),
     usar_plantilla: Optional[str] = Body(None),
@@ -254,13 +255,19 @@ async def generar_informe_proyecto_word(
     """
     Genera un informe ejecutivo del proyecto en formato Word
     
+    ⭐ MEJORADO CON IA - Ahora incluye análisis inteligente automático
+    
     MODO COMPLEJO - Proyecto Complejo
     
     Incluye:
     - Información general del proyecto
     - Todas las cotizaciones asociadas
     - Documentos relacionados
-    - Estadísticas financieras
+    - ⭐ ANÁLISIS AUTOMÁTICO CON IA
+    - ⭐ MÉTRICAS Y KPIs CALCULADOS
+    - ⭐ CONCLUSIONES INTELIGENTES
+    - ⭐ RECOMENDACIONES PERSONALIZADAS
+    - ⭐ ANÁLISIS DE RIESGOS
     - Timeline del proyecto
     - Logo personalizado
     - Formato profesional
@@ -270,6 +277,7 @@ async def generar_informe_proyecto_word(
         incluir_cotizaciones: Si incluir tabla de cotizaciones
         incluir_documentos: Si listar documentos del proyecto
         incluir_estadisticas: Si incluir gráficos y estadísticas
+        incluir_analisis_ia: Si incluir análisis inteligente con IA ⭐ NUEVO
         opciones: Opciones de visualización
         logo_base64: Logo en base64
         usar_plantilla: Nombre de plantilla personalizada (opcional)
@@ -288,77 +296,114 @@ async def generar_informe_proyecto_word(
                 detail="Proyecto no encontrado"
             )
         
-        logger.info(f"Generando informe Word para proyecto: {proyecto.nombre}")
+        logger.info(f"Generando informe Word INTELIGENTE para proyecto: {proyecto.nombre}")
         
         # Obtener cotizaciones relacionadas
+        cotizaciones_db = db.query(Cotizacion).filter(
+            Cotizacion.proyecto_id == proyecto_id
+        ).all() if incluir_cotizaciones else []
+        
         cotizaciones = []
-        if incluir_cotizaciones:
-            cotizaciones_db = db.query(Cotizacion).filter(
-                Cotizacion.proyecto_id == proyecto_id
-            ).all()
-            
-            for cot in cotizaciones_db:
-                cotizaciones.append({
-                    "numero": cot.numero,
-                    "cliente": cot.cliente,
-                    "proyecto": cot.proyecto,
-                    "estado": cot.estado,
-                    "subtotal": float(cot.subtotal) if cot.subtotal else 0,
-                    "igv": float(cot.igv) if cot.igv else 0,
-                    "total": float(cot.total) if cot.total else 0,
-                    "fecha_creacion": cot.fecha_creacion.strftime("%d/%m/%Y") if cot.fecha_creacion else "N/A"
-                })
+        for cot in cotizaciones_db:
+            cotizaciones.append({
+                "numero": cot.numero,
+                "cliente": cot.cliente,
+                "proyecto": cot.proyecto,
+                "estado": cot.estado,
+                "subtotal": float(cot.subtotal) if cot.subtotal else 0,
+                "igv": float(cot.igv) if cot.igv else 0,
+                "total": float(cot.total) if cot.total else 0,
+                "fecha_creacion": cot.fecha_creacion.strftime("%d/%m/%Y") if cot.fecha_creacion else "N/A"
+            })
         
         # Obtener documentos relacionados
+        documentos_db = db.query(Documento).filter(
+            Documento.proyecto_id == proyecto_id
+        ).all() if incluir_documentos else []
+        
         documentos_info = []
-        if incluir_documentos:
-            documentos_db = db.query(Documento).filter(
-                Documento.proyecto_id == proyecto_id
-            ).all()
-            
-            for doc in documentos_db:
-                documentos_info.append({
-                    "nombre": doc.nombre_original,
-                    "tipo": doc.tipo_mime,
-                    "tamano_mb": round(doc.tamano / (1024 * 1024), 2),
-                    "fecha_subida": doc.fecha_subida.strftime("%d/%m/%Y") if doc.fecha_subida else "N/A",
-                    "procesado": "Sí" if doc.procesado == 1 else "No"
-                })
+        for doc in documentos_db:
+            documentos_info.append({
+                "nombre": doc.nombre_original,
+                "tipo": doc.tipo_mime,
+                "tamano_mb": round(doc.tamano / (1024 * 1024), 2),
+                "fecha_subida": doc.fecha_subida.strftime("%d/%m/%Y") if doc.fecha_subida else "N/A",
+                "procesado": "Sí" if doc.procesado == 1 else "No"
+            })
         
-        # Calcular estadísticas
-        total_cotizaciones = len(cotizaciones)
-        cotizaciones_aprobadas = sum(1 for c in cotizaciones if c.get('estado') == 'aprobada')
-        valor_total = sum(c.get('total', 0) for c in cotizaciones if c.get('estado') == 'aprobada')
+        # ═══════════════════════════════════════════════════════
+        # ⭐ ANÁLISIS INTELIGENTE CON report_generator
+        # ═══════════════════════════════════════════════════════
         
-        # Preparar datos del informe
-        datos_informe = {
-            # Información del proyecto
-            "cliente": proyecto.cliente,
-            "proyecto": proyecto.nombre,
-            "numero": f"PROY-{proyecto.id:04d}",
-            "descripcion": proyecto.descripcion or "Sin descripción",
+        if incluir_analisis_ia:
+            from app.services.report_generator import report_generator
             
-            # Metadata del proyecto
-            "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
-            "fecha_inicio": proyecto.fecha_inicio.strftime("%d/%m/%Y") if proyecto.fecha_inicio else "N/A",
-            "fecha_fin": proyecto.fecha_fin.strftime("%d/%m/%Y") if proyecto.fecha_fin else "En curso",
+            logger.info("🤖 Generando análisis inteligente con IA...")
             
-            # Cotizaciones
-            "cotizaciones": cotizaciones,
+            # Preparar datos del proyecto para análisis
+            proyecto_dict = {
+                "id": proyecto.id,
+                "nombre": proyecto.nombre,
+                "cliente": proyecto.cliente,
+                "descripcion": proyecto.descripcion,
+                "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
+                "fecha_inicio": proyecto.fecha_inicio,
+                "fecha_fin": proyecto.fecha_fin
+            }
             
-            # Documentos
-            "documentos": documentos_info,
+            # ⭐ GENERAR INFORME EJECUTIVO CON IA
+            informe_completo = report_generator.generar_informe_ejecutivo_proyecto(
+                proyecto_data=proyecto_dict,
+                cotizaciones=cotizaciones,
+                documentos=documentos_info,
+                opciones=opciones or {}
+            )
             
-            # Estadísticas
-            "total_cotizaciones": total_cotizaciones,
-            "cotizaciones_aprobadas": cotizaciones_aprobadas,
-            "total_documentos": len(documentos_info),
-            "subtotal": valor_total,
-            "igv": valor_total * 0.18,
-            "total": valor_total * 1.18
-        }
+            logger.info("✅ Análisis inteligente completado")
+            
+            # Usar datos del informe completo (con análisis IA)
+            datos_informe = informe_completo
+            
+        else:
+            # Modo básico (sin IA)
+            logger.info("Generando informe básico sin análisis IA")
+            
+            # Calcular estadísticas básicas
+            total_cot = len(cotizaciones)
+            aprobadas = sum(1 for c in cotizaciones if c.get('estado') == 'aprobada')
+            valor_total = sum(c.get('total', 0) for c in cotizaciones if c.get('estado') == 'aprobada')
+            
+            datos_informe = {
+                # Información del proyecto
+                "cliente": proyecto.cliente,
+                "proyecto": proyecto.nombre,
+                "numero": f"PROY-{proyecto.id:04d}",
+                "descripcion": proyecto.descripcion or "Sin descripción",
+                
+                # Metadata del proyecto
+                "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
+                "fecha_inicio": proyecto.fecha_inicio.strftime("%d/%m/%Y") if proyecto.fecha_inicio else "N/A",
+                "fecha_fin": proyecto.fecha_fin.strftime("%d/%m/%Y") if proyecto.fecha_fin else "En curso",
+                
+                # Cotizaciones
+                "cotizaciones": cotizaciones,
+                
+                # Documentos
+                "documentos": documentos_info,
+                
+                # Estadísticas básicas
+                "total_cotizaciones": total_cot,
+                "cotizaciones_aprobadas": aprobadas,
+                "total_documentos": len(documentos_info),
+                "subtotal": valor_total,
+                "igv": valor_total * 0.18,
+                "total": valor_total * 1.18
+            }
         
-        # Usar word_generator o template_processor
+        # ═══════════════════════════════════════════════════════
+        # GENERAR DOCUMENTO WORD
+        # ═══════════════════════════════════════════════════════
+        
         from app.services.word_generator import word_generator
         from app.core.config import settings
         
@@ -403,7 +448,10 @@ async def generar_informe_proyecto_word(
                 detail="No se pudo generar el informe"
             )
         
-        logger.info(f"✅ Informe generado: {nombre_archivo}")
+        if incluir_analisis_ia:
+            logger.info(f"✅ Informe INTELIGENTE generado: {nombre_archivo}")
+        else:
+            logger.info(f"✅ Informe básico generado: {nombre_archivo}")
         
         return FileResponse(
             path=ruta_salida,
@@ -426,12 +474,15 @@ async def generar_informe_proyecto_pdf(
     incluir_cotizaciones: bool = Body(True),
     incluir_documentos: bool = Body(True),
     incluir_estadisticas: bool = Body(True),
+    incluir_analisis_ia: bool = Body(True),  # ⭐ NUEVO
     opciones: Optional[Dict[str, bool]] = Body(None),
     logo_base64: Optional[str] = Body(None),
     db: Session = Depends(get_db)
 ):
     """
     Genera un informe ejecutivo del proyecto en formato PDF
+    
+    ⭐ MEJORADO CON IA - Incluye análisis inteligente automático
     
     MODO COMPLEJO - Proyecto Complejo
     
@@ -442,6 +493,7 @@ async def generar_informe_proyecto_pdf(
         incluir_cotizaciones: Si incluir tabla de cotizaciones
         incluir_documentos: Si listar documentos del proyecto
         incluir_estadisticas: Si incluir gráficos y estadísticas
+        incluir_analisis_ia: Si incluir análisis inteligente ⭐ NUEVO
         opciones: Opciones de visualización
         logo_base64: Logo en base64
     
@@ -459,51 +511,76 @@ async def generar_informe_proyecto_pdf(
                 detail="Proyecto no encontrado"
             )
         
-        logger.info(f"Generando informe PDF para proyecto: {proyecto.nombre}")
+        logger.info(f"Generando informe PDF INTELIGENTE para proyecto: {proyecto.nombre}")
         
         # Obtener cotizaciones relacionadas
+        cotizaciones_db = db.query(Cotizacion).filter(
+            Cotizacion.proyecto_id == proyecto_id
+        ).all() if incluir_cotizaciones else []
+        
         cotizaciones = []
-        if incluir_cotizaciones:
-            cotizaciones_db = db.query(Cotizacion).filter(
-                Cotizacion.proyecto_id == proyecto_id
-            ).all()
-            
-            for cot in cotizaciones_db:
-                cotizaciones.append({
-                    "numero": cot.numero,
-                    "estado": cot.estado,
-                    "total": float(cot.total) if cot.total else 0
-                })
+        for cot in cotizaciones_db:
+            cotizaciones.append({
+                "numero": cot.numero,
+                "estado": cot.estado,
+                "total": float(cot.total) if cot.total else 0,
+                "fecha_creacion": cot.fecha_creacion.strftime("%d/%m/%Y") if cot.fecha_creacion else "N/A"
+            })
         
         # Obtener documentos relacionados
+        documentos_db = db.query(Documento).filter(
+            Documento.proyecto_id == proyecto_id
+        ).all() if incluir_documentos else []
+        
         documentos_info = []
-        if incluir_documentos:
-            documentos_db = db.query(Documento).filter(
-                Documento.proyecto_id == proyecto_id
-            ).all()
+        for doc in documentos_db:
+            documentos_info.append({
+                "nombre": doc.nombre_original,
+                "tipo": doc.tipo_mime,
+                "fecha": doc.fecha_subida.strftime("%d/%m/%Y") if doc.fecha_subida else "N/A"
+            })
+        
+        # ⭐ ANÁLISIS INTELIGENTE (si está habilitado)
+        if incluir_analisis_ia:
+            from app.services.report_generator import report_generator
             
-            for doc in documentos_db:
-                documentos_info.append({
-                    "nombre": doc.nombre_original,
-                    "tipo": doc.tipo_mime,
-                    "fecha": doc.fecha_subida.strftime("%d/%m/%Y") if doc.fecha_subida else "N/A"
-                })
-        
-        # Calcular estadísticas
-        valor_total = sum(c.get('total', 0) for c in cotizaciones if c.get('estado') == 'aprobada')
-        
-        # Preparar datos
-        datos = {
-            "nombre": proyecto.nombre,
-            "descripcion": proyecto.descripcion,
-            "cliente": proyecto.cliente,
-            "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
-            "fecha_inicio": proyecto.fecha_inicio,
-            "fecha_fin": proyecto.fecha_fin,
-            "cotizaciones": cotizaciones,
-            "documentos": documentos_info,
-            "valor_total": valor_total
-        }
+            logger.info("🤖 Generando análisis inteligente con IA...")
+            
+            proyecto_dict = {
+                "id": proyecto.id,
+                "nombre": proyecto.nombre,
+                "cliente": proyecto.cliente,
+                "descripcion": proyecto.descripcion,
+                "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
+                "fecha_inicio": proyecto.fecha_inicio,
+                "fecha_fin": proyecto.fecha_fin
+            }
+            
+            # Generar análisis completo
+            informe_completo = report_generator.generar_informe_ejecutivo_proyecto(
+                proyecto_data=proyecto_dict,
+                cotizaciones=cotizaciones,
+                documentos=documentos_info,
+                opciones=opciones or {}
+            )
+            
+            datos = informe_completo
+            
+        else:
+            # Modo básico
+            valor_total = sum(c.get('total', 0) for c in cotizaciones if c.get('estado') == 'aprobada')
+            
+            datos = {
+                "nombre": proyecto.nombre,
+                "descripcion": proyecto.descripcion,
+                "cliente": proyecto.cliente,
+                "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
+                "fecha_inicio": proyecto.fecha_inicio,
+                "fecha_fin": proyecto.fecha_fin,
+                "cotizaciones": cotizaciones,
+                "documentos": documentos_info,
+                "valor_total": valor_total
+            }
         
         # Generar PDF
         from app.services.pdf_generator import pdf_generator
@@ -525,7 +602,7 @@ async def generar_informe_proyecto_pdf(
                 detail="No se pudo generar el PDF"
             )
         
-        logger.info(f"✅ PDF generado: {nombre_archivo}")
+        logger.info(f"✅ PDF {'INTELIGENTE' if incluir_analisis_ia else 'básico'} generado: {nombre_archivo}")
         
         return FileResponse(
             path=ruta_salida,
@@ -540,4 +617,104 @@ async def generar_informe_proyecto_pdf(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al generar PDF: {str(e)}"
+        )
+
+# ════════════════════════════════════════════════════════════════
+# ⭐ NUEVO ENDPOINT - OBTENER ANÁLISIS SIN GENERAR DOCUMENTO
+# ════════════════════════════════════════════════════════════════
+
+@router.get("/{proyecto_id}/analisis-ia")
+async def obtener_analisis_ia_proyecto(
+    proyecto_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener análisis inteligente del proyecto SIN generar documento
+    
+    ⭐ NUEVO - Solo retorna el análisis en JSON
+    
+    Útil para:
+    - Preview del análisis antes de generar
+    - Dashboard del proyecto
+    - APIs que consumen el análisis
+    
+    Returns:
+        JSON con análisis completo
+    """
+    
+    try:
+        # Obtener proyecto
+        proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
+        
+        if not proyecto:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Proyecto no encontrado"
+            )
+        
+        logger.info(f"Generando análisis IA para: {proyecto.nombre}")
+        
+        # Obtener cotizaciones
+        cotizaciones_db = db.query(Cotizacion).filter(
+            Cotizacion.proyecto_id == proyecto_id
+        ).all()
+        
+        cotizaciones = []
+        for cot in cotizaciones_db:
+            cotizaciones.append({
+                "numero": cot.numero,
+                "estado": cot.estado,
+                "total": float(cot.total) if cot.total else 0,
+                "fecha_creacion": cot.fecha_creacion.strftime("%d/%m/%Y") if cot.fecha_creacion else "N/A"
+            })
+        
+        # Obtener documentos
+        documentos_db = db.query(Documento).filter(
+            Documento.proyecto_id == proyecto_id
+        ).all()
+        
+        documentos = []
+        for doc in documentos_db:
+            documentos.append({
+                "nombre": doc.nombre_original,
+                "tipo": doc.tipo_mime,
+                "procesado": "Sí" if doc.procesado == 1 else "No"
+            })
+        
+        # Generar análisis con IA
+        from app.services.report_generator import report_generator
+        
+        proyecto_dict = {
+            "id": proyecto.id,
+            "nombre": proyecto.nombre,
+            "cliente": proyecto.cliente,
+            "descripcion": proyecto.descripcion,
+            "estado": proyecto.estado.value if hasattr(proyecto.estado, 'value') else str(proyecto.estado),
+            "fecha_inicio": proyecto.fecha_inicio,
+            "fecha_fin": proyecto.fecha_fin
+        }
+        
+        analisis = report_generator.generar_informe_ejecutivo_proyecto(
+            proyecto_data=proyecto_dict,
+            cotizaciones=cotizaciones,
+            documentos=documentos,
+            opciones={}
+        )
+        
+        logger.info("✅ Análisis IA completado")
+        
+        return {
+            "success": True,
+            "proyecto_id": proyecto_id,
+            "proyecto_nombre": proyecto.nombre,
+            "analisis": analisis
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al generar análisis: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar análisis: {str(e)}"
         )

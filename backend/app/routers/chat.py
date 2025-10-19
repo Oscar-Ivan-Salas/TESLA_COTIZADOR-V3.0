@@ -1,10 +1,11 @@
 """
 Router: Chat IA
-Endpoints para interacción con Gemini AI
+Endpoints para interacción con Gemini AI + Gestión de Plantillas
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Body
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict
 from app.core.database import get_db
 from app.schemas.cotizacion import (
     CotizacionRapidaRequest,
@@ -16,7 +17,10 @@ from app.services.gemini_service import gemini_service
 from app.models.cotizacion import Cotizacion
 from app.models.item import Item
 from datetime import datetime
+from pathlib import Path
 import logging
+import os
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -51,63 +55,70 @@ def generar_numero_cotizacion(db: Session) -> str:
 # ============================================
 
 @router.post("/generar-rapida", response_model=CotizacionResponse)
-def generar_cotizacion_rapida(
+async def generar_cotizacion_rapida(
     request: CotizacionRapidaRequest,
     db: Session = Depends(get_db)
 ):
     """
-    Generar cotización rápida usando IA a partir de una descripción
+    Generar cotización rápida usando IA
     
-    El usuario solo proporciona:
-    - Descripción del proyecto
-    - Nombre del cliente
-    - Nombre del proyecto (opcional)
-    
-    La IA genera automáticamente todos los items con precios
+    El usuario describe lo que necesita y la IA genera la cotización automáticamente
     """
     try:
-        logger.info(f"Generando cotización rápida para cliente: {request.cliente}")
+        logger.info("Generando cotización rápida con IA")
         
-        # Llamar a Gemini para generar cotización
-        cotizacion_data = gemini_service.generar_cotizacion_rapida(
-            descripcion_proyecto=request.descripcion_proyecto,
-            cliente=request.cliente,
-            proyecto=request.proyecto
+        # Generar cotización con Gemini
+        cotizacion_data = gemini_service.generar_cotizacion_desde_texto(
+            descripcion=request.descripcion,
+            contexto_adicional=request.contexto_adicional
         )
         
-        # Generar número de cotización
+        # Crear cotización en BD
         numero = generar_numero_cotizacion(db)
         
-        # Crear cotización en la base de datos
         nueva_cotizacion = Cotizacion(
             numero=numero,
-            cliente=cotizacion_data.get('cliente', request.cliente),
-            proyecto=cotizacion_data.get('proyecto', request.proyecto or f"Proyecto {request.cliente}"),
-            descripcion=cotizacion_data.get('descripcion', request.descripcion_proyecto),
-            estado="borrador",
-            items=cotizacion_data.get('items', [])
+            cliente=cotizacion_data.get('cliente', 'Cliente No Especificado'),
+            proyecto=cotizacion_data.get('proyecto', 'Proyecto Generado por IA'),
+            descripcion=request.descripcion,
+            observaciones=cotizacion_data.get('observaciones', ''),
+            estado='borrador',
+            subtotal=0,
+            igv=0,
+            total=0
         )
         
-        # Crear items
-        if cotizacion_data.get('items'):
-            for item_data in cotizacion_data['items']:
-                item = Item(
-                    descripcion=item_data.get('descripcion', ''),
-                    cantidad=float(item_data.get('cantidad', 1.0)),
-                    precio_unitario=float(item_data.get('precio_unitario', 0.0)),
-                    total=float(item_data.get('cantidad', 1.0)) * float(item_data.get('precio_unitario', 0.0))
-                )
-                nueva_cotizacion.items_rel.append(item)
-        
-        # Calcular totales
-        nueva_cotizacion.calcular_totales()
-        
-        # Guardar en base de datos
         db.add(nueva_cotizacion)
+        db.flush()
+        
+        # Crear items
+        items_data = cotizacion_data.get('items', [])
+        subtotal = 0
+        
+        for item_data in items_data:
+            cantidad = float(item_data.get('cantidad', 1))
+            precio = float(item_data.get('precio_unitario', 0))
+            
+            item = Item(
+                cotizacion_id=nueva_cotizacion.id,
+                descripcion=item_data.get('descripcion', ''),
+                cantidad=cantidad,
+                unidad=item_data.get('unidad', 'und'),
+                precio_unitario=precio
+            )
+            
+            db.add(item)
+            subtotal += cantidad * precio
+        
+        # Actualizar totales
+        nueva_cotizacion.subtotal = subtotal
+        nueva_cotizacion.igv = subtotal * 0.18
+        nueva_cotizacion.total = subtotal * 1.18
+        
         db.commit()
         db.refresh(nueva_cotizacion)
         
-        logger.info(f"Cotización generada: {numero} con {len(nueva_cotizacion.items_rel)} items")
+        logger.info(f"Cotización rápida creada: {numero}")
         
         return nueva_cotizacion
         
@@ -120,117 +131,30 @@ def generar_cotizacion_rapida(
         )
 
 @router.post("/conversacional", response_model=ChatResponse)
-def chat_conversacional(
+async def chat_conversacional(
     request: ChatRequest,
     db: Session = Depends(get_db)
 ):
     """
-    Chat conversacional con IA para refinar cotizaciones
+    Chat conversacional para refinar cotizaciones
     
-    Permite al usuario conversar con la IA para:
-    - Modificar items existentes
-    - Agregar nuevos items
-    - Eliminar items
-    - Ajustar precios
-    - Cambiar descripciones
+    El usuario puede iterar y mejorar una cotización mediante conversación
     """
     try:
-        logger.info(f"Chat conversacional: {request.mensaje[:50]}...")
+        logger.info("Procesando mensaje de chat conversacional")
         
-        # Obtener cotización actual si existe
-        cotizacion_actual = None
-        if request.cotizacion_id:
-            cotizacion = db.query(Cotizacion).filter(
-                Cotizacion.id == request.cotizacion_id
-            ).first()
-            
-            if cotizacion:
-                cotizacion_actual = cotizacion.to_dict()
-        
-        # Preparar contexto
-        contexto = []
-        if request.contexto:
-            contexto = [
-                {"role": msg.role, "content": msg.content}
-                for msg in request.contexto
-            ]
-        
-        # Llamar a Gemini
-        respuesta_ia = gemini_service.chat_conversacional(
+        # Enviar mensaje a Gemini
+        respuesta = gemini_service.chat(
             mensaje=request.mensaje,
-            contexto=contexto,
-            cotizacion_actual=cotizacion_actual
+            contexto=request.contexto,
+            cotizacion_id=request.cotizacion_id
         )
         
-        # Procesar respuesta
-        respuesta_texto = respuesta_ia.get('respuesta', 'Lo siento, no pude procesar tu mensaje.')
-        accion = respuesta_ia.get('accion', 'ninguna')
-        cambios = respuesta_ia.get('cambios', {})
-        sugerencias = respuesta_ia.get('sugerencias', [])
-        
-        # Si hay cambios y existe una cotización
-        cotizacion_actualizada = None
-        
-        if accion != 'ninguna' and request.cotizacion_id:
-            cotizacion = db.query(Cotizacion).filter(
-                Cotizacion.id == request.cotizacion_id
-            ).first()
-            
-            if cotizacion:
-                # Aplicar cambios según acción
-                if accion == 'modificar_cotizacion' and cambios:
-                    if 'items' in cambios:
-                        # Eliminar items anteriores
-                        db.query(Item).filter(Item.cotizacion_id == cotizacion.id).delete()
-                        
-                        # Crear nuevos items
-                        for item_data in cambios['items']:
-                            item = Item(
-                                descripcion=item_data.get('descripcion', ''),
-                                cantidad=float(item_data.get('cantidad', 1.0)),
-                                precio_unitario=float(item_data.get('precio_unitario', 0.0)),
-                                total=float(item_data.get('cantidad', 1.0)) * float(item_data.get('precio_unitario', 0.0)),
-                                cotizacion_id=cotizacion.id
-                            )
-                            db.add(item)
-                    
-                    if 'descripcion' in cambios:
-                        cotizacion.descripcion = cambios['descripcion']
-                    
-                    # Recalcular totales
-                    cotizacion.calcular_totales()
-                    
-                    db.commit()
-                    db.refresh(cotizacion)
-                    
-                    cotizacion_actualizada = cotizacion
-                
-                elif accion == 'agregar_item' and cambios.get('items'):
-                    # Agregar nuevos items
-                    for item_data in cambios['items']:
-                        item = Item(
-                            descripcion=item_data.get('descripcion', ''),
-                            cantidad=float(item_data.get('cantidad', 1.0)),
-                            precio_unitario=float(item_data.get('precio_unitario', 0.0)),
-                            total=float(item_data.get('cantidad', 1.0)) * float(item_data.get('precio_unitario', 0.0)),
-                            cotizacion_id=cotizacion.id
-                        )
-                        db.add(item)
-                    
-                    cotizacion.calcular_totales()
-                    db.commit()
-                    db.refresh(cotizacion)
-                    
-                    cotizacion_actualizada = cotizacion
-        
-        # Construir respuesta
-        response = ChatResponse(
-            respuesta=respuesta_texto,
-            cotizacion=cotizacion_actualizada,
-            sugerencias=sugerencias if sugerencias else None
+        return ChatResponse(
+            respuesta=respuesta.get('mensaje', ''),
+            sugerencias=respuesta.get('sugerencias', []),
+            accion_recomendada=respuesta.get('accion_recomendada')
         )
-        
-        return response
         
     except Exception as e:
         logger.error(f"Error en chat conversacional: {str(e)}")
@@ -240,12 +164,11 @@ def chat_conversacional(
         )
 
 @router.post("/analizar-proyecto")
-def analizar_proyecto_texto(
-    descripcion: str,
-    db: Session = Depends(get_db)
+def analizar_proyecto_ia(
+    descripcion: str
 ):
     """
-    Analizar descripción de proyecto y sugerir estructura de cotización
+    Analizar descripción de un proyecto con IA
     
     NO crea la cotización, solo analiza y sugiere
     """
@@ -318,3 +241,423 @@ def health_check_ia():
         "model": settings.GEMINI_MODEL,
         "status": "ready" if gemini_service.model else "not_configured"
     }
+
+# ════════════════════════════════════════════════════════════════
+# ⭐ NUEVOS ENDPOINTS - GESTIÓN DE PLANTILLAS
+# ════════════════════════════════════════════════════════════════
+
+@router.post("/subir-plantilla")
+async def subir_plantilla(
+    archivo: UploadFile = File(...),
+    nombre_plantilla: str = Body(...),
+    descripcion: Optional[str] = Body(None)
+):
+    """
+    Subir una plantilla Word personalizada
+    
+    ⭐ NUEVO - Gestión de plantillas personalizadas
+    
+    La plantilla puede contener marcadores como:
+    - {{cliente}}
+    - {{proyecto}}
+    - {{fecha}}
+    - {{numero}}
+    - etc.
+    
+    Args:
+        archivo: Archivo .docx de plantilla
+        nombre_plantilla: Nombre descriptivo
+        descripcion: Descripción de la plantilla
+    
+    Returns:
+        Información de la plantilla subida
+    """
+    
+    try:
+        from app.core.config import settings
+        
+        logger.info(f"Subiendo plantilla: {nombre_plantilla}")
+        
+        # Validar que sea archivo Word
+        if not archivo.filename.endswith('.docx'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Solo se permiten archivos .docx"
+            )
+        
+        # Crear directorio de plantillas si no existe
+        templates_dir = Path(settings.TEMPLATES_DIR)
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generar nombre único para el archivo
+        nombre_archivo = f"{nombre_plantilla.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+        ruta_plantilla = templates_dir / nombre_archivo
+        
+        # Guardar archivo
+        with open(ruta_plantilla, "wb") as buffer:
+            contenido = await archivo.read()
+            buffer.write(contenido)
+        
+        # Extraer marcadores de la plantilla
+        from app.services.template_processor import template_processor
+        
+        marcadores = template_processor.extraer_marcadores(str(ruta_plantilla))
+        
+        logger.info(f"✅ Plantilla subida: {nombre_archivo}")
+        logger.info(f"Marcadores encontrados: {len(marcadores)}")
+        
+        return {
+            "success": True,
+            "nombre_plantilla": nombre_plantilla,
+            "archivo": nombre_archivo,
+            "ruta": str(ruta_plantilla),
+            "descripcion": descripcion,
+            "marcadores_encontrados": marcadores,
+            "total_marcadores": len(marcadores),
+            "mensaje": f"Plantilla '{nombre_plantilla}' subida exitosamente. Se encontraron {len(marcadores)} marcadores."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al subir plantilla: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al subir plantilla: {str(e)}"
+        )
+
+@router.get("/listar-plantillas")
+async def listar_plantillas():
+    """
+    Listar todas las plantillas disponibles
+    
+    ⭐ NUEVO - Ver plantillas disponibles
+    
+    Returns:
+        Lista de plantillas con información
+    """
+    
+    try:
+        from app.core.config import settings
+        
+        templates_dir = Path(settings.TEMPLATES_DIR)
+        
+        if not templates_dir.exists():
+            return {
+                "total": 0,
+                "plantillas": []
+            }
+        
+        plantillas = []
+        
+        for archivo in templates_dir.glob("*.docx"):
+            try:
+                from app.services.template_processor import template_processor
+                
+                # Extraer marcadores
+                marcadores = template_processor.extraer_marcadores(str(archivo))
+                
+                plantillas.append({
+                    "nombre": archivo.stem,
+                    "archivo": archivo.name,
+                    "ruta": str(archivo),
+                    "tamano_kb": round(archivo.stat().st_size / 1024, 2),
+                    "fecha_creacion": datetime.fromtimestamp(archivo.stat().st_ctime).strftime("%d/%m/%Y %H:%M"),
+                    "total_marcadores": len(marcadores),
+                    "marcadores": marcadores
+                })
+                
+            except Exception as e:
+                logger.warning(f"Error al procesar plantilla {archivo.name}: {str(e)}")
+                continue
+        
+        return {
+            "total": len(plantillas),
+            "plantillas": plantillas
+        }
+        
+    except Exception as e:
+        logger.error(f"Error al listar plantillas: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al listar plantillas: {str(e)}"
+        )
+
+@router.get("/plantilla/{nombre_archivo}/marcadores")
+async def obtener_marcadores_plantilla(
+    nombre_archivo: str
+):
+    """
+    Obtener marcadores de una plantilla específica
+    
+    ⭐ NUEVO - Ver qué marcadores tiene una plantilla
+    
+    Args:
+        nombre_archivo: Nombre del archivo de plantilla
+    
+    Returns:
+        Lista de marcadores encontrados
+    """
+    
+    try:
+        from app.core.config import settings
+        from app.services.template_processor import template_processor
+        
+        ruta_plantilla = Path(settings.TEMPLATES_DIR) / nombre_archivo
+        
+        if not ruta_plantilla.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Plantilla '{nombre_archivo}' no encontrada"
+            )
+        
+        marcadores = template_processor.extraer_marcadores(str(ruta_plantilla))
+        
+        return {
+            "plantilla": nombre_archivo,
+            "total_marcadores": len(marcadores),
+            "marcadores": marcadores,
+            "marcadores_comunes": [
+                "{{cliente}}", "{{proyecto}}", "{{fecha}}", "{{numero}}",
+                "{{descripcion}}", "{{subtotal}}", "{{igv}}", "{{total}}"
+            ]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al obtener marcadores: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error: {str(e)}"
+        )
+
+@router.post("/usar-plantilla/{cotizacion_id}")
+async def generar_cotizacion_con_plantilla(
+    cotizacion_id: int,
+    nombre_plantilla: str = Body(...),
+    opciones: Optional[Dict[str, bool]] = Body(None),
+    logo_base64: Optional[str] = Body(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Generar cotización usando una plantilla personalizada
+    
+    ⭐ NUEVO - Usar plantilla del usuario
+    
+    El chat puede decir: "usa mi plantilla de informe"
+    Y este endpoint procesa esa solicitud
+    
+    Args:
+        cotizacion_id: ID de la cotización
+        nombre_plantilla: Nombre del archivo de plantilla
+        opciones: Opciones adicionales
+        logo_base64: Logo en base64
+    
+    Returns:
+        Archivo Word generado desde plantilla
+    """
+    
+    try:
+        # Obtener cotización
+        cotizacion = db.query(Cotizacion).filter(Cotizacion.id == cotizacion_id).first()
+        
+        if not cotizacion:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Cotización no encontrada"
+            )
+        
+        logger.info(f"Generando cotización {cotizacion.numero} con plantilla: {nombre_plantilla}")
+        
+        from app.core.config import settings
+        from app.services.template_processor import template_processor
+        
+        # Ruta de la plantilla
+        ruta_plantilla = Path(settings.TEMPLATES_DIR) / nombre_plantilla
+        
+        if not ruta_plantilla.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Plantilla '{nombre_plantilla}' no encontrada"
+            )
+        
+        # Obtener items de la cotización
+        items_db = db.query(Item).filter(Item.cotizacion_id == cotizacion_id).all()
+        
+        items = []
+        for item in items_db:
+            items.append({
+                "descripcion": item.descripcion,
+                "cantidad": float(item.cantidad),
+                "unidad": item.unidad,
+                "precio_unitario": float(item.precio_unitario)
+            })
+        
+        # Preparar datos
+        datos_cotizacion = {
+            "numero": cotizacion.numero,
+            "cliente": cotizacion.cliente,
+            "proyecto": cotizacion.proyecto,
+            "descripcion": cotizacion.descripcion or "",
+            "observaciones": cotizacion.observaciones or "",
+            "fecha": datetime.now().strftime("%d/%m/%Y"),
+            "subtotal": float(cotizacion.subtotal) if cotizacion.subtotal else 0,
+            "igv": float(cotizacion.igv) if cotizacion.igv else 0,
+            "total": float(cotizacion.total) if cotizacion.total else 0,
+            "items": items
+        }
+        
+        # Generar documento con plantilla
+        nombre_salida = f"cotizacion_{cotizacion.numero}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+        ruta_salida = os.path.join(settings.GENERATED_DIR, nombre_salida)
+        
+        ruta_generada = template_processor.procesar_plantilla(
+            ruta_plantilla=str(ruta_plantilla),
+            datos_cotizacion=datos_cotizacion,
+            ruta_salida=ruta_salida,
+            logo_base64=logo_base64
+        )
+        
+        if not os.path.exists(ruta_generada):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No se pudo generar el documento"
+            )
+        
+        logger.info(f"✅ Cotización generada con plantilla: {nombre_salida}")
+        
+        return FileResponse(
+            path=ruta_generada,
+            filename=nombre_salida,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al usar plantilla: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error: {str(e)}"
+        )
+
+@router.delete("/eliminar-plantilla/{nombre_archivo}")
+async def eliminar_plantilla(
+    nombre_archivo: str
+):
+    """
+    Eliminar una plantilla
+    
+    ⭐ NUEVO - Gestión de plantillas
+    
+    Args:
+        nombre_archivo: Nombre del archivo a eliminar
+    
+    Returns:
+        Confirmación de eliminación
+    """
+    
+    try:
+        from app.core.config import settings
+        
+        ruta_plantilla = Path(settings.TEMPLATES_DIR) / nombre_archivo
+        
+        if not ruta_plantilla.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Plantilla '{nombre_archivo}' no encontrada"
+            )
+        
+        # Eliminar archivo
+        ruta_plantilla.unlink()
+        
+        logger.info(f"✅ Plantilla eliminada: {nombre_archivo}")
+        
+        return {
+            "success": True,
+            "mensaje": f"Plantilla '{nombre_archivo}' eliminada exitosamente"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al eliminar plantilla: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error: {str(e)}"
+        )
+
+@router.post("/validar-plantilla")
+async def validar_plantilla(
+    archivo: UploadFile = File(...)
+):
+    """
+    Validar una plantilla antes de subirla
+    
+    ⭐ NUEVO - Verificar que la plantilla es válida
+    
+    Verifica:
+    - Que sea un archivo .docx válido
+    - Extrae y muestra los marcadores
+    - Valida la estructura
+    
+    Returns:
+        Reporte de validación
+    """
+    
+    try:
+        import tempfile
+        from app.services.template_processor import template_processor
+        
+        # Validar extensión
+        if not archivo.filename.endswith('.docx'):
+            return {
+                "valida": False,
+                "error": "El archivo debe ser .docx",
+                "recomendacion": "Usa Microsoft Word para crear la plantilla"
+            }
+        
+        # Guardar temporalmente
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp:
+            contenido = await archivo.read()
+            tmp.write(contenido)
+            tmp_path = tmp.name
+        
+        try:
+            # Validar plantilla
+            es_valida, mensaje = template_processor.validar_plantilla(tmp_path)
+            
+            if es_valida:
+                # Extraer marcadores
+                marcadores = template_processor.extraer_marcadores(tmp_path)
+                
+                return {
+                    "valida": True,
+                    "mensaje": "Plantilla válida",
+                    "total_marcadores": len(marcadores),
+                    "marcadores_encontrados": marcadores,
+                    "marcadores_sugeridos": [
+                        "{{cliente}}", "{{proyecto}}", "{{fecha}}", "{{numero}}",
+                        "{{descripcion}}", "{{subtotal}}", "{{igv}}", "{{total}}"
+                    ],
+                    "recomendacion": "Puedes subir esta plantilla para usarla en cotizaciones"
+                }
+            else:
+                return {
+                    "valida": False,
+                    "error": mensaje,
+                    "recomendacion": "Revisa la plantilla y vuelve a intentar"
+                }
+                
+        finally:
+            # Eliminar archivo temporal
+            Path(tmp_path).unlink(missing_ok=True)
+        
+    except Exception as e:
+        logger.error(f"Error al validar plantilla: {str(e)}")
+        return {
+            "valida": False,
+            "error": str(e),
+            "recomendacion": "Verifica que el archivo no esté corrupto"
+        }
