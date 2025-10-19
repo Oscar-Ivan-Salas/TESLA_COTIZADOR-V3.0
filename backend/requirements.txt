@@ -36,3 +36,6 @@ httpx==0.26.0
 
 # CORS
 fastapi-cors==0.0.6
+
+# Generación de Documentos
+reportlab==4.1.0

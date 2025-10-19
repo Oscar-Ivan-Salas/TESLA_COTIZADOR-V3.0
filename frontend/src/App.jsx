@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen } from 'lucide-react';
+import { descargarInforme } from './services/api';
 
 const CotizadorTesla30 = () => {
   // ESTADOS PRINCIPALES
@@ -28,6 +29,7 @@ const CotizadorTesla30 = () => {
   const [ocultarPreciosUnitarios, setOcultarPreciosUnitarios] = useState(false);
   const [ocultarTotalesPorItem, setOcultarTotalesPorItem] = useState(false);
   const [modoVisualizacionIGV, setModoVisualizacionIGV] = useState('sin-igv');
+  const [descargando, setDescargando] = useState(null); // 'pdf', 'word', null
   
   // Estados para proyectos
   const [proyectoActual, setProyectoActual] = useState(null);
@@ -66,6 +68,7 @@ const CotizadorTesla30 = () => {
 
   // DATOS MOCK
   const cotizacionMock = {
+    id: 1, // ID de ejemplo para la descarga
     cliente: {
       nombre: 'Empresa Demo S.A.C.',
       proyecto: 'Instalación Eléctrica Completa',
@@ -131,6 +134,26 @@ const CotizadorTesla30 = () => {
       setExito('✅ Proyecto creado (DEMO)');
       setTimeout(() => setExito(''), 3000);
     }, 1500);
+  };
+
+  const handleDescargar = async (formato) => {
+    if (!cotizacion || !cotizacion.id) {
+      setError('No hay una cotización válida para descargar.');
+      return;
+    }
+    setDescargando(formato);
+    setError('');
+    setExito('');
+
+    const result = await descargarInforme(cotizacion.id, formato);
+
+    if (result.success) {
+      setExito(result.message);
+    } else {
+      setError(result.message);
+    }
+
+    setDescargando(null);
   };
 
   const calcularTotales = () => {
@@ -344,21 +367,7 @@ const CotizadorTesla30 = () => {
           </div>
         </div>
 
-        <style jsx>{`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(-10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
-          }
-        `}</style>
+        
       </div>
     );
   }
@@ -825,7 +834,7 @@ const CotizadorTesla30 = () => {
                 <p>5. Tablas de costos profesionales</p>
                 <p>6. Gráficos de distribución (generados con matplotlib)</p>
                 <p>7. Cronograma con hitos</p>
-                <p>8. Análisis financiero (ROI, VAN, TIR)</p>
+                <p>8. Análisis financiero (ROI, flujo de caja proyectado)</p>
                 <p>9. Conclusiones y recomendaciones</p>
               </div>
             </div>
@@ -875,15 +884,29 @@ const CotizadorTesla30 = () => {
               </div>
               
               <div className="flex gap-3 flex-wrap">
-                <button className="bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all border-2 border-blue-600 shadow-xl">
-                  <Download className="w-5 h-5" /> DOCX
+                <button 
+                  onClick={() => handleDescargar('word')}
+                  disabled={descargando !== null}
+                  className="bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all border-2 border-blue-600 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {descargando === 'word' ? <Loader className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />} 
+                  DOCX
                 </button>
                 
-                <button className="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all border-2 border-red-600 shadow-xl">
-                  <Download className="w-5 h-5" /> PDF
+                <button 
+                  onClick={() => handleDescargar('pdf')}
+                  disabled={descargando !== null}
+                  className="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all border-2 border-red-600 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {descargando === 'pdf' ? <Loader className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />} 
+                  PDF
                 </button>
                 
-                <button className="bg-green-800 hover:bg-green-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all border-2 border-green-600 shadow-xl">
+                <button 
+                  disabled
+                  title="La generación de HTML no está implementada en el backend"
+                  className="bg-gray-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all border-2 border-gray-500 shadow-xl opacity-50 cursor-not-allowed"
+                >
                   <Download className="w-5 h-5" /> HTML
                 </button>
 

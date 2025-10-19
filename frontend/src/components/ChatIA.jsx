@@ -33,14 +33,14 @@ const ChatIA = ({ contexto, onCotizacionGenerada }) => {
     setCargando(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat/generar-cotizacion', {
+      const response = await fetch('/api/chat/conversacional', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mensajes: [...mensajes, nuevoMensaje],
-          contexto: contexto
+          mensaje: inputMensaje,
+          contexto: mensajes
         })
       });
 

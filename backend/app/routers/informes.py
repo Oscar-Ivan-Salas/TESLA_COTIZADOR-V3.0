@@ -31,12 +31,24 @@ async def generar_pdf_cotizacion(
         )
     
     # Preparar datos
+    items_list = []
+    if cotizacion.items_rel:
+        items_list = [
+            {
+                "descripcion": item.descripcion,
+                "cantidad": item.cantidad,
+                "precio_unitario": item.precio_unitario,
+                "total": item.total
+            }
+            for item in cotizacion.items_rel
+        ]
+
     datos = {
         "numero": cotizacion.numero,
         "cliente": cotizacion.cliente,
         "proyecto": cotizacion.proyecto,
         "descripcion": cotizacion.descripcion,
-        "items": cotizacion.items or [],
+        "items": items_list,
         "subtotal": cotizacion.subtotal,
         "igv": cotizacion.igv,
         "total": cotizacion.total,
@@ -86,12 +98,24 @@ async def generar_word_cotizacion(
         )
     
     # Preparar datos
+    items_list = []
+    if cotizacion.items_rel:
+        items_list = [
+            {
+                "descripcion": item.descripcion,
+                "cantidad": item.cantidad,
+                "precio_unitario": item.precio_unitario,
+                "total": item.total
+            }
+            for item in cotizacion.items_rel
+        ]
+
     datos = {
         "numero": cotizacion.numero,
         "cliente": cotizacion.cliente,
         "proyecto": cotizacion.proyecto,
         "descripcion": cotizacion.descripcion,
-        "items": cotizacion.items or [],
+        "items": items_list,
         "subtotal": cotizacion.subtotal,
         "igv": cotizacion.igv,
         "total": cotizacion.total,

@@ -194,7 +194,8 @@ from app.routers import (
     cotizaciones_router,
     proyectos_router,
     chat_router,
-    documentos_router
+    documentos_router,
+    informes_router
 )
 
 app.include_router(
@@ -219,6 +220,12 @@ app.include_router(
     documentos_router,
     prefix="/api/documentos",
     tags=["Documentos"]
+)
+
+app.include_router(
+    informes_router,
+    prefix="/api/informes",
+    tags=["Informes"]
 )
 
 # ============================================

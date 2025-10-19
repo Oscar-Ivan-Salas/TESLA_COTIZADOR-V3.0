@@ -1,287 +1,66 @@
-const API_URL = 'http://localhost:8000/api';
+/**
+ * Módulo de API para interactuar con el backend de Tesla Cotizador.
+ */
 
-// Helper para manejar respuestas
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ 
-      detail: 'Error en la solicitud' 
-    }));
-    throw new Error(error.detail || 'Error en la solicitud');
+/**
+ * Descarga un informe (PDF o DOCX) de una cotización.
+ *
+ * @param {number} cotizacionId - El ID de la cotización.
+ * @param {'pdf' | 'word'} formato - El formato del archivo a descargar.
+ * @returns {Promise<{success: boolean, message: string}>} - Un objeto indicando si la descarga fue exitosa.
+ */
+export const descargarInforme = async (cotizacionId, formato) => {
+  if (!cotizacionId) {
+    return { success: false, message: 'ID de cotización no válido.' };
   }
-  return response.json();
-};
 
-// ============================================
-// COTIZACIONES
-// ============================================
+  const endpoint = `/api/informes/generar-${formato}/${cotizacionId}`;
 
-export const crearCotizacion = async (datos) => {
-  const response = await fetch(`${API_URL}/cotizaciones/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(datos)
-  });
-  return handleResponse(response);
-};
-
-export const obtenerCotizaciones = async () => {
-  const response = await fetch(`${API_URL}/cotizaciones/`);
-  return handleResponse(response);
-};
-
-export const obtenerCotizacion = async (id) => {
-  const response = await fetch(`${API_URL}/cotizaciones/${id}`);
-  return handleResponse(response);
-};
-
-export const actualizarCotizacion = async (id, datos) => {
-  const response = await fetch(`${API_URL}/cotizaciones/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(datos)
-  });
-  return handleResponse(response);
-};
-
-export const eliminarCotizacion = async (id) => {
-  const response = await fetch(`${API_URL}/cotizaciones/${id}`, {
-    method: 'DELETE'
-  });
-  return handleResponse(response);
-};
-
-// ============================================
-// PROYECTOS
-// ============================================
-
-export const crearProyecto = async (datos) => {
-  const response = await fetch(`${API_URL}/proyectos/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(datos)
-  });
-  return handleResponse(response);
-};
-
-export const obtenerProyectos = async () => {
-  const response = await fetch(`${API_URL}/proyectos/`);
-  return handleResponse(response);
-};
-
-export const obtenerProyecto = async (id) => {
-  const response = await fetch(`${API_URL}/proyectos/${id}`);
-  return handleResponse(response);
-};
-
-export const actualizarProyecto = async (id, datos) => {
-  const response = await fetch(`${API_URL}/proyectos/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(datos)
-  });
-  return handleResponse(response);
-};
-
-// ============================================
-// DOCUMENTOS (Upload y procesamiento)
-// ============================================
-
-export const subirDocumento = async (archivo) => {
-  const formData = new FormData();
-  formData.append('file', archivo);
-
-  const response = await fetch(`${API_URL}/documentos/upload`, {
-    method: 'POST',
-    body: formData
-  });
-  return handleResponse(response);
-};
-
-export const procesarDocumento = async (archivoId) => {
-  const response = await fetch(`${API_URL}/documentos/${archivoId}/procesar`, {
-    method: 'POST'
-  });
-  return handleResponse(response);
-};
-
-export const obtenerDocumentos = async (proyectoId) => {
-  const response = await fetch(`${API_URL}/documentos/?proyecto_id=${proyectoId}`);
-  return handleResponse(response);
-};
-
-// ============================================
-// CHAT IA (Gemini)
-// ============================================
-
-export const enviarMensajeChat = async (mensajes, contexto = {}) => {
-  const response = await fetch(`${API_URL}/chat/generar-cotizacion`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      mensajes,
-      contexto
-    })
-  });
-  return handleResponse(response);
-};
-
-export const generarCotizacionIA = async (descripcion, documentos = []) => {
-  const response = await fetch(`${API_URL}/chat/generar-cotizacion-rapida`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      descripcion,
-      documentos
-    })
-  });
-  return handleResponse(response);
-};
-
-// ============================================
-// INFORMES (Generación de documentos)
-// ============================================
-
-export const generarPDF = async (cotizacionId) => {
-  const response = await fetch(`${API_URL}/informes/generar-pdf/${cotizacionId}`, {
-    method: 'POST'
-  });
-  
-  if (!response.ok) {
-    throw new Error('Error al generar PDF');
-  }
-  
-  // Descargar archivo
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `cotizacion_${cotizacionId}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
-  
-  return { success: true };
-};
-
-export const generarWord = async (cotizacionId) => {
-  const response = await fetch(`${API_URL}/informes/generar-word/${cotizacionId}`, {
-    method: 'POST'
-  });
-  
-  if (!response.ok) {
-    throw new Error('Error al generar Word');
-  }
-  
-  // Descargar archivo
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `cotizacion_${cotizacionId}.docx`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
-  
-  return { success: true };
-};
-
-export const generarInformeEjecutivo = async (proyectoId, opciones = {}) => {
-  const response = await fetch(`${API_URL}/informes/generar-informe-ejecutivo/${proyectoId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(opciones)
-  });
-  
-  if (!response.ok) {
-    throw new Error('Error al generar informe');
-  }
-  
-  // Descargar archivo
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `informe_ejecutivo_${proyectoId}.docx`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
-  
-  return { success: true };
-};
-
-// ============================================
-// BÚSQUEDA Y RAG
-// ============================================
-
-export const buscarEnDocumentos = async (query, proyectoId = null) => {
-  const params = new URLSearchParams({ query });
-  if (proyectoId) params.append('proyecto_id', proyectoId);
-  
-  const response = await fetch(`${API_URL}/documentos/buscar?${params}`);
-  return handleResponse(response);
-};
-
-// ============================================
-// UTILIDADES
-// ============================================
-
-export const verificarConexion = async () => {
   try {
-    const response = await fetch(`${API_URL}/health`);
-    return response.ok;
-  } catch (error) {
-    return false;
-  }
-};
+    const response = await fetch(endpoint, {
+      method: 'POST',
+    });
 
-export default {
-  // Cotizaciones
-  crearCotizacion,
-  obtenerCotizaciones,
-  obtenerCotizacion,
-  actualizarCotizacion,
-  eliminarCotizacion,
-  
-  // Proyectos
-  crearProyecto,
-  obtenerProyectos,
-  obtenerProyecto,
-  actualizarProyecto,
-  
-  // Documentos
-  subirDocumento,
-  procesarDocumento,
-  obtenerDocumentos,
-  
-  // Chat IA
-  enviarMensajeChat,
-  generarCotizacionIA,
-  
-  // Informes
-  generarPDF,
-  generarWord,
-  generarInformeEjecutivo,
-  
-  // Búsqueda
-  buscarEnDocumentos,
-  
-  // Utilidades
-  verificarConexion
+    if (!response.ok) {
+      let errorMessage;
+      // Clone the response so we can read it twice
+      const clonedResponse = response.clone();
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || JSON.stringify(errorData);
+      } catch (e) {
+        errorMessage = await clonedResponse.text();
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Obtener el nombre del archivo del header Content-Disposition
+    const disposition = response.headers.get('content-disposition');
+    let nombreArchivo = `cotizacion-${cotizacionId}.${formato === 'word' ? 'docx' : 'pdf'}`;
+    if (disposition && disposition.indexOf('attachment') !== -1) {
+      const filenameRegex = /filename[^;=\n]*=((['"])(.*?)\2|[^;\n]*)/;
+      const matches = filenameRegex.exec(disposition);
+      if (matches != null && matches[3]) {
+        nombreArchivo = matches[3];
+      }
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Limpieza
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    return { success: true, message: `Descargando ${nombreArchivo}` };
+
+  } catch (error) {
+    console.error(`Error al descargar el informe (${formato}):`, error);
+    return { success: false, message: error.message || 'No se pudo iniciar la descarga.' };
+  }
 };
