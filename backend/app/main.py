@@ -12,7 +12,7 @@ from app.core.database import engine, Base, get_db
 from sqlalchemy.orm import Session
 from pathlib import Path
 import logging
-
+from app.routers import cotizaciones, proyectos, documentos, chat, system # <--- AÑADE "system" A ESTA LÍNEA
 logger = logging.getLogger(__name__)
 
 # ============================================
@@ -202,6 +202,7 @@ from app.routers import (
     chat_router,
     documentos_router,
     informes_router
+    
 )
 
 app.include_router(
