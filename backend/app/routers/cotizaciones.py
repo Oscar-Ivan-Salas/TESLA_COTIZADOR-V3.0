@@ -411,3 +411,44 @@ def obtener_items_cotizacion(
         "numero_cotizacion": cotizacion.numero,
         "items": [item.to_dict() for item in cotizacion.items_rel]
     }
+
+
+# ============================================
+# ENDPOINT DE DIAGNÓSTICO TEMPORAL
+# ============================================
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.models.cotizacion import Cotizacion
+from fastapi import APIRouter, Depends, HTTPException, status
+
+# Suponiendo que tu router se llama 'router' en este archivo
+# Si tiene otro nombre, ajústalo.
+@router.get("/test-db/{cotizacion_id}", tags=["TEMP - Diagnóstico"])
+def test_database_connection(cotizacion_id: int, db: Session = Depends(get_db)):
+    """
+    Endpoint de prueba para verificar únicamente la conexión a la BD
+    y la lectura de una cotización.
+    """
+    print(f"--- INICIANDO PRUEBA DE BD PARA COTIZACIÓN ID: {cotizacion_id} ---")
+    try:
+        cotizacion = db.query(Cotizacion).filter(Cotizacion.id == cotizacion_id).first()
+        if not cotizacion:
+            print("--- PRUEBA FALLIDA: No se encontró la cotización. ---")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No se encontró una cotización con el ID {cotizacion_id}"
+            )
+        
+        print("--- ¡ÉXITO! Conexión a BD y lectura correctas. ---")
+        return {
+            "status": "¡Conexión y lectura de BD exitosa!",
+            "cotizacion_id": cotizacion.id,
+            "cliente": cotizacion.cliente,
+            "total": cotizacion.total
+        }
+    except Exception as e:
+        print(f"--- PRUEBA FALLIDA: Error durante la consulta a la BD: {e} ---")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ocurrió un error al consultar la base de datos: {str(e)}"
+        )

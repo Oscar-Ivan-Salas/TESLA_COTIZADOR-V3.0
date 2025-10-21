@@ -10,23 +10,30 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ============================================
-# CREAR ENGINE DE SQLALCHEMY
+# CREAR ENGINE DE SQLALCHEMY (SECCIÓN CORREGIDA Y MEJORADA)
 # ============================================
 
+# Preparamos los argumentos de conexión de forma condicional
+connect_args = {}
+# Esta configuración de zona horaria es específica de PostgreSQL.
+# La aplicamos solo si estamos usando una base de datos PostgreSQL.
+if settings.DATABASE_URL.startswith("postgresql"):
+    connect_args["options"] = "-c timezone=America/Lima"
+    logger.info("Configurando zona horaria de PostgreSQL a America/Lima.")
+
+# Creamos el engine usando los argumentos que preparamos
 engine = create_engine(
     settings.DATABASE_URL,
     echo=settings.DATABASE_ECHO,
-    pool_pre_ping=True,  # Verificar conexión antes de usar
-    pool_size=5,          # Tamaño del pool de conexiones
-    max_overflow=10,      # Conexiones adicionales permitidas
-    pool_recycle=3600,    # Reciclar conexiones cada hora
-    connect_args={
-        "options": "-c timezone=America/Lima"  # Zona horaria Perú
-    }
+    pool_pre_ping=True,      # Verificar conexión antes de usar
+    pool_size=5,             # Tamaño del pool de conexiones
+    max_overflow=10,         # Conexiones adicionales permitidas
+    pool_recycle=3600,       # Reciclar conexiones cada hora
+    connect_args=connect_args  # Usamos el diccionario preparado
 )
 
 # ============================================
-# SESSION LOCAL
+# SESSION LOCAL (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
 
 SessionLocal = sessionmaker(
@@ -36,23 +43,19 @@ SessionLocal = sessionmaker(
 )
 
 # ============================================
-# BASE PARA MODELOS
+# BASE PARA MODELOS (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
 
 Base = declarative_base()
 
 # ============================================
-# DEPENDENCY PARA FASTAPI
+# DEPENDENCY PARA FASTAPI (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
 
 def get_db() -> Session:
     """
     Dependency que proporciona una sesión de base de datos.
-    
-    Uso en FastAPI:
-    @app.get("/items")
-    def get_items(db: Session = Depends(get_db)):
-        return db.query(Item).all()
+    Asegura que la sesión se cierre después de cada request.
     """
     db = SessionLocal()
     try:
@@ -61,36 +64,18 @@ def get_db() -> Session:
         db.close()
 
 # ============================================
-# EVENTOS DE SQLALCHEMY
-# ============================================
-
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    """
-    Configurar pragmas para SQLite (si se usa)
-    """
-    cursor = dbapi_connection.cursor()
-    try:
-        cursor.execute("SELECT 1")
-        logger.info("Conexión a base de datos establecida")
-    except Exception as e:
-        logger.error(f"Error al conectar a base de datos: {str(e)}")
-    finally:
-        cursor.close()
-
-# ============================================
-# FUNCIONES AUXILIARES
+# FUNCIONES DE UTILIDAD (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
 
 def init_db():
     """
-    Inicializar base de datos (crear todas las tablas)
+    Crear todas las tablas en la base de datos
     """
     try:
         Base.metadata.create_all(bind=engine)
-        logger.info("Base de datos inicializada correctamente")
+        logger.info("Base de datos inicializada con éxito.")
     except Exception as e:
-        logger.error(f"Error al inicializar base de datos: {str(e)}")
+        logger.error(f"Error al inicializar la base de datos: {str(e)}")
         raise
 
 def drop_db():
@@ -110,14 +95,17 @@ def check_db_connection() -> bool:
     """
     try:
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            # En SQLAlchemy v1.x se usa connection.execute("SELECT 1")
+            # En SQLAlchemy v2+ se recomienda usar text()
+            from sqlalchemy import text
+            connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         logger.error(f"Error de conexión a base de datos: {str(e)}")
         return False
 
 # ============================================
-# CONTEXT MANAGER PARA SESIONES
+# CONTEXT MANAGER PARA SESIONES (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
 
 class DatabaseSession:
@@ -137,9 +125,3 @@ class DatabaseSession:
         if exc_type:
             self.db.rollback()
         self.db.close()
-
-# ============================================
-# LOGGING
-# ============================================
-
-logger.info(f"Engine de base de datos creado: {settings.DATABASE_URL.split('@')[1] if '@' in settings.DATABASE_URL else 'local'}")

@@ -14,6 +14,24 @@ from pathlib import Path
 import logging
 from app.routers import cotizaciones, proyectos, documentos, chat, system # <--- AÑADE "system" A ESTA LÍNEA
 logger = logging.getLogger(__name__)
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Configuración de CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Origen de tu frontend
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos (GET, POST, etc.)
+    allow_headers=["*"],  # Permite todos los encabezados
+)
+
+# Tus rutas aquí...
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
 # ============================================
 # CREAR APLICACIÓN FASTAPI
@@ -364,3 +382,45 @@ if __name__ == "__main__":
         reload=settings.DEBUG,
         log_level="debug" if settings.DEBUG else "info"
     )
+
+
+# En backend/app/main.py
+
+from fastapi import FastAPI
+from app.core.config import settings  # Importa la configuración
+import logging
+
+# Configura el logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# --- (Aquí va la creación de tu 'app = FastAPI()') ---
+app = FastAPI(title="Tesla Cotizador API")
+
+
+# === INICIO DEL CÓDIGO A AÑADIR ===
+@app.on_event("startup")
+def on_startup():
+    """
+    Se ejecuta una vez cuando el servidor arranca.
+    Nos anunciará qué configuración está activa.
+    """
+    logger.info("🚀 Servidor Iniciando...")
+    logger.info("==================================================")
+    logger.info(f"== Entorno de Trabajo: {settings.ENVIRONMENT.upper()}")
+    
+    # Extraemos el tipo de BD de la URL para no imprimir contraseñas
+    db_type = "Desconocida"
+    if settings.DATABASE_URL:
+        db_type = settings.DATABASE_URL.split("://")[0]
+        
+    logger.info(f"== Base de Datos (ACTIVA): {db_type.upper()}")
+    logger.info(f"== Modelo de IA (ACTIVO): {settings.GEMINI_MODEL}")
+    logger.info("==================================================")
+# === FIN DEL CÓDIGO A AÑADIR ===
+
+
+# --- (Aquí van tus 'app.include_router(...)') ---
+# from app.routers import cotizaciones, system, ...
+# app.include_router(cotizaciones.router)
+# ... etc ...
