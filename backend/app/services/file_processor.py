@@ -15,7 +15,7 @@ class FileProcessor:
     def __init__(self):
         self.upload_dir = settings.UPLOAD_DIR
         self.allowed_extensions = settings.ALLOWED_EXTENSIONS
-        self.max_file_size = settings.MAX_FILE_SIZE
+        self.max_file_size = settings.MAX_UPLOAD_SIZE_MB
     
     async def procesar_archivo(self, archivo_path: str, nombre_original: str) -> Dict[str, Any]:
         """

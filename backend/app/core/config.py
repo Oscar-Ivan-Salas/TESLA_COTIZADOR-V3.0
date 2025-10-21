@@ -7,8 +7,7 @@ import os
 
 class Settings(BaseSettings):
     
-    # === LÓGICA DE BD FLEXIBLE (LA QUE AÑADIMOS) ===
-    
+    # === LÓGICA DE BD FLEXIBLE ===
     ENVIRONMENT: str = Field("development", env="ENVIRONMENT")
     DEV_DATABASE_URL: str = Field(..., env="DEV_DATABASE_URL")
     PROD_DATABASE_URL: str = Field(..., env="PROD_DATABASE_URL")
@@ -16,9 +15,6 @@ class Settings(BaseSettings):
     
     @validator("DATABASE_URL", pre=False, always=True)
     def set_database_url(cls, v, values):
-        """
-        Elige la URL de la base de datos correcta basándose en el ENTORNO.
-        """
         env = values.get("ENVIRONMENT", "development")
         if env == "production":
             print("INFO: Usando configuración de Base de Datos de PRODUCCIÓN (PostgreSQL).")
@@ -27,8 +23,7 @@ class Settings(BaseSettings):
             print("INFO: Usando configuración de Base de Datos de DESARROLLO (SQLite).")
             return values.get("DEV_DATABASE_URL")
             
-    # === TUS VARIABLES ORIGINALES (INTACTAS) ===
-    
+    # === TUS VARIABLES ORIGINALES ===
     GEMINI_API_KEY: str = Field(..., env="GEMINI_API_KEY")
     GEMINI_MODEL: str = Field(..., env="GEMINI_MODEL")
     SECRET_KEY: str = Field(..., env="SECRET_KEY")
@@ -38,9 +33,7 @@ class Settings(BaseSettings):
     CHROMA_PERSIST_DIRECTORY: str = Field(..., env="CHROMA_PERSIST_DIRECTORY")
     EMBEDDING_MODEL: str = Field(..., env="EMBEDDING_MODEL")
 
-    # === LAS 12 VARIABLES FALTANTES (AHORA AÑADIDAS) ===
-    # Estas son las variables que causaban el error 'extra_forbidden'
-    
+    # === OTRAS VARIABLES DE TU .ENV ===
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
     MAX_TOKENS: int = 8192
@@ -54,11 +47,12 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 50
     ALLOWED_EXTENSIONS: str = "pdf,docx,xlsx,jpg,jpeg,png,txt,csv"
 
-    # --- Configuración de Pydantic ---
+    # === LA VARIABLE QUE CORRIGE EL ERROR ===
+    DATABASE_ECHO: bool = False
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
 
-# Creamos la instancia única de configuración
 settings = Settings()
