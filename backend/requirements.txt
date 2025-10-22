@@ -22,7 +22,8 @@ langchain-google-genai==0.0.8
 # ... (el resto de tus librerías) ..
 
 # IA y procesamiento
-chromadb==0.4.22
+chromadb==0.4.22 
+numpy==2.0
 sentence-transformers==2.3.1
 
 # Procesamiento de documentos

@@ -1,16 +1,16 @@
 """
 Configuración de la aplicación
 """
+### <<< CORREGIDO: Importaciones añadidas para la lógica flexible
 from pydantic_settings import BaseSettings
 from pydantic import Field, validator
 from typing import List, Optional
 import os
 from pathlib import Path
-import logging
-import sys
-from logging.handlers import RotatingFileHandler
 
 # Directorio base del proyecto
+# __file__ es .../backend/app/core/config.py
+# .parent.parent.parent -> .../backend
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
@@ -21,26 +21,19 @@ class Settings(BaseSettings):
     """
     
     # ========================================
-    # INFORMACIÓN DE LA APP
+    # INFORMACIÓN DE LA APP (Leído desde el .env o con valor por defecto)
     # ========================================
     APP_NAME: str = "Tesla Cotizador"
     VERSION: str = "3.0.0"
-    
     DEBUG: bool = Field(True, env="DEBUG")
     ENVIRONMENT: str = Field("development", env="ENVIRONMENT")
     LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
     
     # ========================================
-    # BASE DE DATOS (LÓGICA MEJORADA)
+    # BASE DE DATOS (Con lógica flexible)
     # ========================================
-    
-    # 1. Definimos la ruta de Producción (esta SÍ debe estar en .env)
+    DEV_DATABASE_URL: str = Field(..., env="DEV_DATABASE_URL")
     PROD_DATABASE_URL: str = Field(..., env="PROD_DATABASE_URL")
-    
-    # 2. Definimos la ruta de Desarrollo (SQLite) internamente
-    SQLITE_DB_PATH: Path = BASE_DIR / "database" / "tesla_cotizador.db"
-
-    # 3. DATABASE_URL será calculada por el validador
     DATABASE_URL: Optional[str] = None
     DATABASE_ECHO: bool = False
 
@@ -55,19 +48,11 @@ class Settings(BaseSettings):
             return values.get("PROD_DATABASE_URL")
         else:
             print("INFO: Usando configuración de Base de Datos de DESARROLLO (SQLite).")
-            
-            sqlite_path = values.get("SQLITE_DB_PATH")
-            
-            # Creamos la carpeta 'database' si no existe.
-            sqlite_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Devolvemos la URL de conexión de SQLite
-            return f"sqlite:///{sqlite_path.resolve()}"
+            return values.get("DEV_DATABASE_URL")
     
     # ========================================
     # GEMINI AI (Google)
     # ========================================
-    
     GEMINI_API_KEY: str = Field(..., env="GEMINI_API_KEY")
     GEMINI_MODEL: str = Field(..., env="GEMINI_MODEL")
     TEMPERATURE: float = Field(0.7, env="TEMPERATURE")
@@ -76,10 +61,9 @@ class Settings(BaseSettings):
     # ========================================
     # ARCHIVOS Y STORAGE
     # ========================================
-    
-    STORAGE_PATH: str = Field(..., env="STORAGE_PATH")
-    TEMPLATES_PATH: str = Field(..., env="TEMPLATES_PATH")
-    
+
+    ### <<< CORREGIDO: Se cambió de 'str' a 'Path' y se quitó la conversión str()
+    # Esto soluciona el 'TypeError' porque permite usar el operador /
     UPLOAD_DIR: Path = BASE_DIR / "storage" / "documentos"
     GENERATED_DIR: Path = BASE_DIR / "storage" / "generados"
     TEMPLATES_DIR: Path = BASE_DIR / "storage" / "templates"
@@ -87,10 +71,16 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = Field(50, env="MAX_UPLOAD_SIZE_MB")
     ALLOWED_EXTENSIONS: str = Field(..., env="ALLOWED_EXTENSIONS")
 
+    ### <<< CORREGIDO: Se añadieron las variables del .env que faltaban
+    # Esto soluciona el error 'extra_forbidden'
+    STORAGE_PATH: str = Field(..., env="STORAGE_PATH")
+    TEMPLATES_PATH: str = Field(..., env="TEMPLATES_PATH")
+
     # ========================================
     # MÓDULOS DE SERVICIO
     # ========================================
     
+    # Ahora esto funciona, porque TEMPLATES_DIR es un Path
     WORD_TEMPLATE_PATH: str = str(TEMPLATES_DIR / "plantilla_cotizacion.docx")
     PDF_TEMPLATE_PATH: str = str(TEMPLATES_DIR / "plantilla_informe_pdf.html")
     PDF_LOGO_PATH: str = str(TEMPLATES_DIR / "logo_tesla.png")
@@ -99,13 +89,13 @@ class Settings(BaseSettings):
     # RAG (Vector Database)
     # ========================================
     
+    ### <<< CORREGIDO: Se cambió de 'str' a 'Path'
     CHROMA_PERSIST_DIRECTORY: Path = BASE_DIR / "storage" / "chroma_db"
     EMBEDDING_MODEL: str = Field(..., env="EMBEDDING_MODEL")
 
     # ========================================
     # SEGURIDAD (JWT)
     # ========================================
-    
     SECRET_KEY: str = Field(..., env="SECRET_KEY")
     ALGORITHM: str = Field("HS256", env="ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
@@ -113,7 +103,6 @@ class Settings(BaseSettings):
     # ========================================
     # SERVIDOR Y CORS
     # ========================================
-    
     FRONTEND_URL: str = Field("http://localhost:3000", env="FRONTEND_URL")
     BACKEND_HOST: str = Field("0.0.0.0", env="BACKEND_HOST")
     BACKEND_PORT: int = Field(8000, env="BACKEND_PORT")
@@ -125,9 +114,9 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
-        arbitrary_types_allowed = True
-        extra = 'ignore'  # <<< ¡ESTA ES LA CORRECCIÓN!
-        
+        ### <<< CORREGIDO: Se añade esto para permitir el tipo 'Path'
+        arbitrary_types_allowed = True 
+
 
 # Instancia única de la configuración
 settings = Settings()
@@ -163,6 +152,7 @@ def get_upload_directory() -> Path:
     """
     Retorna el directorio de uploads como Path
     """
+    ### <<< CORREGIDO: settings.UPLOAD_DIR ya es un Path
     settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     return settings.UPLOAD_DIR
 
@@ -171,6 +161,7 @@ def get_generated_directory() -> Path:
     """
     Retorna el directorio de archivos generados como Path
     """
+    ### <<< CORREGIDO: settings.GENERATED_DIR ya es un Path
     settings.GENERATED_DIR.mkdir(parents=True, exist_ok=True)
     return settings.GENERATED_DIR
 
@@ -180,6 +171,7 @@ def validate_file_extension(filename: str) -> bool:
     Valida si la extensión del archivo está permitida
     """
     extension = filename.split('.')[-1].lower()
+    ### <<< CORREGIDO: Compara contra una lista, no un string
     allowed_list = [ext.strip() for ext in settings.ALLOWED_EXTENSIONS.split(',')]
     return extension in allowed_list
 
@@ -188,10 +180,15 @@ def validate_file_extension(filename: str) -> bool:
 # LOGGING CONFIGURATION
 # =======================================
 
+import logging
+import sys
+from logging.handlers import RotatingFileHandler
+
 def setup_logging():
     """
     Configura el sistema de logging
     """
+    ### <<< CORREGIDO: Lee el LOG_LEVEL desde la variable correcta
     log_level_str = settings.LOG_LEVEL.upper()
     level = getattr(logging, log_level_str, logging.INFO)
     
@@ -238,6 +235,9 @@ def setup_logging():
 # ========================================
 
 def get_word_template_path() -> Path:
+    """
+    Retorna la ruta de la plantilla de Word
+    """
     path = Path(settings.WORD_TEMPLATE_PATH)
     if not path.exists():
         logging.error(f"No se encontró la plantilla de Word en: {path}")
@@ -245,6 +245,9 @@ def get_word_template_path() -> Path:
     return path
 
 def get_pdf_template_path() -> Path:
+    """
+    Retorna la ruta de la plantilla de PDF
+    """
     path = Path(settings.PDF_TEMPLATE_PATH)
     if not path.exists():
         logging.error(f"No se encontró la plantilla de PDF en: {path}")
@@ -252,6 +255,9 @@ def get_pdf_template_path() -> Path:
     return path
 
 def get_pdf_logo_path() -> Path:
+    """
+    Retorna la ruta del logo para el PDF
+    """
     path = Path(settings.PDF_LOGO_PATH)
     if not path.exists():
         logging.warning(f"No se encontró el logo de PDF en: {path}. El PDF se generará sin logo.")
@@ -264,10 +270,17 @@ def get_pdf_logo_path() -> Path:
 # ========================================
 
 def get_chroma_persist_directory() -> str:
+    """
+    Retorna el directorio de persistencia de ChromaDB
+    """
+    ### <<< CORREGIDO: settings.CHROMA_PERSIST_DIRECTORY es un Path
     settings.CHROMA_PERSIST_DIRECTORY.mkdir(parents=True, exist_ok=True)
     return str(settings.CHROMA_PERSIST_DIRECTORY)
 
 def get_embedding_model_name() -> str:
+    """
+    Retorna el nombre del modelo de embedding
+    """
     return settings.EMBEDDING_MODEL
 
 
@@ -276,14 +289,23 @@ def get_embedding_model_name() -> str:
 # ========================================
 
 def get_secret_key() -> str:
+    """
+    Retorna la secret key para JWT
+    """
     if settings.SECRET_KEY == "tu_secret_key_aqui":
         logging.warning("Estás usando la SECRET_KEY por defecto. ¡Cámbiala en producción!")
     return settings.SECRET_KEY
 
 def get_jwt_algorithm() -> str:
+    """
+    Retorna el algoritmo JWT
+    """
     return settings.ALGORITHM
 
 def get_access_token_expire_minutes() -> int:
+    """
+    Retorna los minutos de expiración del token
+    """
     return settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
@@ -292,9 +314,16 @@ def get_access_token_expire_minutes() -> int:
 # ========================================
 
 def get_frontend_url() -> str:
+    """
+    Retorna la URL del frontend
+    """
     return settings.FRONTEND_URL
 
 def get_max_upload_size_bytes() -> int:
+    """
+    Retorna el tamaño máximo de archivo en bytes
+    """
+    ### <<< CORREGIDO: Usa la variable correcta
     return settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
 
@@ -302,4 +331,5 @@ def get_max_upload_size_bytes() -> int:
 # EJECUTAR CONFIGURACIÓN INICIAL
 # ========================================
 
+# Configurar el logging tan pronto como se importa este módulo
 setup_logging()

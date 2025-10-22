@@ -1,5 +1,5 @@
 """
-Tesla Cotizador V3 - Aplicación Principal (Versión Corregida)
+Tesla Cotizador V3 - Aplicación Principal (Versión Limpia y Funcional)
 FastAPI Backend
 """
 from fastapi import FastAPI, Request, status, Depends, HTTPException
@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.core.database import engine, Base, get_db
+from app.core.database import init_database, Base, get_db, engine, SessionLocal
 from sqlalchemy.orm import Session
 from pathlib import Path
 import logging
@@ -17,19 +17,13 @@ import logging
 # Importamos todos los módulos de routers que usaremos
 from app.routers import cotizaciones, proyectos, documentos, chat, system, informes
 
-# === IMPORTACIÓN DE MODELOS ===
-# ¡ESTA ES LA CORRECCIÓN!
-# Importamos todos los modelos aquí para que se "registren" en
-# SQLAlchemy Base.metadata antes de que 'create_all' sea llamado.
-# Si tienes más modelos (ej. user.py), impórtalos también.
-from app.models import cotizacion, item, proyecto, documento
-
 logger = logging.getLogger(__name__)
 
 # ============================================
 # CREAR APLICACIÓN FASTAPI
 # ============================================
 
+# Esta es la ÚNICA definición de app
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
@@ -43,35 +37,19 @@ app = FastAPI(
 # CONFIGURAR CORS
 # ============================================
 
-# Configuración de CORS
-allowed_origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:8000"
-]
-
-# Agregar FRONTEND_URL si está definido y no está en la lista
-if hasattr(settings, 'FRONTEND_URL') and settings.FRONTEND_URL and settings.FRONTEND_URL not in allowed_origins:
-    allowed_origins.append(settings.FRONTEND_URL)
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        settings.FRONTEND_URL # Leído desde config
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition", "Content-Type"],
-    max_age=600  # 10 minutos
+    expose_headers=["Content-Disposition"], # Permitir que el frontend lea el nombre del archivo
 )
-
-# Middleware para log de CORS
-@app.middleware("http")
-async def log_cors(request: Request, call_next):
-    response = await call_next(request)
-    origin = request.headers.get("origin")
-    if origin and origin in allowed_origins:
-        response.headers["Access-Control-Allow-Origin"] = origin
-    return response
 
 # ============================================
 # MANEJADORES DE ERRORES
@@ -128,13 +106,14 @@ async def startup_event():
     logger.info(f"Modo: {settings.ENVIRONMENT}")
     logger.info(f"Debug: {settings.DEBUG}")
     
+    # Inicializar la base de datos
+    init_database(settings)
     # Crear tablas en la base de datos
     try:
-        # Ahora Base.metadata SÍ contiene tus tablas gracias a las importaciones
         Base.metadata.create_all(bind=engine)
-        logger.info("Tablas de base de datos verificadas/creadas con éxito.")
+        logger.info("Tablas de base de datos verificadas/creadas")
     except Exception as e:
-        logger.error(f"Error CRÍTICO al crear tablas: {str(e)}")
+        logger.error(f"Error al crear tablas: {str(e)}")
     
     # Verificar directorios de storage
     dirs_to_check = [
@@ -196,7 +175,7 @@ logger.info("Incluyendo routers de la aplicación...")
 
 app.include_router(
     system.router,
-    prefix="/api",
+    prefix="/api/system",
     tags=["System"]
 )
 
@@ -274,16 +253,18 @@ async def obtener_estadisticas_generales(db: Session = Depends(get_db)):
     """
     from sqlalchemy.orm import Session
     from app.core.database import get_db
+    from app.models.cotizacion import Cotizacion
+    from app.models.proyecto import Proyecto
+    from app.models.documento import Documento
     
     try:
-        # Las importaciones ahora están seguras aquí
-        total_cotizaciones = db.query(cotizacion.Cotizacion).count()
-        total_proyectos = db.query(proyecto.Proyecto).count()
-        total_documentos = db.query(documento.Documento).count()
+        total_cotizaciones = db.query(Cotizacion).count()
+        total_proyectos = db.query(Proyecto).count()
+        total_documentos = db.query(Documento).count()
         
         # Total facturado
-        cotizaciones_aprobadas = db.query(cotizacion.Cotizacion).filter(
-            cotizacion.Cotizacion.estado == "aprobado"
+        cotizaciones_aprobadas = db.query(Cotizacion).filter(
+            Cotizacion.estado == "aprobado"
         ).all()
         
         total_facturado = sum(
@@ -301,10 +282,8 @@ async def obtener_estadisticas_generales(db: Session = Depends(get_db)):
         
     except Exception as e:
         logger.error(f"Error al obtener estadísticas: {str(e)}")
-        # Si las tablas aún no existen, esto fallará
         return {
-            "error": "Error al calcular estadísticas (posiblemente tablas no creadas)",
-            "detalle": str(e)
+            "error": str(e)
         }
 
 # ============================================
@@ -313,4 +292,11 @@ async def obtener_estadisticas_generales(db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True, log_level="debug")
+    
+    uvicorn.run(
+        "app.main:app",
+        host=settings.BACKEND_HOST,
+        port=settings.BACKEND_PORT,
+        reload=settings.DEBUG,
+        log_level="debug" if settings.DEBUG else "info"
+    )

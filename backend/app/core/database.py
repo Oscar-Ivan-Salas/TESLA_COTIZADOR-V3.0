@@ -1,55 +1,60 @@
 """
 Configuración de base de datos con SQLAlchemy
 """
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from app.core.config import settings
 import logging
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# ============================================
-# CREAR ENGINE DE SQLALCHEMY (SECCIÓN CORREGIDA Y MEJORADA)
-# ============================================
-
-# Preparamos los argumentos de conexión de forma condicional
-connect_args = {}
-# Esta configuración de zona horaria es específica de PostgreSQL.
-# La aplicamos solo si estamos usando una base de datos PostgreSQL.
-if settings.DATABASE_URL.startswith("postgresql"):
-    connect_args["options"] = "-c timezone=America/Lima"
-    logger.info("Configurando zona horaria de PostgreSQL a America/Lima.")
-
-# Creamos el engine usando los argumentos que preparamos
-engine = create_engine(
-    settings.DATABASE_URL,
-    echo=settings.DATABASE_ECHO,
-    pool_pre_ping=True,      # Verificar conexión antes de usar
-    pool_size=5,             # Tamaño del pool de conexiones
-    max_overflow=10,         # Conexiones adicionales permitidas
-    pool_recycle=3600,       # Reciclar conexiones cada hora
-    connect_args=connect_args  # Usamos el diccionario preparado
-)
-
-# ============================================
-# SESSION LOCAL (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
-# ============================================
-# BASE PARA MODELOS (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
-
+# Inicializamos las variables globales como None
+engine = None
+SessionLocal = None
 Base = declarative_base()
 
 # ============================================
-# DEPENDENCY PARA FASTAPI (TU CÓDIGO ORIGINAL INTACTO)
+# INICIALIZACIÓN DIFERIDA
+# ============================================
+
+def init_database(settings):
+    """
+    Inicializa la configuración de la base de datos.
+    Debe llamarse al inicio de la aplicación después de cargar la configuración.
+    """
+    global engine, SessionLocal, Base
+    
+    # Preparamos los argumentos de conexión de forma condicional
+    connect_args = {}
+    
+    # Configuración específica para PostgreSQL
+    if settings.DATABASE_URL.startswith("postgresql"):
+        connect_args["options"] = "-c timezone=America/Lima"
+        logger.info("Configurando zona horaria de PostgreSQL a America/Lima.")
+    
+    # Creamos el engine
+    engine = create_engine(
+        settings.DATABASE_URL,
+        echo=settings.DATABASE_ECHO,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+        pool_recycle=3600,
+        connect_args=connect_args
+    )
+    
+    # Configuramos la sesión
+    SessionLocal = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine
+    )
+    
+    return engine, SessionLocal, Base
+
+# ============================================
+# SESSION LOCAL (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
 
 def get_db() -> Session:

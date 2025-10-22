@@ -5,6 +5,7 @@
  */
 
 // Configuración de la URL base del backend
+// Nota: No incluir '/api' al final ya que se agrega en cada endpoint
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 /**

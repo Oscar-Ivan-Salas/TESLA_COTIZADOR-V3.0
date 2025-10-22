@@ -19,7 +19,7 @@ from pathlib import Path
 import logging
 import os
 
-# <<< CORRECCIÓN: Importar los generadores de documentos
+# Importar los generadores de documentos
 from app.services.word_generator import word_generator
 from app.services.pdf_generator import pdf_generator
 from app.core.config import settings
@@ -89,9 +89,7 @@ def _preparar_datos_documento(cotizacion: Cotizacion) -> Dict[str, Any]:
 
 # ============================================\n# ENDPOINTS DE COTIZACIONES (CRUD)
 # ============================================
-# (Tu código CRUD ... crear_cotizacion, listar_cotizaciones, etc. va aquí)
-# ... (Tu código CRUD original de 194 líneas se mantiene intacto) ...
-
+# (Tu código CRUD original de ~194 líneas está intacto)
 
 @router.post("/", response_model=CotizacionResponse, status_code=status.HTTP_201_CREATED)
 async def crear_cotizacion(
@@ -245,8 +243,8 @@ async def eliminar_cotizacion(
 # ============================================\n# ENDPOINTS DE GENERACIÓN DE DOCUMENTOS
 # ============================================
 
-### <<< CORRECCIÓN: Endpoint movido desde 'informes.py'
-@router.post("/generar-pdf/{cotizacion_id}")
+### <<< CORRECCIÓN: Ruta cambiada a /{id}/generar-pdf
+@router.post("/{cotizacion_id}/generar-pdf")
 async def generar_pdf_cotizacion(
     cotizacion_id: int,
     db: Session = Depends(get_db)
@@ -301,7 +299,7 @@ async def generar_pdf_cotizacion(
         )
 
 
-### <<< CORRECCIÓN: Endpoint NUEVO para 'generar-word' (Problema #1)
+### <<< CORRECCIÓN: Ruta cambiada a /{id}/generar-word
 @router.post("/{cotizacion_id}/generar-word")
 async def generar_word_cotizacion(
     cotizacion_id: int,
@@ -355,8 +353,3 @@ async def generar_word_cotizacion(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al generar Word: {str(e)}"
         )
-
-
-### <<< CORRECCIÓN: Endpoint de TEST eliminado
-# El endpoint /test-db/ ha sido eliminado.
-# Usa /api/system/health en su lugar.

@@ -7,6 +7,7 @@ import logging
 from typing import List, Dict, Any, Optional
 import chromadb
 from chromadb.config import Settings as ChromaSettings
+from app.core.config import settings # <<< CORRECCIÓN: Importar settings
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +24,15 @@ class RAGService:
         self.collection = None
         
         try:
-            # Usar PersistentClient (API nueva de ChromaDB)
+            # <<< CORRECCIÓN: Usar la ruta de settings en lugar de hardcodearla
+            # Esto soluciona el Problema #3
+            persist_directory = str(settings.CHROMA_PERSIST_DIRECTORY)
+            
             self.client = chromadb.PersistentClient(
-                path="./chroma_db"
+                path=persist_directory
             )
             
-            logger.info("✅ ChromaDB client inicializado")
+            logger.info(f"✅ ChromaDB client inicializado en: {persist_directory}")
             
             # Obtener o crear colección
             self.collection = self._get_or_create_collection()
@@ -43,139 +47,122 @@ class RAGService:
     
     def _get_or_create_collection(self):
         """
-        Obtener o crear la colección de ChromaDB
+        Obtener o crear la colección en ChromaDB
         """
-        if not self.client:
-            return None
-            
         try:
-            # Intentar obtener colección existente
             collection = self.client.get_or_create_collection(
-                name=self.collection_name,
-                metadata={"description": "Documentos de cotizaciones Tesla"}
+                name=self.collection_name
             )
-            
-            logger.info(f"Colección '{self.collection_name}' lista")
             return collection
-            
         except Exception as e:
             logger.error(f"Error al crear/obtener colección: {str(e)}")
-            return None
-    
+            # Si hay un error (ej. 'no such column'), intentamos resetear
+            try:
+                logger.warning(f"Intentando resetear la colección '{self.collection_name}'...")
+                self.client.delete_collection(name=self.collection_name)
+                collection = self.client.get_or_create_collection(name=self.collection_name)
+                logger.info("Colección reseteada y recreada exitosamente.")
+                return collection
+            except Exception as e2:
+                logger.critical(f"Fallo crítico al resetear la colección: {e2}")
+                raise e2
+
     def is_available(self) -> bool:
-        """Verificar si el servicio está disponible"""
+        """Verificar si el servicio RAG está disponible"""
         return self.client is not None and self.collection is not None
     
-    def add_documents(
-        self,
-        documents: List[str],
-        metadatas: Optional[List[Dict[str, Any]]] = None,
-        ids: Optional[List[str]] = None
-    ) -> bool:
+    def agregar_documento(self, doc_id: str, texto: str, metadata: Dict[str, Any]) -> bool:
         """
-        Agregar documentos a la colección
+        Agregar un documento a la colección
         
         Args:
-            documents: Lista de textos a agregar
-            metadatas: Metadatos opcionales para cada documento
-            ids: IDs opcionales para cada documento
-            
+            doc_id: ID único del documento
+            texto: Contenido de texto
+            metadata: Metadatos (ej. {'proyecto_id': 1, 'nombre_archivo': 'test.pdf'})
+        
         Returns:
-            True si se agregaron exitosamente
+            True si se agregó exitosamente
         """
         if not self.is_available():
-            logger.warning("RAG Service no disponible")
+            logger.warning("RAG Service no disponible, no se puede agregar documento")
             return False
         
         try:
-            # Generar IDs si no se proporcionan
-            if not ids:
-                import uuid
-                ids = [str(uuid.uuid4()) for _ in documents]
-            
-            # Preparar metadatos
-            if not metadatas:
-                metadatas = [{} for _ in documents]
-            
-            # Agregar a la colección
             self.collection.add(
-                documents=documents,
-                metadatas=metadatas,
-                ids=ids
+                documents=[texto],
+                metadatas=[metadata],
+                ids=[doc_id]
             )
-            
-            logger.info(f"✅ {len(documents)} documentos agregados a ChromaDB")
+            logger.info(f"Documento agregado a RAG: {doc_id}")
             return True
             
         except Exception as e:
-            logger.error(f"Error al agregar documentos: {str(e)}")
+            logger.error(f"Error al agregar documento a RAG: {str(e)}")
             return False
-    
-    def query(
-        self,
-        query_text: str,
-        n_results: int = 5,
-        where: Optional[Dict[str, Any]] = None
-    ) -> List[Dict[str, Any]]:
+            
+    def buscar(self, query: str, n_results: int = 5, where: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
-        Buscar documentos relevantes
+        Buscar documentos relevantes en la colección
         
         Args:
-            query_text: Texto de búsqueda
+            query: Texto de búsqueda
             n_results: Número de resultados
-            where: Filtros opcionales
-            
+            where: Filtro de metadatos (ej. {'proyecto_id': 1})
+        
         Returns:
-            Lista de documentos relevantes con metadatos
+            Lista de resultados
         """
         if not self.is_available():
-            logger.warning("RAG Service no disponible")
+            logger.warning("RAG Service no disponible, búsqueda omitida")
             return []
-        
+            
         try:
-            # Realizar búsqueda
-            results = self.collection.query(
-                query_texts=[query_text],
-                n_results=n_results,
-                where=where
-            )
+            if where:
+                results = self.collection.query(
+                    query_texts=[query],
+                    n_results=n_results,
+                    where=where
+                )
+            else:
+                results = self.collection.query(
+                    query_texts=[query],
+                    n_results=n_results
+                )
             
             # Formatear resultados
-            formatted_results = []
+            output = []
+            if results and results.get('documents'):
+                for i, doc in enumerate(results['documents'][0]):
+                    output.append({
+                        "id": results['ids'][0][i],
+                        "documento": doc,
+                        "metadata": results['metadatas'][0][i],
+                        "distancia": results['distances'][0][i]
+                    })
             
-            if results and "documents" in results:
-                for i, doc in enumerate(results["documents"][0]):
-                    result = {
-                        "document": doc,
-                        "metadata": results["metadatas"][0][i] if "metadatas" in results else {},
-                        "distance": results["distances"][0][i] if "distances" in results else None
-                    }
-                    formatted_results.append(result)
-            
-            logger.info(f"✅ Búsqueda retornó {len(formatted_results)} resultados")
-            return formatted_results
+            return output
             
         except Exception as e:
-            logger.error(f"Error al buscar documentos: {str(e)}")
+            logger.error(f"Error al buscar en RAG: {str(e)}")
             return []
     
-    def delete_documents(self, ids: List[str]) -> bool:
+    def eliminar_documentos(self, where: Dict[str, Any]) -> bool:
         """
-        Eliminar documentos por ID
+        Eliminar documentos de la colección basado en metadatos
         
         Args:
-            ids: Lista de IDs a eliminar
-            
+            where: Filtro de metadatos (ej. {'proyecto_id': 1})
+        
         Returns:
-            True si se eliminaron exitosamente
+            True si se eliminó exitosamente
         """
         if not self.is_available():
             logger.warning("RAG Service no disponible")
             return False
         
         try:
-            self.collection.delete(ids=ids)
-            logger.info(f"✅ {len(ids)} documentos eliminados")
+            self.collection.delete(where=where)
+            logger.info(f"Documentos eliminados de RAG (filtro: {where})")
             return True
             
         except Exception as e:
@@ -223,5 +210,5 @@ class RAGService:
 try:
     rag_service = RAGService()
 except Exception as e:
-    logger.error(f"Error crítico al inicializar RAGService: {str(e)}")
-    rag_service = None
+    logger.error(f"❌ Fallo al crear la instancia global de RAGService: {e}")
+    rag_service = None # Dejarlo como None para que is_available() falle
