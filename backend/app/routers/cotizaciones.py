@@ -246,7 +246,7 @@ async def eliminar_cotizacion(
 # ============================================
 
 ### <<< CORRECCIÓN: Endpoint movido desde 'informes.py'
-@router.post("/generar-pdf/{cotizacion_id}")
+@router.post("/{cotizacion_id}/generar-pdf")
 async def generar_pdf_cotizacion(
     cotizacion_id: int,
     db: Session = Depends(get_db)

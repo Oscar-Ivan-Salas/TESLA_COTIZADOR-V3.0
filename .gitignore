@@ -43,12 +43,14 @@ venv.bak/
 *.log
 *.sqlite3
 *.db
-backend/storage/documentos/*
-backend/storage/generados/*
-backend/storage/chroma_db/*
-!backend/storage/.gitkeep
-!backend/storage/documentos/.gitkeep
-!backend/storage/generados/.gitkeep
+# Archivos de almacenamiento (excluyendo .gitkeep)
+backend/storage/documents/*
+backend/storage/generated/*
+backend/storage/templates/*
+!backend/storage/documents/.gitkeep
+!backend/storage/generated/.gitkeep
+!backend/storage/templates/.gitkeep
+!backend/storage/README.md
 
 # ===================================
 # Node.js / React

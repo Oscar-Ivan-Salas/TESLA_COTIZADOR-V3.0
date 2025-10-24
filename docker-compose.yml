@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  # Base de datos PostgreSQL
+  # Base de datos PostgreSQL con pgvector
   db:
-    image: postgres:15-alpine
+    image: ankane/pgvector:latest
     container_name: tesla_cotizador_db
     restart: always
     environment:
@@ -14,26 +14,49 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql  # ← Ruta ajustada
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/init-vector.sql:/docker-entrypoint-initdb.d/init-vector.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tesla_cotizador"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - tesla_network
 
   # Backend FastAPI
   backend:
-    build: ./backend  # ← Ruta ajustada
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: tesla_cotizador_backend
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      bash -c "
+      echo 'Esperando a que la base de datos esté lista...' &&
+      until pg_isready -h db -p 5432 -U postgres; do
+        echo 'Esperando a la base de datos...';
+        sleep 2;
+      done &&
+      alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/tesla_cotizador
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      - ENVIRONMENT=development
+      - DEBUG=True
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/tesla_cotizador
+      - PROD_DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/tesla_cotizador_prod
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHROMA_SERVER_HOST=chromadb
+      - CHROMA_SERVER_HTTP_PORT=8000
     volumes:
       - ./backend:/app
       - ./backend/storage:/app/storage
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - tesla_network
 
@@ -44,14 +67,23 @@ services:
     restart: always
     ports:
       - "8001:8000"
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS=admin:admin
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.basic.BasicAuthServerProvider
+      - CHROMA_SERVER_AUTH_PROVIDER=chromadb.auth.basic.BasicAuthServerProvider
     volumes:
       - chroma_data:/chroma/chroma
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - tesla_network
 
   # Frontend React (opcional en producción)
   frontend:
-    build: ./frontend  # ← Ruta ajustada
+    build: ./frontend
     container_name: tesla_cotizador_frontend
     restart: always
     ports:
@@ -68,7 +100,9 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
   chroma_data:
+    driver: local
 
 networks:
   tesla_network:

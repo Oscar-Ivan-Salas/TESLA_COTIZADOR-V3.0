@@ -1,5 +1,5 @@
 """
-Tesla Cotizador V3 - Aplicación Principal (Versión Corregida - Lógica Original Intacta)
+Tesla Cotizador V3 - Aplicación Principal (Versión Corregida)
 FastAPI Backend
 """
 from fastapi import FastAPI, Request, status, Depends, HTTPException
@@ -8,26 +8,26 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.core.database import engine, Base, get_db, init_db # <-- AÑADIDO init_db
+from app.core.database import engine, Base, get_db
 from sqlalchemy.orm import Session
 from pathlib import Path
 import logging
 
-# === IMPORTACIÓN DE MODELOS (¡SECCIÓN AÑADIDA Y CRÍTICA!) ===
-# Importamos todos los modelos aquí para que se "registren" en
-# SQLAlchemy Base.metadata antes de que 'init_db()' sea llamado.
-# Esto soluciona el error '_run_ddl_visitor' y 'no such table'.
-from app.models import cotizacion, item, proyecto, documento
-# Si tienes más modelos (ej. user.py), impórtalos también aquí.
-
-
-# === IMPORTACIÓN DE ROUTERS (TU CÓDIGO ORIGINAL) ===
+# === IMPORTACIÓN DE ROUTERS ===
+# Importamos todos los módulos de routers que usaremos
 from app.routers import cotizaciones, proyectos, documentos, chat, system, informes
+
+# === IMPORTACIÓN DE MODELOS ===
+# ¡ESTA ES LA CORRECCIÓN!
+# Importamos todos los modelos aquí para que se "registren" en
+# SQLAlchemy Base.metadata antes de que 'create_all' sea llamado.
+# Si tienes más modelos (ej. user.py), impórtalos también.
+from app.models import cotizacion, item, proyecto, documento
 
 logger = logging.getLogger(__name__)
 
-# ============================================\
-# CREAR APLICACIÓN FASTAPI (TU CÓDIGO ORIGINAL INTACTO)
+# ============================================
+# CREAR APLICACIÓN FASTAPI
 # ============================================
 
 app = FastAPI(
@@ -39,32 +39,48 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# ============================================\
-# CONFIGURAR CORS (TU CÓDIGO ORIGINAL INTACTO)
 # ============================================
+# CONFIGURAR CORS
+# ============================================
+
+# Configuración de CORS
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000"
+]
+
+# Agregar FRONTEND_URL si está definido y no está en la lista
+if hasattr(settings, 'FRONTEND_URL') and settings.FRONTEND_URL and settings.FRONTEND_URL not in allowed_origins:
+    allowed_origins.append(settings.FRONTEND_URL)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:8000",
-        settings.FRONTEND_URL # (Añadido desde tu config para robustez)
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition"],
+    expose_headers=["Content-Disposition", "Content-Type"],
+    max_age=600  # 10 minutos
 )
 
-# ============================================\
-# MANEJADORES DE ERRORES (TU CÓDIGO ORIGINAL INTACTO)
+# Middleware para log de CORS
+@app.middleware("http")
+async def log_cors(request: Request, call_next):
+    response = await call_next(request)
+    origin = request.headers.get("origin")
+    if origin and origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+    return response
+
+# ============================================
+# MANEJADORES DE ERRORES
 # ============================================
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
-    (Tu manejador de errores de validación original)
+    Manejador personalizado para errores de validación
     """
     errors = []
     for error in exc.errors():
@@ -85,7 +101,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """
-    (Tu manejador de errores general original)
+    Manejador general de excepciones
     """
     logger.error(f"Error no manejado: {str(exc)}", exc_info=True)
     
@@ -99,41 +115,43 @@ async def general_exception_handler(request: Request, exc: Exception):
         }
     )
 
-# ============================================\
-# EVENTOS DE INICIO Y CIERRE (SECCIÓN AÑADIDA Y CRÍTICA)
+# ============================================
+# EVENTOS DE INICIO Y CIERRE
 # ============================================
 
 @app.on_event("startup")
 async def startup_event():
     """
     Ejecutar al iniciar la aplicación
-    ¡AQUÍ SE CREAN LAS TABLAS!
     """
     logger.info(f"Iniciando {settings.APP_NAME} v{settings.VERSION}")
     logger.info(f"Modo: {settings.ENVIRONMENT}")
     logger.info(f"Debug: {settings.DEBUG}")
     
     # Crear tablas en la base de datos
-    # Esto soluciona el error "no such table"
-    init_db()
+    try:
+        # Ahora Base.metadata SÍ contiene tus tablas gracias a las importaciones
+        Base.metadata.create_all(bind=engine)
+        logger.info("Tablas de base de datos verificadas/creadas con éxito.")
+    except Exception as e:
+        logger.error(f"Error CRÍTICO al crear tablas: {str(e)}")
     
     # Verificar directorios de storage
     dirs_to_check = [
-        settings.UPLOAD_DIR,
-        settings.GENERATED_DIR,
-        settings.CHROMA_PERSIST_DIRECTORY,
-        settings.TEMPLATES_DIR
+        str(settings.UPLOAD_DIR),
+        str(settings.GENERATED_DIR),
+        str(settings.CHROMA_PERSIST_DIRECTORY)
     ]
     
     for directory in dirs_to_check:
-        directory.mkdir(parents=True, exist_ok=True)
+        Path(directory).mkdir(parents=True, exist_ok=True)
         logger.info(f"Directorio verificado: {directory}")
     
     # Verificar configuración de Gemini
-    if settings.GEMINI_API_KEY and "AIza" in settings.GEMINI_API_KEY:
+    if settings.GEMINI_API_KEY:
         logger.info("✅ Gemini API Key configurada")
     else:
-        logger.warning("⚠️ Gemini API Key NO configurada o inválida")
+        logger.warning("⚠️ Gemini API Key NO configurada - funcionalidad IA limitada")
     
     logger.info("🚀 Aplicación iniciada exitosamente")
 
@@ -144,15 +162,14 @@ async def shutdown_event():
     """
     logger.info("Cerrando aplicación...")
 
-
-# ============================================\
-# RUTAS PRINCIPALES (TU CÓDIGO ORIGINAL INTACTO)
+# ============================================
+# RUTAS PRINCIPALES
 # ============================================
 
 @app.get("/", tags=["Root"])
 async def root():
     """
-    (Tu ruta raíz original)
+    Ruta raíz - Información de la API
     """
     return {
         "app": settings.APP_NAME,
@@ -171,15 +188,15 @@ async def root():
         }
     }
 
-# ============================================\
-# INCLUIR ROUTERS (TU CÓDIGO ORIGINAL INTACTO)
+# ============================================
+# INCLUIR ROUTERS
 # ============================================
 
 logger.info("Incluyendo routers de la aplicación...")
 
 app.include_router(
     system.router,
-    prefix="/api/system",
+    prefix="/api",
     tags=["System"]
 )
 
@@ -213,14 +230,14 @@ app.include_router(
     tags=["Informes"]
 )
 
-# ============================================\
-# SERVIR ARCHIVOS ESTÁTICOS (TU CÓDIGO ORIGINAL INTACTO)
+# ============================================
+# SERVIR ARCHIVOS ESTÁTICOS (DESCARGAS)
 # ============================================
 
 try:
     app.mount(
         "/api/descargas",
-        StaticFiles(directory=settings.GENERATED_DIR),
+        StaticFiles(directory=str(settings.GENERATED_DIR)),
         name="descargas"
     )
     logger.info(f"Directorio de descargas montado: {settings.GENERATED_DIR}")
@@ -230,9 +247,9 @@ except Exception as e:
 @app.get("/api/descargas/{nombre_archivo}", tags=["Descargas"])
 async def descargar_archivo(nombre_archivo: str):
     """
-    (Tu endpoint de descargas original)
+    Descargar archivo generado
     """
-    ruta_archivo = settings.GENERATED_DIR / nombre_archivo
+    ruta_archivo = Path(settings.GENERATED_DIR) / nombre_archivo
     
     if not ruta_archivo.exists():
         raise HTTPException(
@@ -246,20 +263,25 @@ async def descargar_archivo(nombre_archivo: str):
         media_type='application/octet-stream'
     )
 
-# ============================================\
-# ESTADÍSTICAS (TU CÓDIGO ORIGINAL INTACTO)
+# ============================================
+# ESTADÍSTICAS GENERALES
 # ============================================
 
 @app.get("/api/estadisticas", tags=["Estadísticas"])
 async def obtener_estadisticas_generales(db: Session = Depends(get_db)):
     """
-    (Tu endpoint de estadísticas original)
+    Obtener estadísticas generales del sistema
     """
+    from sqlalchemy.orm import Session
+    from app.core.database import get_db
+    
     try:
+        # Las importaciones ahora están seguras aquí
         total_cotizaciones = db.query(cotizacion.Cotizacion).count()
         total_proyectos = db.query(proyecto.Proyecto).count()
         total_documentos = db.query(documento.Documento).count()
         
+        # Total facturado
         cotizaciones_aprobadas = db.query(cotizacion.Cotizacion).filter(
             cotizacion.Cotizacion.estado == "aprobado"
         ).all()
@@ -285,17 +307,10 @@ async def obtener_estadisticas_generales(db: Session = Depends(get_db)):
             "detalle": str(e)
         }
 
-# ============================================\
-# PARA EJECUTAR DIRECTAMENTE (TU CÓDIGO ORIGINAL INTACTO)
+# ============================================
+# PARA EJECUTAR DIRECTAMENTE
 # ============================================
 
 if __name__ == "__main__":
     import uvicorn
-    
-    uvicorn.run(
-        "app.main:app",
-        host=settings.BACKEND_HOST,
-        port=settings.BACKEND_PORT,
-        reload=settings.DEBUG,
-        log_level="debug" if settings.DEBUG else "info"
-    )
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True, log_level="debug")

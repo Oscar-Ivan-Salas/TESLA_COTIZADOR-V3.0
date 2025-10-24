@@ -8,7 +8,7 @@ import os
 from app.core.database import get_db
 from app.models import Cotizacion, Proyecto
 # <<< CORRECCIÓN: word_generator ya no se usa aquí
-from app.services.pdf_generator import pdf_generator
+
 from app.core.config import settings # <<< CORRECCIÓN: Importar settings
 
 router = APIRouter()
@@ -73,3 +73,5 @@ async def obtener_formatos_disponibles():
             }
         ]
     }
+
+    
