@@ -25,6 +25,10 @@ class Cotizacion(Base):
     igv = Column(Numeric(10, 2), default=0.00)
     total = Column(Numeric(10, 2), default=0.00)
     
+    # ✅ CAMPOS QUE FALTABAN (AHORA EN EL LUGAR CORRECTO)
+    observaciones = Column(Text, nullable=True)
+    vigencia = Column(String(100), nullable=True, default="30 días")
+    
     # Estado
     estado = Column(String(50), default="borrador", index=True)
     
@@ -88,4 +92,6 @@ class Cotizacion(Base):
             "fecha_creacion": self.fecha_creacion.isoformat() if self.fecha_creacion else None,
             "fecha_modificacion": self.fecha_modificacion.isoformat() if self.fecha_modificacion else None,
             "proyecto_id": self.proyecto_id,
+            "observaciones": self.observaciones,
+            "vigencia": self.vigencia,
         }

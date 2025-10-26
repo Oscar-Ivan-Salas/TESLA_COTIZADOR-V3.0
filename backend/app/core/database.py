@@ -1,5 +1,5 @@
 """
-Configuración de base de datos con SQLAlchemy (Versión Corregida - Lógica Original Intacta)
+Configuración de base de datos con SQLAlchemy - VERSIÓN CORREGIDA
 """
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -9,38 +9,32 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# ============================================\
-# CREAR ENGINE DE SQLALCHEMY (SECCIÓN CORREGIDA Y MEJORADA)
-# ============================================
+# =======================================
+# CREAR ENGINE DE SQLALCHEMY
+# =======================================
 
-# Preparamos los argumentos de conexión de forma condicional
+# Preparamos los argumentos de conexión
 connect_args = {}
 
-# Esta configuración de zona horaria es específica de PostgreSQL.
-# La aplicamos solo si estamos usando una base de datos PostgreSQL.
-if settings.DATABASE_URL.startswith("postgresql"):
-    connect_args["options"] = "-c timezone=America/Lima"
-    logger.info("Configurando zona horaria de PostgreSQL a America/Lima.")
-elif settings.DATABASE_URL.startswith("sqlite"):
-    # Configuración específica y NECESARIA para SQLite
+# Configuración específica para SQLite
+if settings.DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
     logger.info("Configurando SQLite con check_same_thread=False.")
 
-
-# Creamos el engine usando los argumentos que preparamos
+# Creamos el engine
 engine = create_engine(
     settings.DATABASE_URL,
     echo=settings.DATABASE_ECHO,
-    pool_pre_ping=True,      # (Tu lógica original)
-    pool_size=5,             # (Tu lógica original)
-    max_overflow=10,         # (Tu lógica original)
-    pool_recycle=3600,       # (Tu lógica original)
-    connect_args=connect_args  # Usamos el diccionario que preparamos
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=3600,
+    connect_args=connect_args
 )
 
-# ============================================\
-# SESSION LOCAL (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
+# =======================================
+# SESSION LOCAL
+# =======================================
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -48,15 +42,15 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
-# ============================================\
-# BASE PARA MODELOS (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
+# =======================================
+# BASE PARA MODELOS
+# =======================================
 
 Base = declarative_base()
 
-# ============================================\
-# DEPENDENCY PARA FASTAPI (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
+# =======================================
+# DEPENDENCY PARA FASTAPI
+# =======================================
 
 def get_db() -> Session:
     """
@@ -69,9 +63,9 @@ def get_db() -> Session:
     finally:
         db.close()
 
-# ============================================\
-# FUNCIONES HELPER (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
+# =======================================
+# FUNCIONES HELPER
+# =======================================
 
 def init_db():
     """
@@ -101,17 +95,15 @@ def check_db_connection() -> bool:
     """
     try:
         with engine.connect() as connection:
-            # En SQLAlchemy v1.x se usa connection.execute("SELECT 1")
-            # En SQLAlchemy v2+ se recomienda usar text()
             connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         logger.error(f"Error de conexión a base de datos: {str(e)}")
         return False
 
-# ============================================\
-# CONTEXT MANAGER PARA SESIONES (TU CÓDIGO ORIGINAL INTACTO)
-# ============================================
+# =======================================
+# CONTEXT MANAGER PARA SESIONES
+# =======================================
 
 class DatabaseSession:
     """

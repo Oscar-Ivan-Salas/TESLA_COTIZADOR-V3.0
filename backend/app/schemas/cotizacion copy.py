@@ -39,76 +39,43 @@ class CotizacionBase(BaseModel):
     descripcion: Optional[str] = Field(None, description="Descripción de la cotización")
 
 class CotizacionCreate(CotizacionBase):
-    """Schema para crear una cotización - ✅ CORREGIDO"""
-    items: List[Dict[str, Any]] = Field(..., description="Items de la cotización")
-    
-    # ✅ CAMPOS OBLIGATORIOS QUE FALTABAN
-    subtotal: Decimal = Field(..., ge=0, description="Subtotal sin IGV")
-    igv: Decimal = Field(..., ge=0, description="Monto del IGV")
-    total: Decimal = Field(..., ge=0, description="Total con IGV")
-    # ✅ CAMPOS QUE FALTABAN
-    # Estas son las columnas que necesitamos agregar
-    
-    # Campos opcionales
-    observaciones: Optional[str] = Field(None, description="Observaciones")
-    vigencia: Optional[str] = Field("30 días", description="Vigencia de la cotización")
+    """Schema para crear una cotización"""
+    items: Optional[List[Dict[str, Any]]] = Field(None, description="Items de la cotización")
     proyecto_id: Optional[int] = Field(None, description="ID del proyecto relacionado")
     estado: Optional[str] = Field("borrador", description="Estado de la cotización")
-    metadata_adicional: Optional[Dict[str, Any]] = Field(None, description="Metadata adicional")
     
     @field_validator('items')
     @classmethod
     def validar_items(cls, v):
         """Validar que los items tengan la estructura correcta"""
-        if not v or len(v) == 0:
-            raise ValueError("Debe haber al menos un item en la cotización")
-            
-        for idx, item in enumerate(v):
-            if not isinstance(item, dict):
-                raise ValueError(f"Item {idx + 1}: debe ser un diccionario")
-            
-            required_fields = ["descripcion", "cantidad", "precio_unitario"]
-            for field in required_fields:
-                if field not in item:
-                    raise ValueError(f"Item {idx + 1}: debe tener el campo '{field}'")
-            
-            # Validar descripción
-            if not isinstance(item["descripcion"], str) or len(item["descripcion"]) < 1:
-                raise ValueError(f"Item {idx + 1}: la descripción debe ser un texto no vacío")
-            
-            # Validar cantidad
-            try:
-                cantidad = float(item["cantidad"])
-                if cantidad <= 0:
-                    raise ValueError(f"Item {idx + 1}: la cantidad debe ser mayor a 0")
-            except (ValueError, TypeError):
-                raise ValueError(f"Item {idx + 1}: la cantidad debe ser un número válido")
-            
-            # Validar precio
-            try:
-                precio = float(item["precio_unitario"])
-                if precio < 0:
-                    raise ValueError(f"Item {idx + 1}: el precio debe ser mayor o igual a 0")
-            except (ValueError, TypeError):
-                raise ValueError(f"Item {idx + 1}: el precio debe ser un número válido")
-            
-            # Calcular total si no viene
-            if "total" not in item:
-                item["total"] = cantidad * precio
+        if v is not None:
+            for item in v:
+                if not isinstance(item, dict):
+                    raise ValueError("Cada item debe ser un diccionario")
+                
+                required_fields = ["descripcion", "cantidad", "precio_unitario"]
+                for field in required_fields:
+                    if field not in item:
+                        raise ValueError(f"El item debe tener el campo '{field}'")
+                
+                # Validar tipos
+                if not isinstance(item["descripcion"], str) or len(item["descripcion"]) < 1:
+                    raise ValueError("La descripción debe ser un texto no vacío")
+                
+                try:
+                    cantidad = float(item["cantidad"])
+                    if cantidad <= 0:
+                        raise ValueError("La cantidad debe ser mayor a 0")
+                except (ValueError, TypeError):
+                    raise ValueError("La cantidad debe ser un número válido")
+                
+                try:
+                    precio = float(item["precio_unitario"])
+                    if precio < 0:
+                        raise ValueError("El precio debe ser mayor o igual a 0")
+                except (ValueError, TypeError):
+                    raise ValueError("El precio debe ser un número válido")
         
-        return v
-    
-    @field_validator('total')
-    @classmethod
-    def validar_total(cls, v, info):
-        """Validar que el total sea coherente"""
-        if 'subtotal' in info.data and 'igv' in info.data:
-            total_calculado = info.data['subtotal'] + info.data['igv']
-            # Permitir diferencia de 0.01 por redondeo
-            if abs(float(v) - float(total_calculado)) > 0.01:
-                raise ValueError(
-                    f"El total ({v}) no coincide con subtotal + IGV ({total_calculado})"
-                )
         return v
 
 class CotizacionUpdate(BaseModel):
@@ -117,11 +84,6 @@ class CotizacionUpdate(BaseModel):
     proyecto: Optional[str] = Field(None, min_length=3, max_length=200)
     descripcion: Optional[str] = None
     items: Optional[List[Dict[str, Any]]] = None
-    subtotal: Optional[Decimal] = None
-    igv: Optional[Decimal] = None
-    total: Optional[Decimal] = None
-    observaciones: Optional[str] = None
-    vigencia: Optional[str] = None
     estado: Optional[str] = None
     metadata_adicional: Optional[Dict[str, Any]] = None
     
@@ -154,8 +116,6 @@ class CotizacionResponse(CotizacionBase):
     fecha_creacion: datetime
     fecha_modificacion: datetime
     proyecto_id: Optional[int] = None
-    observaciones: Optional[str] = None
-    vigencia: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
 
