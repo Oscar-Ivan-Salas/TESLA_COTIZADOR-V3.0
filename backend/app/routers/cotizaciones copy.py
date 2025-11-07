@@ -134,6 +134,7 @@ async def crear_cotizacion(
                 db_item = Item(
                     descripcion=item_data.get("descripcion"),
                     cantidad=item_data.get("cantidad"),
+                    unidad=item_data.get("unidad", "und"),
                     precio_unitario=item_data.get("precio_unitario"),
                     total=item_data.get("total", item_data.get("cantidad") * item_data.get("precio_unitario")),
                     cotizacion_id=db_cotizacion.id
@@ -225,6 +226,7 @@ async def actualizar_cotizacion(
             db_item = Item(
                 descripcion=item_data.get("descripcion"),
                 cantidad=item_data.get("cantidad"),
+                unidad=item_data.get("unidad", "und"),
                 precio_unitario=item_data.get("precio_unitario"),
                 total=item_data.get("total", item_data.get("cantidad") * item_data.get("precio_unitario")),
                 cotizacion_id=cotizacion_id
