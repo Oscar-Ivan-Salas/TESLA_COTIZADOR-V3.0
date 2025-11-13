@@ -1,0 +1,98 @@
+ESTRUCTURA DEL PROYECTO
+
+e:\TESLA_COTIZADOR-V3.0\
+│
+├── .git/                    # Directorio de control de versiones
+├── backend/                 # Código del servidor (FastAPI)
+│   ├── app/                 # Código fuente de la aplicación
+│   │   ├── core/            # Configuraciones centrales
+│   │   ├── models/          # Modelos de base de datos
+│   │   ├── routers/         # Rutas de la API
+│   │   ├── schemas/         # Esquemas Pydantic
+│   │   ├── services/        # Lógica de negocio
+│   │   ├── utils/           # Utilidades
+│   │   └── main.py          # Punto de entrada de la aplicación
+│   ├── docker-compose.yml   # Configuración de Docker
+│   └── requirements.txt     # Dependencias de Python
+│
+├── database/                # Archivos de base de datos
+│   └── tesla_cotizador.db   # Base de datos SQLite
+│
+├── frontend/                # Aplicación React
+│   ├── public/              # Archivos estáticos
+│   └── src/                 # Código fuente de React
+│       ├── components/      # Componentes reutilizables
+│       ├── services/        # Servicios de API
+│       ├── App.jsx          # Componente principal
+│       └── index.js         # Punto de entrada de React
+│
+├── storage/                 # Almacenamiento de archivos
+│   ├── clientes/            # Archivos de clientes
+│   └── documentos/          # Documentos generados
+│
+├── docs/                    # Documentación
+├── venv/                    # Entorno virtual de Python
+│
+├── .gitignore               # Archivos ignorados por git
+├── README.md                # Documentación principal
+├── docker-compose.yml       # Configuración de Docker
+└── fix_database.py          # Script de reparación de base de datos
+
+
+backend/
+├── app/
+│   ├── core/
+│   │   ├── config.py        # Configuración de la aplicación
+│   │   └── database.py      # Configuración de la base de datos
+│   │
+│   ├── models/              # Modelos SQLAlchemy
+│   │   ├── __init__.py
+│   │   ├── cotizacion.py    # Modelo de cotización
+│   │   └── ...              # Otros modelos
+│   │
+│   ├── routers/             # Rutas de la API
+│   │   ├── __init__.py
+│   │   ├── cotizaciones.py  # Rutas de cotizaciones
+│   │   └── ...              # Otras rutas
+│   │
+│   ├── schemas/             # Esquemas Pydantic
+│   │   ├── __init__.py
+│   │   ├── cotizacion.py    # Esquemas de cotización
+│   │   └── ...              # Otros esquemas
+│   │
+│   ├── services/            # Lógica de negocio
+│   │   ├── __init__.py
+│   │   ├── cotizacion_service.py
+│   │   └── ...              # Otros servicios
+│   │
+│   ├── utils/               # Utilidades
+│   │   ├── __init__.py
+│   │   └── ...              # Utilidades varias
+│   │
+│   └── main.py              # Punto de entrada de la aplicación
+│
+└── requirements.txt         # Dependencias de Python
+
+
+frontend/
+├── public/                  # Archivos estáticos
+│   ├── index.html
+│   ├── favicon.ico
+│   └── ...                  # Otros archivos estáticos
+│
+└── src/
+    ├── components/          # Componentes reutilizables
+    │   ├── Layout/          # Componentes de diseño
+    │   ├── Cotizacion/      # Componentes de cotización
+    │   └── ...              # Otros componentes
+    │
+    ├── services/            # Servicios de API
+    │   ├── api.js           # Configuración de axios
+    │   └── cotizaciones.js  # Llamadas a la API de cotizaciones
+    │
+    ├── utils/               # Utilidades
+    │   └── ...              # Utilidades varias
+    │
+    ├── App.jsx              # Componente principal
+    ├── index.js             # Punto de entrada de React
+    └── index.css            # Estilos globales

@@ -65,10 +65,10 @@ const CotizadorTesla30 = () => {
   const [datosEmpresa] = useState({
     nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
     ruc: '20601138787',
-    direccion: 'Jr. Los Narcisos Mz H lote 4 Urb. Los jardines de San Calos',
+    direccion: 'Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos',
     telefono: '906315961',
     email: 'ingenieria.teslaelectricidad@gmail.com',
-    ciudad: 'Huanacayo, Junin - Perú'
+    ciudad: 'San Juan de Lurigancho, Lima - Perú'
   });
 
   const servicios = [
