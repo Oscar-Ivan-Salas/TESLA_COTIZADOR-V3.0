@@ -444,14 +444,23 @@ async def chat_mensaje(request: ChatRequest):
             "routers_avanzados_activos": ROUTERS_AVANZADOS_DISPONIBLES
         }
 
+@app.post("/api/chat/chat-contextualizado")
+async def chat_contextualizado(request: ChatRequest):
+    """
+    🆕 AGREGADO - Endpoint de chat contextualizado (compatibilidad con frontend v3.0)
+
+    Este endpoint es un alias mejorado de /api/chat/mensaje con el mismo comportamiento
+    """
+    return await chat_mensaje(request)
+
 @app.get("/api/chat/botones-contextuales/{tipo_flujo}")
 async def obtener_botones_contextuales(tipo_flujo: str, etapa: str = "inicial"):
     """🔄 CONSERVADO - Obtiene botones contextuales según el tipo de flujo"""
-    
+
     botones_base = {
         "inicial": [
             "🏠 Instalación Residencial",
-            "🏢 Instalación Comercial", 
+            "🏢 Instalación Comercial",
             "🏭 Instalación Industrial",
             "💡 Iluminación LED",
             "🔌 Tomacorrientes",
