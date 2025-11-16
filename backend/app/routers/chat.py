@@ -1170,67 +1170,94 @@ async def obtener_botones_contextuales(
 @router.post("/chat-contextualizado")
 async def chat_contextualizado(
     tipo_flujo: str = Body(...),
-    mensaje: str = Body(...), 
+    mensaje: str = Body(...),
     historial: Optional[List[Dict]] = Body([]),
     contexto_adicional: Optional[str] = Body(""),
     cotizacion_id: Optional[int] = Body(None),
+    archivos_procesados: Optional[List[Dict]] = Body([]),
+    generar_html: Optional[bool] = Body(False),
     db: Session = Depends(get_db)
 ):
     """
     🔄 CONSERVADO v2.0 + MEJORADO PILI v3.0
-    
+
     Chat inteligente con contexto específico según el servicio.
     PILI ahora responde con su personalidad específica por agente.
+
+    NUEVO: Genera vista previa HTML editable si generar_html=True
     """
     try:
         logger.info(f"🤖 PILI chat contextualizado para {tipo_flujo}")
-        
+
         # Obtener contexto del servicio
         contexto = obtener_contexto_servicio(tipo_flujo)
-        
+
         if not contexto:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Tipo de flujo '{tipo_flujo}' no soportado por PILI"
             )
-        
+
         # Construir prompt especializado PILI
         nombre_pili = contexto.get("nombre_pili", "PILI")
         prompt_especializado = f"""
         Eres {nombre_pili}.
-        
+
         {contexto.get('personalidad', '')}
-        
+
         {contexto.get('rol_ia', '')}
-        
+
         {contexto.get('prompt_especializado', '')}
-        
+
         CONTEXTO DEL PROYECTO:
         {contexto_adicional}
-        
+
         HISTORIAL DE CONVERSACIÓN:
         """
-        
+
         # Agregar historial al prompt
         for i, msg in enumerate(historial[-5:]):  # Últimos 5 mensajes
             role = msg.get('role', 'user')
             content = msg.get('content', msg.get('mensaje', ''))
             prompt_especializado += f"\n{role.upper()}: {content}"
-        
+
         prompt_especializado += f"\n\nUSUARIO: {mensaje}\n\nRESPUESTA DE {nombre_pili}:"
-        
+
         # Enviar a Gemini con contexto especializado
         respuesta = gemini_service.chat(
             mensaje=prompt_especializado,
             contexto=f"Agente: {nombre_pili}. Servicio: {tipo_flujo}. {contexto_adicional}",
             cotizacion_id=cotizacion_id
         )
-        
+
         # Determinar etapa y botones sugeridos
         tiene_cotizacion = cotizacion_id is not None
         etapa_actual = determinar_etapa_conversacion(historial, tiene_cotizacion)
         botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
-        
+
+        # NUEVO: Generar vista previa HTML si se solicitó
+        html_preview = None
+        datos_generados = None
+
+        if generar_html and len(historial) >= 1:
+            # Crear estructura de datos básica para preview
+            datos_json = {
+                "pili_version": "3.0",
+                "agente_responsable": nombre_pili,
+                "tipo_servicio": tipo_flujo,
+                "timestamp": datetime.now().isoformat(),
+                "datos_extraidos": {
+                    "cliente": "[Cliente por definir]",
+                    "proyecto": "[Proyecto generado con PILI]",
+                    "descripcion": contexto_adicional or mensaje,
+                    "fecha": datetime.now().strftime("%d/%m/%Y")
+                }
+            }
+
+            # Generar HTML preview según tipo
+            html_preview = generar_preview_html(datos_json)
+            datos_generados = datos_json.get("datos_extraidos")
+
         return {
             "success": True,
             "agente_activo": nombre_pili,
@@ -1240,7 +1267,11 @@ async def chat_contextualizado(
             "botones_contextuales": botones_sugeridos,
             "etapa_actual": etapa_actual,
             "preguntas_pendientes": contexto.get("preguntas_esenciales", []),
-            "tipo_flujo": tipo_flujo
+            "tipo_flujo": tipo_flujo,
+            "html_preview": html_preview,
+            "cotizacion_generada": datos_generados if "cotizacion" in tipo_flujo else None,
+            "proyecto_generado": datos_generados if "proyecto" in tipo_flujo else None,
+            "informe_generado": datos_generados if "informe" in tipo_flujo else None
         }
         
     except Exception as e:
