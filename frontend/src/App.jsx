@@ -738,12 +738,12 @@ const CotizadorTesla30 = () => {
               {menuCotizaciones && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
-                    onClick={() => iniciarFlujo('cotizacion-rapida')}
+                    onClick={() => iniciarFlujo('cotizacion-simple')}
                     className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-yellow-900 hover:to-yellow-800 p-4 rounded-xl border-2 border-gray-700 hover:border-yellow-600 transition-all duration-300 text-left">
                     <div className="flex items-center gap-3">
                       <Zap className="w-6 h-6 text-yellow-400 group-hover:scale-110 transition-transform" />
                       <div>
-                        <p className="font-bold text-white text-lg">Cotización Rápida</p>
+                        <p className="font-bold text-white text-lg">Cotización Simple</p>
                         <p className="text-gray-400 text-sm">Vista previa en tiempo real - 5 a 15 minutos</p>
                       </div>
                     </div>
@@ -876,7 +876,7 @@ const CotizadorTesla30 = () => {
     else if (esInforme) colores = { primary: 'green', border: 'green-700', bg: 'green-600' };
 
     const configuracion = {
-      'cotizacion-rapida': { titulo: '⚡ Cotización Rápida', desc: 'Vista previa en tiempo real - 5 a 15 minutos', icon: Zap },
+      'cotizacion-simple': { titulo: '⚡ Cotización Simple', desc: 'Vista previa en tiempo real - 5 a 15 minutos', icon: Zap },
       'cotizacion-compleja': { titulo: '📄 Cotización Compleja', desc: 'Análisis detallado con edición avanzada', icon: Layers },
       'proyecto-simple': { titulo: '📁 Proyecto Simple', desc: 'Gestión básica con vista previa', icon: Folder },
       'proyecto-complejo': { titulo: '🏗️ Proyecto Complejo', desc: 'Gantt, hitos y seguimiento avanzado', icon: Layout },
