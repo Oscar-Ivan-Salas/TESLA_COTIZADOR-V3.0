@@ -26,6 +26,9 @@ import logging
 from datetime import datetime
 from app.core.config import settings
 
+# 🧠 Importar PILIBrain para modo demo inteligente
+from app.services.pili_brain import pili_brain
+
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════
@@ -334,33 +337,107 @@ INSTRUCCIONES DE INFORME:
         return resultado
     
     def _respuesta_demo_pili(self, mensaje: str, tipo_servicio: str) -> Dict[str, Any]:
-        """Respuesta demo cuando Gemini no está configurado"""
-        
+        """
+        🧠 Respuesta INTELIGENTE usando PILIBrain cuando Gemini no está configurado
+
+        Ahora genera JSONs estructurados reales usando lógica interna sin APIs.
+        """
+
         agente = PILI_AGENTES.get(tipo_servicio, PILI_AGENTES["cotizacion-simple"])
-        
-        respuestas_demo = {
-            "cotizacion-simple": f"¡Hola! Soy {agente['nombre']} 🤖\n\nPara '{mensaje}', necesito algunos datos específicos:\n• Tipo de instalación (residencial/comercial)\n• Metros cuadrados del área\n• Número de puntos de luz\n• Cantidad de tomacorrientes\n\n💡 Configura GEMINI_API_KEY para funcionalidad completa.",
-            
-            "cotizacion-compleja": f"¡Hola! Soy {agente['nombre']} 🔍\n\nPuedo analizar tu proyecto complejo '{mensaje}' con documentos técnicos.\n\n📄 Sube: planos, especificaciones, memoria descriptiva\n🎯 Incluiré: metrados, cargas eléctricas, cronograma\n\n💡 Configura GEMINI_API_KEY para análisis real con IA.",
-            
-            "proyecto-simple": f"¡Hola! Soy {agente['nombre']} 📁\n\nTe ayudo a organizar '{mensaje}' de forma eficiente.\n\n📋 Crearé: estructura, cronograma, responsabilidades\n📊 Incluiré: seguimiento y control básico\n\n💡 Configura GEMINI_API_KEY para gestión inteligente.",
-            
-            "proyecto-complejo": f"¡Hola! Soy {agente['nombre']} 📊\n\nGestionaré tu proyecto complejo '{mensaje}' con metodología PMI.\n\n📈 Incluiré: Gantt, EVM, análisis riesgos\n👥 Gestión: stakeholders y comunicaciones\n\n💡 Configura GEMINI_API_KEY para PMI completo.",
-            
-            "informe-simple": f"¡Hola! Soy {agente['nombre']} 📄\n\nGenero informes técnicos claros sobre '{mensaje}'.\n\n📝 Incluiré: estructura lógica, conclusiones\n📊 Formato: profesional y bien organizado\n\n💡 Configura GEMINI_API_KEY para informes reales.",
-            
-            "informe-ejecutivo": f"¡Hola! Soy {agente['nombre']} 💼\n\nCreo informes ejecutivos de alto nivel sobre '{mensaje}'.\n\n📈 Incluiré: gráficos, métricas, ROI\n📋 Formato: APA profesional\n\n💡 Configura GEMINI_API_KEY para análisis completo."
-        }
-        
-        return {
-            "exito": True,
-            "agente_pili": agente["nombre"],
-            "tipo_servicio": tipo_servicio,
-            "mensaje": respuestas_demo.get(tipo_servicio, f"Soy {agente['nombre']} en modo demo."),
-            "modo_demo": True,
-            "accion_recomendada": "configurar_gemini",
-            "timestamp": datetime.now().isoformat()
-        }
+
+        # 🧠 Usar PILIBrain para generar respuesta inteligente
+        logger.info(f"🧠 PILIBrain procesando: {tipo_servicio}")
+
+        # Detectar servicio técnico (eléctrico, contraincendios, etc.)
+        servicio_tecnico = pili_brain.detectar_servicio(mensaje)
+
+        # Determinar complejidad
+        complejidad = "simple" if "simple" in tipo_servicio else "complejo"
+
+        # Si es cotización, generar con PILIBrain
+        if "cotizacion" in tipo_servicio:
+            # 🎯 Generar cotización real con cálculos
+            respuesta_brain = pili_brain.generar_cotizacion(
+                mensaje=mensaje,
+                servicio=servicio_tecnico,
+                complejidad=complejidad
+            )
+
+            # Combinar con formato esperado
+            return {
+                "exito": True,
+                "agente_pili": agente["nombre"],
+                "tipo_servicio": tipo_servicio,
+                "servicio_tecnico_detectado": servicio_tecnico,
+                "mensaje": respuesta_brain["conversacion"]["mensaje_pili"],
+                "datos_estructurados": respuesta_brain["datos"],
+                "accion_recomendada": "generar_documento",
+                "puede_generar": respuesta_brain["conversacion"]["puede_generar"],
+                "preguntas_pendientes": respuesta_brain["conversacion"].get("preguntas_pendientes", []),
+                "modo_demo": True,
+                "modo_inteligente": True,  # ✨ NUEVO: Indica que usa PILIBrain
+                "timestamp": datetime.now().isoformat()
+            }
+
+        # Para proyectos e informes (por ahora respuesta conversacional)
+        # TODO: Implementar generación de proyectos e informes con PILIBrain
+        else:
+            mensaje_respuesta = self._generar_respuesta_conversacional(tipo_servicio, mensaje, agente)
+
+            return {
+                "exito": True,
+                "agente_pili": agente["nombre"],
+                "tipo_servicio": tipo_servicio,
+                "mensaje": mensaje_respuesta,
+                "modo_demo": True,
+                "modo_inteligente": True,
+                "accion_recomendada": "continuar_conversacion",
+                "timestamp": datetime.now().isoformat()
+            }
+
+    def _generar_respuesta_conversacional(self, tipo_servicio: str, mensaje: str, agente: Dict) -> str:
+        """Genera respuesta conversacional para proyectos e informes"""
+
+        if "proyecto" in tipo_servicio:
+            return f"""¡Hola! Soy {agente['nombre']} 📊
+
+He analizado tu solicitud: "{mensaje}"
+
+Para crear un proyecto profesional, necesito:
+• 📋 Descripción detallada del alcance
+• 📅 Fecha de inicio deseada
+• 👥 Recursos disponibles
+• 💰 Presupuesto estimado
+
+🎯 **Generaré un proyecto con:**
+- Cronograma Gantt
+- Plan de recursos
+- Análisis de riesgos
+- Entregables definidos
+
+💬 Cuéntame más detalles y lo estructuramos juntos."""
+
+        elif "informe" in tipo_servicio:
+            return f"""¡Hola! Soy {agente['nombre']} 📄
+
+He recibido tu solicitud: "{mensaje}"
+
+Para el informe necesito:
+• 📊 Datos del proyecto/cotización base
+• 🎯 Objetivo del informe
+• 👥 Audiencia (técnico/ejecutivo)
+• 📈 Métricas a incluir
+
+✅ **El informe incluirá:**
+- Resumen ejecutivo
+- Análisis detallado
+- Conclusiones y recomendaciones
+- Gráficos profesionales
+
+💬 ¿Qué proyecto quieres documentar?"""
+
+        else:
+            return f"Soy {agente['nombre']} en modo inteligente. ¿En qué puedo ayudarte?"
     
     async def _guardar_aprendizaje_pili(
         self,
