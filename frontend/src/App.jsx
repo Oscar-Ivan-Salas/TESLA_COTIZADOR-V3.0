@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react';
+import PiliAvatar from './components/PiliAvatar';
 
 const CotizadorTesla30 = () => {
   // ============================================
@@ -1171,8 +1172,10 @@ const CotizadorTesla30 = () => {
                   <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                     <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
                       <h3 className="text-xl font-bold text-black flex items-center gap-2">
-                        <MessageSquare className="w-6 h-6" />
-                        Chat IA Tesla - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
+                        <div className="bg-white p-1 rounded-full">
+                          <PiliAvatar size={24} showCrown={true} />
+                        </div>
+                        👑 PILI - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
                       </h3>
                     </div>
                     
@@ -1180,8 +1183,11 @@ const CotizadorTesla30 = () => {
                     <div ref={chatContainerRef} className="flex-grow bg-gray-100 p-4 overflow-y-auto">
                       {conversacion.length === 0 ? (
                         <div className="text-center text-gray-600 mt-8">
-                          <MessageSquare className="w-10 h-10 mx-auto mb-3 text-yellow-600" />
-                          <p className="font-semibold">¡Hola! Soy Tesla IA 🤖</p>
+                          <div className="inline-block bg-yellow-600 p-3 rounded-full mb-3">
+                            <PiliAvatar size={32} showCrown={true} />
+                          </div>
+                          <p className="font-semibold text-lg">¡Hola! Soy 👑 PILI - Tu Asistente IA</p>
+                          <p className="text-xs text-gray-500 mb-2">Procesadora Inteligente de Licitaciones Industriales v3.0</p>
                           <p className="text-sm mt-1">
                             {esCotizacion && "Empezemos con tu cotización..."}
                             {esProyecto && "Vamos a planificar tu proyecto..."}
@@ -1206,8 +1212,11 @@ const CotizadorTesla30 = () => {
                             <div className="flex justify-start">
                               <div className="bg-white border-2 border-gray-300 p-3 rounded-2xl">
                                 <div className="flex items-center gap-2 text-gray-600">
-                                  <Loader className="w-4 h-4 animate-spin" />
-                                  <span className="text-sm">Analizando...</span>
+                                  <div className="bg-yellow-600 p-1 rounded-full animate-pulse">
+                                    <PiliAvatar size={16} showCrown={true} />
+                                  </div>
+                                  <Loader className="w-4 h-4 animate-spin text-yellow-600" />
+                                  <span className="text-sm font-medium">PILI está pensando... 🤔</span>
                                 </div>
                               </div>
                             </div>
