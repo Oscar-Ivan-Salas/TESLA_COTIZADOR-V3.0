@@ -32,8 +32,27 @@ pypdf==5.2.0
 python-magic==0.4.27
 python-magic-bin==0.4.14  # Para Windows
 
-# AI - Google Gemini
+# ═══════════════════════════════════════════════════════════════
+# 🤖 MULTI-IA SUPPORT (Instala solo las que vayas a usar)
+# ═══════════════════════════════════════════════════════════════
+
+# AI - Google Gemini (RECOMENDADO - Ya instalado)
 google-generativeai==0.8.3
+
+# AI - OpenAI ChatGPT (Opcional - Descomenta para usar)
+# openai==1.54.5
+
+# AI - Anthropic Claude (Opcional - Descomenta para usar)
+# anthropic==0.39.0
+
+# AI - Groq Llama (GRATIS - Opcional - Descomenta para usar)
+# groq==0.11.0
+
+# AI - Together AI (GRATIS - Opcional - Descomenta para usar)
+# together==1.3.3
+
+# AI - Cohere (GRATIS - Opcional - Descomenta para usar)
+# cohere==5.11.3
 
 # AI - ChromaDB
 chromadb==0.5.23

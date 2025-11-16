@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader, Sparkles, User, Bot } from 'lucide-react';
+import PiliAvatar, { PiliAvatarLarge, PiliStatus } from './PiliAvatar';
 
 const ChatIA = ({ contexto, onCotizacionGenerada }) => {
   const [mensajes, setMensajes] = useState([
@@ -79,12 +80,15 @@ const ChatIA = ({ contexto, onCotizacionGenerada }) => {
       {/* Header */}
       <div className="bg-gradient-to-r from-red-900 to-black p-4 rounded-t-2xl border-b-2 border-yellow-600">
         <div className="flex items-center gap-3">
-          <div className="bg-yellow-600 p-2 rounded-full animate-pulse">
-            <Sparkles className="text-black" size={24} />
+          <div className="bg-yellow-600 p-3 rounded-full animate-pulse shadow-lg">
+            <PiliAvatar size={32} showCrown={true} />
           </div>
           <div>
-            <h3 className="text-yellow-400 font-bold text-xl">Asistente IA Gemini</h3>
-            <p className="text-gray-400 text-sm">Generando cotización inteligente...</p>
+            <h3 className="text-yellow-400 font-bold text-xl flex items-center gap-2">
+              👑 PILI - Asistente IA
+              <span className="text-xs bg-yellow-600 text-black px-2 py-0.5 rounded-full">v3.0</span>
+            </h3>
+            <p className="text-gray-400 text-sm">Procesadora Inteligente de Licitaciones Industriales</p>
           </div>
         </div>
       </div>
@@ -97,8 +101,8 @@ const ChatIA = ({ contexto, onCotizacionGenerada }) => {
             className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'assistant' && (
-              <div className="bg-yellow-600 p-2 rounded-full h-fit">
-                <Bot size={20} className="text-black" />
+              <div className="bg-yellow-600 p-2 rounded-full h-fit shadow-md">
+                <PiliAvatar size={20} showCrown={true} />
               </div>
             )}
             
@@ -122,13 +126,13 @@ const ChatIA = ({ contexto, onCotizacionGenerada }) => {
 
         {cargando && (
           <div className="flex gap-3 justify-start">
-            <div className="bg-yellow-600 p-2 rounded-full h-fit animate-pulse">
-              <Bot size={20} className="text-black" />
+            <div className="bg-yellow-600 p-2 rounded-full h-fit animate-pulse shadow-md">
+              <PiliAvatar size={20} showCrown={true} />
             </div>
             <div className="bg-gray-800 p-4 rounded-2xl">
               <div className="flex gap-2 items-center">
                 <Loader className="animate-spin text-yellow-400" size={20} />
-                <span className="text-gray-400">Gemini está pensando...</span>
+                <span className="text-gray-400">PILI está pensando... 🤔</span>
               </div>
             </div>
           </div>
