@@ -379,8 +379,54 @@ INSTRUCCIONES DE INFORME:
                 "timestamp": datetime.now().isoformat()
             }
 
-        # Para proyectos e informes (por ahora respuesta conversacional)
-        # TODO: Implementar generación de proyectos e informes con PILIBrain
+        # Para proyectos - generar con PILIBrain
+        elif "proyecto" in tipo_servicio:
+            # 🎯 Generar proyecto real con cronograma
+            respuesta_brain = pili_brain.generar_proyecto(
+                mensaje=mensaje,
+                servicio=servicio_tecnico,
+                complejidad=complejidad
+            )
+
+            return {
+                "exito": True,
+                "agente_pili": agente["nombre"],
+                "tipo_servicio": tipo_servicio,
+                "servicio_tecnico_detectado": servicio_tecnico,
+                "mensaje": respuesta_brain["conversacion"]["mensaje_pili"],
+                "datos_estructurados": respuesta_brain["datos"],
+                "accion_recomendada": "generar_documento",
+                "puede_generar": respuesta_brain["conversacion"]["puede_generar"],
+                "preguntas_pendientes": respuesta_brain["conversacion"].get("preguntas_pendientes", []),
+                "modo_demo": True,
+                "modo_inteligente": True,
+                "timestamp": datetime.now().isoformat()
+            }
+
+        # Para informes - generar con PILIBrain
+        elif "informe" in tipo_servicio:
+            # 🎯 Generar informe real con análisis
+            respuesta_brain = pili_brain.generar_informe(
+                mensaje=mensaje,
+                servicio=servicio_tecnico,
+                complejidad=complejidad
+            )
+
+            return {
+                "exito": True,
+                "agente_pili": agente["nombre"],
+                "tipo_servicio": tipo_servicio,
+                "servicio_tecnico_detectado": servicio_tecnico,
+                "mensaje": respuesta_brain["conversacion"]["mensaje_pili"],
+                "datos_estructurados": respuesta_brain["datos"],
+                "accion_recomendada": "generar_documento",
+                "puede_generar": respuesta_brain["conversacion"]["puede_generar"],
+                "modo_demo": True,
+                "modo_inteligente": True,
+                "timestamp": datetime.now().isoformat()
+            }
+
+        # Fallback genérico
         else:
             mensaje_respuesta = self._generar_respuesta_conversacional(tipo_servicio, mensaje, agente)
 
