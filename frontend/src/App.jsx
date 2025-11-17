@@ -544,8 +544,12 @@ const CotizadorTesla30 = () => {
     setExito('');
 
     try {
-      // Usar datos editables si existen
-      const datosFinales = datosEditables || entidad;
+      // Determinar entidad según tipo de documento
+      const entidadActual = tipoDocumento === 'cotizacion' ? cotizacion :
+                           tipoDocumento === 'proyecto' ? proyecto : informe;
+
+      // Usar datos editables si existen, sino usar entidad del tipo correcto
+      const datosFinales = datosEditables || entidadActual;
       let entidadId = datosFinales?.id;
 
       // Si no tiene ID, guardar primero
