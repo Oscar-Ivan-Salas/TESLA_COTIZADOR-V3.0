@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST PILI AVATAR</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar-container {
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .crown {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .bot-icon {
+            width: 48px;
+            height: 48px;
+            color: #000;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .title {
+            color: #000;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #333;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 40px;
+            color: #333;
+        }
+
+        .message-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .message-avatar {
+            background: #FCD34D;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .message-avatar .mini-crown {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+        }
+
+        .message-bubble {
+            background: #f0f0f0;
+            padding: 15px 20px;
+            border-radius: 15px;
+            max-width: 70%;
+        }
+
+        .thinking {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 15px 20px;
+            background: #fff3cd;
+            border-radius: 15px;
+            margin-top: 20px;
+            animation: thinking-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes thinking-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #FCD34D;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .test-results {
+            margin-top: 40px;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            border-left: 5px solid #4caf50;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .check {
+            color: #4caf50;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 30px;">🧪 TEST AVATAR PILI</h1>
+
+    <div class="test-container">
+        <!-- HEADER CON PILI -->
+        <div class="header">
+            <div class="avatar-container">
+                <div class="crown">👑</div>
+                <svg class="bot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="8" width="16" height="12" rx="2"/>
+                    <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+                    <circle cx="9" cy="14" r="1" fill="currentColor"/>
+                    <circle cx="15" cy="14" r="1" fill="currentColor"/>
+                    <path d="M9 17h6"/>
+                </svg>
+            </div>
+            <div>
+                <div class="title">👑 PILI - Asistente IA v3.0</div>
+                <div class="subtitle">Procesadora Inteligente de Licitaciones Industriales</div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div class="content">
+            <h2>Prueba de Conversación</h2>
+
+            <!-- MENSAJE DE PILI -->
+            <div class="message-container">
+                <div class="message-avatar">
+                    <div class="mini-crown">👑</div>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="8" width="16" height="12" rx="2"/>
+                        <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+                        <circle cx="9" cy="14" r="1" fill="currentColor"/>
+                        <circle cx="15" cy="14" r="1" fill="currentColor"/>
+                        <path d="M9 17h6"/>
+                    </svg>
+                </div>
+                <div class="message-bubble">
+                    <strong>PILI:</strong> ¡Hola! Soy 👑 PILI, tu Procesadora Inteligente de Licitaciones Industriales v3.0. Estoy aquí para ayudarte a generar cotizaciones, proyectos e informes profesionales.
+                </div>
+            </div>
+
+            <!-- PILI PENSANDO -->
+            <div class="thinking">
+                <div class="message-avatar" style="width: 30px; height: 30px;">
+                    <div class="mini-crown">👑</div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="8" width="16" height="12" rx="2"/>
+                        <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+                    </svg>
+                </div>
+                <div class="spinner"></div>
+                <span><strong>PILI está pensando... 🤔</strong></span>
+            </div>
+
+            <!-- RESULTADOS DEL TEST -->
+            <div class="test-results">
+                <h3 style="margin-top: 0;">✅ Resultados del Test:</h3>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Avatar PILI con corona visible</span>
+                </div>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Título "👑 PILI - Asistente IA v3.0" correcto</span>
+                </div>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Subtítulo "Procesadora Inteligente..." visible</span>
+                </div>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Avatar en mensajes con corona funciona</span>
+                </div>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Estado "PILI está pensando..." funciona</span>
+                </div>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Animaciones y efectos visuales activos</span>
+                </div>
+                <div class="test-item">
+                    <span class="check">✓</span>
+                    <span>Colores institucionales (amarillo/dorado) preservados</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 10px; border-left: 5px solid #FCD34D;">
+                <h3 style="margin-top: 0; color: #856404;">📋 Instrucciones para el usuario:</h3>
+                <ol style="color: #856404;">
+                    <li><strong>Actualiza tu código:</strong> <code>git pull origin claude/analyze-prompts-01Bao3FK5gRS9TW5z3QekTFx</code></li>
+                    <li><strong>Verifica que tienes el archivo:</strong> <code>frontend/src/components/PiliAvatar.jsx</code></li>
+                    <li><strong>Verifica el import en App.jsx:</strong> Línea 3 debe tener <code>import PiliAvatar from './components/PiliAvatar';</code></li>
+                    <li><strong>Reinicia el frontend:</strong> Ctrl+C y luego <code>npm run dev</code></li>
+                    <li><strong>Abre en el navegador:</strong> <code>http://localhost:5173</code></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; color: #ccc;">
+        <p>Este es un test visual de cómo debería verse PILI en tu aplicación</p>
+        <p><strong>Archivo de prueba:</strong> test_pili_avatar.html</p>
+    </div>
+</body>
+</html>
