@@ -44,6 +44,7 @@ from app.schemas.cotizacion import (
     CotizacionResponse
 )
 from app.services.gemini_service import gemini_service
+from app.services.pili_brain import PILIBrain
 from app.models.cotizacion import Cotizacion
 from app.models.item import Item
 from datetime import datetime
@@ -56,6 +57,9 @@ import base64
 import tempfile
 
 logger = logging.getLogger(__name__)
+
+# Inicializar PILIBrain para generación offline
+pili_brain = PILIBrain()
 
 router = APIRouter()
 
@@ -845,9 +849,40 @@ def generar_preview_html(datos_json: Dict[str, Any]) -> str:
     else:
         return f"<p>Vista previa no disponible para {tipo_servicio}</p>"
 
+def generar_filas_items(items: List[Dict[str, Any]]) -> str:
+    """Genera las filas de items dinámicamente desde el array de items"""
+    if not items:
+        return """
+        <tr>
+            <td colspan="5" style="border: 1px solid #333; padding: 20px; text-align: center; color: #666; font-style: italic;">
+                No hay items generados aún. PILI está esperando más información...
+            </td>
+        </tr>
+        """
+
+    filas_html = ""
+    for item in items:
+        descripcion = item.get('descripcion', item.get('item', 'Item sin descripción'))
+        cantidad = item.get('cantidad', item.get('cant', 0))
+        unidad = item.get('unidad', 'und')
+        precio_unitario = item.get('precio_unitario', item.get('precioUnitario', 0))
+        total = item.get('total', cantidad * precio_unitario)
+
+        filas_html += f"""
+        <tr>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; background: #fff3cd; cursor: text; color: #000;">{descripcion}</td>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; text-align: center; background: #fff3cd; cursor: text; color: #000; font-weight: bold;">{cantidad}</td>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; text-align: center; background: #fff3cd; cursor: text; color: #000;">{unidad}</td>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; text-align: right; background: #fff3cd; cursor: text; color: #000; font-weight: bold;">S/ {precio_unitario:.2f}</td>
+            <td style="border: 1px solid #333; padding: 8px; text-align: right; background: #e8e8e8; font-weight: bold; color: #000; font-size: 15px;">S/ {total:.2f}</td>
+        </tr>
+        """
+
+    return filas_html
+
 def generar_preview_cotizacion(datos: Dict[str, Any], agente: str) -> str:
     """Genera HTML preview editable para cotización"""
-    
+
     html = f"""
     <div class="cotizacion-preview" style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
         <div class="pili-header" style="text-align: center; background: linear-gradient(135deg, #d4af37, #f4e37e); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -861,18 +896,18 @@ def generar_preview_cotizacion(datos: Dict[str, Any], agente: str) -> str:
             <h2 style="color: #333; margin-top: 15px;">COTIZACIÓN</h2>
         </div>
         
-        <div class="datos-cliente" style="margin-bottom: 20px;">
-            <h3 style="color: #d4af37; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DATOS DEL CLIENTE</h3>
-            <p><strong>Cliente:</strong> <span contenteditable="true" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px; cursor: text;">{datos.get('cliente', '[EDITAR CLIENTE]')}</span></p>
-            <p><strong>Proyecto:</strong> <span contenteditable="true" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px; cursor: text;">{datos.get('proyecto', '[EDITAR PROYECTO]')}</span></p>
-            <p><strong>Número:</strong> {datos.get('numero', 'COT-202501-001')}</p>
-            <p><strong>Fecha:</strong> {datos.get('fecha', datetime.now().strftime('%d/%m/%Y'))}</p>
-            <p><strong>Vigencia:</strong> {datos.get('vigencia', '30 días')}</p>
+        <div class="datos-cliente" style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #d4af37;">
+            <h3 style="color: #b8860b; border-bottom: 2px solid #d4af37; padding-bottom: 5px; font-size: 18px;">DATOS DEL CLIENTE</h3>
+            <p style="color: #000; font-size: 15px;"><strong style="color: #b8860b;">Cliente:</strong> <span contenteditable="true" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px; cursor: text; color: #000; font-weight: bold;">{datos.get('cliente', '[EDITAR CLIENTE]')}</span></p>
+            <p style="color: #000; font-size: 15px;"><strong style="color: #b8860b;">Proyecto:</strong> <span contenteditable="true" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px; cursor: text; color: #000; font-weight: bold;">{datos.get('proyecto', '[EDITAR PROYECTO]')}</span></p>
+            <p style="color: #000; font-size: 14px;"><strong style="color: #b8860b;">Número:</strong> {datos.get('numero', 'COT-202501-001')}</p>
+            <p style="color: #000; font-size: 14px;"><strong style="color: #b8860b;">Fecha:</strong> {datos.get('fecha', datetime.now().strftime('%d/%m/%Y'))}</p>
+            <p style="color: #000; font-size: 14px;"><strong style="color: #b8860b;">Vigencia:</strong> {datos.get('vigencia', '30 días')}</p>
         </div>
         
-        <div class="descripcion" style="margin-bottom: 20px;">
-            <h3 style="color: #d4af37; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DESCRIPCIÓN DEL PROYECTO</h3>
-            <div contenteditable="true" style="background: #fff3cd; padding: 12px; border: 1px dashed #d4af37; min-height: 80px; border-radius: 4px; cursor: text;">
+        <div class="descripcion" style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #d4af37;">
+            <h3 style="color: #b8860b; border-bottom: 2px solid #d4af37; padding-bottom: 5px; font-size: 18px;">DESCRIPCIÓN DEL PROYECTO</h3>
+            <div contenteditable="true" style="background: #fff3cd; padding: 12px; border: 2px dashed #d4af37; min-height: 80px; border-radius: 4px; cursor: text; color: #000; font-size: 14px;">
                 {datos.get('descripcion', '[EDITAR DESCRIPCIÓN DEL PROYECTO - Describe el alcance del trabajo a realizar]')}
             </div>
         </div>
@@ -882,41 +917,21 @@ def generar_preview_cotizacion(datos: Dict[str, Any], agente: str) -> str:
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <thead>
                     <tr style="background: #d4af37; color: white;">
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">DESCRIPCIÓN</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; width: 80px;">CANT.</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; width: 60px;">UND.</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; width: 100px;">P.UNIT.</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; width: 100px;">TOTAL</th>
+                        <th style="border: 1px solid #333; padding: 10px; text-align: left;">DESCRIPCIÓN</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 80px;">CANT.</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 60px;">UND.</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 100px;">P.UNIT.</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 100px;">TOTAL</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; background: #fff3cd; cursor: text;">Punto de luz LED 18W empotrado incluye interruptor</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff3cd; cursor: text;">10</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff3cd; cursor: text;">und</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: right; background: #fff3cd; cursor: text;">S/ 30.00</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right; background: #f8f9fa; font-weight: bold;">S/ 300.00</td>
-                    </tr>
-                    <tr>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; background: #fff3cd; cursor: text;">Tomacorriente doble con tierra línea Ticino</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff3cd; cursor: text;">8</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff3cd; cursor: text;">und</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: right; background: #fff3cd; cursor: text;">S/ 35.00</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right; background: #f8f9fa; font-weight: bold;">S/ 280.00</td>
-                    </tr>
-                    <tr>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; background: #fff3cd; cursor: text;">Cable THW 2.5mm² marca Indeco</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff3cd; cursor: text;">50</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff3cd; cursor: text;">mt</td>
-                        <td contenteditable="true" style="border: 1px solid #ddd; padding: 8px; text-align: right; background: #fff3cd; cursor: text;">S/ 4.00</td>
-                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right; background: #f8f9fa; font-weight: bold;">S/ 200.00</td>
-                    </tr>
+                    {generar_filas_items(datos.get('items', []))}
                 </tbody>
             </table>
-            <div style="margin-top: 20px; text-align: right; background: #f8f9fa; padding: 15px; border-radius: 4px;">
-                <p style="margin: 5px 0;"><strong>Subtotal: S/ 780.00</strong></p>
-                <p style="margin: 5px 0;"><strong>IGV (18%): S/ 140.40</strong></p>
-                <p style="font-size: 20px; color: #d4af37; margin: 10px 0 0 0;"><strong>TOTAL: S/ 920.40</strong></p>
+            <div style="margin-top: 20px; text-align: right; background: #e8e8e8; padding: 15px; border-radius: 4px; border: 2px solid #d4af37;">
+                <p style="margin: 5px 0; color: #000; font-size: 16px;"><strong>Subtotal: S/ {datos.get('subtotal', 0):.2f}</strong></p>
+                <p style="margin: 5px 0; color: #000; font-size: 16px;"><strong>IGV (18%): S/ {datos.get('igv', 0):.2f}</strong></p>
+                <p style="font-size: 22px; color: #b8860b; margin: 10px 0 0 0;"><strong>TOTAL: S/ {datos.get('total', 0):.2f}</strong></p>
             </div>
         </div>
         
@@ -1240,23 +1255,75 @@ async def chat_contextualizado(
         datos_generados = None
 
         if generar_html and len(historial) >= 1:
-            # Crear estructura de datos básica para preview
-            datos_json = {
-                "pili_version": "3.0",
-                "agente_responsable": nombre_pili,
-                "tipo_servicio": tipo_flujo,
-                "timestamp": datetime.now().isoformat(),
-                "datos_extraidos": {
-                    "cliente": "[Cliente por definir]",
-                    "proyecto": "[Proyecto generado con PILI]",
-                    "descripcion": contexto_adicional or mensaje,
-                    "fecha": datetime.now().strftime("%d/%m/%Y")
-                }
-            }
+            # Usar PILIBrain para generar datos reales con items
+            try:
+                if "cotizacion" in tipo_flujo:
+                    # Detectar servicio y generar cotización completa con PILIBrain
+                    mensaje_completo = contexto_adicional or mensaje
+                    for msg in historial[-3:]:  # Últimos 3 mensajes para contexto
+                        mensaje_completo += " " + msg.get('content', '')
 
-            # Generar HTML preview según tipo
-            html_preview = generar_preview_html(datos_json)
-            datos_generados = datos_json.get("datos_extraidos")
+                    # Detectar servicio basado en el mensaje
+                    servicio_detectado = pili_brain.detectar_servicio(mensaje_completo)
+                    complejidad = "complejo" if "complejo" in tipo_flujo else "simple"
+
+                    # Generar cotización completa con items
+                    cotizacion_data = pili_brain.generar_cotizacion(
+                        mensaje=mensaje_completo,
+                        servicio=servicio_detectado,
+                        complejidad=complejidad
+                    )
+
+                    # Extraer datos generados con items
+                    datos_generados = cotizacion_data.get("datos", {})
+
+                    # Crear datos_json para preview
+                    datos_json = {
+                        "pili_version": "3.0",
+                        "agente_responsable": nombre_pili,
+                        "tipo_servicio": tipo_flujo,
+                        "timestamp": datetime.now().isoformat(),
+                        "datos_extraidos": datos_generados
+                    }
+
+                    logger.info(f"✅ PILIBrain generó {len(datos_generados.get('items', []))} items para cotización")
+
+                else:
+                    # Para proyecto e informe, usar datos básicos
+                    datos_json = {
+                        "pili_version": "3.0",
+                        "agente_responsable": nombre_pili,
+                        "tipo_servicio": tipo_flujo,
+                        "timestamp": datetime.now().isoformat(),
+                        "datos_extraidos": {
+                            "cliente": "[Cliente por definir]",
+                            "proyecto": "[Proyecto generado con PILI]",
+                            "descripcion": contexto_adicional or mensaje,
+                            "fecha": datetime.now().strftime("%d/%m/%Y")
+                        }
+                    }
+                    datos_generados = datos_json.get("datos_extraidos")
+
+                # Generar HTML preview según tipo
+                html_preview = generar_preview_html(datos_json)
+
+            except Exception as e:
+                logger.error(f"Error generando datos con PILIBrain: {e}")
+                # Fallback a datos básicos
+                datos_json = {
+                    "pili_version": "3.0",
+                    "agente_responsable": nombre_pili,
+                    "tipo_servicio": tipo_flujo,
+                    "timestamp": datetime.now().isoformat(),
+                    "datos_extraidos": {
+                        "cliente": "[Cliente por definir]",
+                        "proyecto": "[Proyecto generado con PILI]",
+                        "descripcion": contexto_adicional or mensaje,
+                        "fecha": datetime.now().strftime("%d/%m/%Y")
+                    }
+                }
+                html_preview = generar_preview_html(datos_json)
+                datos_generados = datos_json.get("datos_extraidos")
 
         return {
             "success": True,

@@ -40,18 +40,10 @@ const PiliAvatar = ({ size = 24, className = "", showCrown = true }) => {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 40% 40%, rgba(255,215,0,0.4) 0%, transparent 60%)',
-            animation: 'pili-shine 3s ease-in-out infinite'
+            background: 'radial-gradient(circle at 40% 40%, rgba(255,215,0,0.4) 0%, transparent 60%)'
           }}
         />
       </div>
-
-      <style jsx>{`
-        @keyframes pili-shine {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.8; }
-        }
-      `}</style>
     </div>
   );
 };
