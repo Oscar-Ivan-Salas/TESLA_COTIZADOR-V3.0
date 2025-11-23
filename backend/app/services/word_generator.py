@@ -77,44 +77,46 @@ class WordGenerator:
         datos_json: Dict[str, Any],
         tipo_documento: str = "cotizacion",
         opciones: Optional[Dict[str, Any]] = None,
-        logo_base64: Optional[str] = None
+        logo_base64: Optional[str] = None,
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         🤖 NUEVO PILI v3.0 - Genera documento Word desde JSON estructurado de PILI
-        
+
         Args:
             datos_json: Datos estructurados por PILI
             tipo_documento: Tipo (cotizacion, proyecto, informe)
             opciones: Opciones de personalización
             logo_base64: Logo en base64
-            
+            ruta_salida: Ruta personalizada para guardar el archivo
+
         Returns:
             Información del documento generado
         """
-        
+
         try:
             logger.info(f"🤖 PILI generando documento {tipo_documento} desde JSON")
-            
+
             # 1. Validar y procesar datos JSON
             datos_procesados = self._procesar_json_pili(datos_json, tipo_documento)
-            
+
             # 2. Obtener agente PILI responsable
             agente_pili = datos_json.get("agente_responsable", "PILI")
-            
+
             # 3. Determinar método de generación según tipo
             if tipo_documento == "cotizacion" or "cotizacion" in tipo_documento:
-                resultado = self._generar_cotizacion_pili(datos_procesados, agente_pili, opciones, logo_base64)
-                
+                resultado = self._generar_cotizacion_pili(datos_procesados, agente_pili, opciones, logo_base64, ruta_salida)
+
             elif tipo_documento == "proyecto" or "proyecto" in tipo_documento:
-                resultado = self._generar_proyecto_pili(datos_procesados, agente_pili, opciones, logo_base64)
-                
+                resultado = self._generar_proyecto_pili(datos_procesados, agente_pili, opciones, logo_base64, ruta_salida)
+
             elif tipo_documento == "informe" or "informe" in tipo_documento:
-                resultado = self._generar_informe_pili(datos_procesados, agente_pili, opciones, logo_base64)
-                
+                resultado = self._generar_informe_pili(datos_procesados, agente_pili, opciones, logo_base64, ruta_salida)
+
             else:
                 # Fallback a cotización
-                resultado = self._generar_cotizacion_pili(datos_procesados, agente_pili, opciones, logo_base64)
-            
+                resultado = self._generar_cotizacion_pili(datos_procesados, agente_pili, opciones, logo_base64, ruta_salida)
+
             # 4. Agregar metadatos PILI
             resultado["pili_metadata"] = {
                 "agente_responsable": agente_pili,
@@ -122,10 +124,10 @@ class WordGenerator:
                 "timestamp_generacion": datetime.now().isoformat(),
                 "version_pili": "3.0"
             }
-            
+
             logger.info(f"✅ PILI documento generado: {resultado.get('nombre_archivo', 'documento.docx')}")
             return resultado
-            
+
         except Exception as e:
             logger.error(f"❌ Error PILI generando documento: {str(e)}")
             return {
@@ -171,137 +173,140 @@ class WordGenerator:
         return datos_procesados
     
     def _generar_cotizacion_pili(
-        self, 
-        datos: Dict[str, Any], 
-        agente_pili: str, 
-        opciones: Optional[Dict[str, Any]], 
-        logo_base64: Optional[str]
+        self,
+        datos: Dict[str, Any],
+        agente_pili: str,
+        opciones: Optional[Dict[str, Any]],
+        logo_base64: Optional[str],
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """Genera cotización con formato PILI personalizado"""
-        
+
         # Crear documento nuevo
         doc = Document()
-        
+
         # Configurar márgenes
         self._configurar_margenes(doc)
-        
+
         # 1. Header con logo PILI
         if logo_base64:
             self._insertar_logo_pili(doc, logo_base64, agente_pili)
         else:
             self._insertar_header_pili(doc, agente_pili)
-        
+
         # 2. Información de empresa
         self._insertar_info_empresa(doc)
-        
+
         # 3. Título cotización
         self._insertar_titulo_cotizacion(doc, agente_pili)
-        
+
         # 4. Datos del cliente
         self._insertar_datos_cliente_pili(doc, datos)
-        
+
         # 5. Descripción del proyecto
         self._insertar_descripcion_proyecto(doc, datos)
-        
+
         # 6. Tabla de items
         self._insertar_tabla_items_pili(doc, datos)
-        
+
         # 7. Totales
         self._insertar_totales_pili(doc, datos)
-        
+
         # 8. Observaciones
         self._insertar_observaciones_pili(doc, datos)
-        
+
         # 9. Footer PILI
         self._insertar_footer_pili(doc, agente_pili)
-        
+
         # 10. Guardar documento
-        return self._guardar_documento(doc, datos, "cotizacion")
+        return self._guardar_documento(doc, datos, "cotizacion", ruta_salida)
     
     def _generar_proyecto_pili(
-        self, 
-        datos: Dict[str, Any], 
-        agente_pili: str, 
-        opciones: Optional[Dict[str, Any]], 
-        logo_base64: Optional[str]
+        self,
+        datos: Dict[str, Any],
+        agente_pili: str,
+        opciones: Optional[Dict[str, Any]],
+        logo_base64: Optional[str],
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """Genera documento de proyecto con formato PILI"""
-        
+
         # Crear documento nuevo
         doc = Document()
-        
+
         # Configurar márgenes
         self._configurar_margenes(doc)
-        
+
         # 1. Header PILI
         self._insertar_header_pili(doc, agente_pili)
-        
+
         # 2. Información empresa
         self._insertar_info_empresa(doc)
-        
+
         # 3. Título proyecto
         titulo = doc.add_heading("GESTIÓN DE PROYECTO", level=1)
         titulo.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         self._aplicar_estilo_titulo(titulo, self.COLOR_DORADO)
-        
+
         # 4. Información del proyecto
         self._insertar_info_proyecto_pili(doc, datos, agente_pili)
-        
+
         # 5. Fases del proyecto (si existen)
         if "fases" in datos and datos["fases"]:
             self._insertar_fases_proyecto(doc, datos["fases"])
-        
+
         # 6. Footer PILI
         self._insertar_footer_pili(doc, agente_pili)
-        
+
         # 7. Guardar documento
-        return self._guardar_documento(doc, datos, "proyecto")
+        return self._guardar_documento(doc, datos, "proyecto", ruta_salida)
     
     def _generar_informe_pili(
-        self, 
-        datos: Dict[str, Any], 
-        agente_pili: str, 
-        opciones: Optional[Dict[str, Any]], 
-        logo_base64: Optional[str]
+        self,
+        datos: Dict[str, Any],
+        agente_pili: str,
+        opciones: Optional[Dict[str, Any]],
+        logo_base64: Optional[str],
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """Genera informe con formato PILI personalizado"""
-        
+
         # Crear documento nuevo
         doc = Document()
-        
+
         # Configurar márgenes
         self._configurar_margenes(doc)
-        
+
         # 1. Header PILI
         self._insertar_header_pili(doc, agente_pili)
-        
+
         # 2. Información empresa
         self._insertar_info_empresa(doc)
-        
+
         # 3. Título informe
         titulo_text = datos.get("titulo_informe", "INFORME TÉCNICO")
         titulo = doc.add_heading(titulo_text, level=1)
         titulo.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         self._aplicar_estilo_titulo(titulo, self.COLOR_DORADO)
-        
+
         # 4. Información del informe
         self._insertar_info_informe_pili(doc, datos, agente_pili)
-        
+
         # 5. Contenido del informe
         if "resumen_ejecutivo" in datos:
             self._insertar_seccion_informe(doc, "RESUMEN EJECUTIVO", datos["resumen_ejecutivo"])
-        
+
         if "conclusiones" in datos:
             self._insertar_seccion_informe(doc, "CONCLUSIONES", datos["conclusiones"])
-            
+
         if "recomendaciones" in datos:
             self._insertar_seccion_informe(doc, "RECOMENDACIONES", datos["recomendaciones"])
-        
+
         # 6. Footer PILI
         self._insertar_footer_pili(doc, agente_pili)
-        
+
         # 7. Guardar documento
-        return self._guardar_documento(doc, datos, "informe")
+        return self._guardar_documento(doc, datos, "informe", ruta_salida)
     
     def _insertar_header_pili(self, doc: Document, agente_pili: str):
         """Inserta header personalizado con marca PILI"""
@@ -736,35 +741,42 @@ class WordGenerator:
         
         doc.add_paragraph()  # Espacio
     
-    def _guardar_documento(self, doc: Document, datos: Dict[str, Any], tipo: str) -> Dict[str, Any]:
+    def _guardar_documento(self, doc: Document, datos: Dict[str, Any], tipo: str, ruta_salida: Optional[str] = None) -> Dict[str, Any]:
         """Guarda documento y retorna información"""
-        
+
         try:
-            # Generar nombre único
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            cliente_slug = self._slugify(datos.get("cliente", "cliente"))
-            nombre_archivo = f"{tipo}_{cliente_slug}_{timestamp}.docx"
-            
-            # Ruta de salida
-            output_dir = Path("backend/storage/generated")
-            output_dir.mkdir(parents=True, exist_ok=True)
-            ruta_salida = output_dir / nombre_archivo
-            
+            # Usar ruta personalizada o generar una
+            if ruta_salida:
+                ruta_archivo = Path(ruta_salida)
+                # Asegurar que el directorio existe
+                ruta_archivo.parent.mkdir(parents=True, exist_ok=True)
+                nombre_archivo = ruta_archivo.name
+            else:
+                # Generar nombre único
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                cliente_slug = self._slugify(datos.get("cliente", "cliente"))
+                nombre_archivo = f"{tipo}_{cliente_slug}_{timestamp}.docx"
+
+                # Ruta de salida por defecto
+                output_dir = Path("backend/storage/generated")
+                output_dir.mkdir(parents=True, exist_ok=True)
+                ruta_archivo = output_dir / nombre_archivo
+
             # Guardar documento
-            doc.save(str(ruta_salida))
-            
+            doc.save(str(ruta_archivo))
+
             # Información del archivo generado
             return {
                 "exito": True,
-                "ruta_archivo": str(ruta_salida),
+                "ruta_archivo": str(ruta_archivo),
                 "nombre_archivo": nombre_archivo,
-                "tamano_bytes": ruta_salida.stat().st_size,
+                "tamano_bytes": ruta_archivo.stat().st_size,
                 "tipo_documento": tipo,
                 "fecha_generacion": datetime.now().isoformat(),
                 "cliente": datos.get("cliente", ""),
                 "mensaje": f"Documento {tipo} generado exitosamente"
             }
-            
+
         except Exception as e:
             logger.error(f"Error guardando documento: {e}")
             return {
@@ -786,33 +798,40 @@ class WordGenerator:
     
     def generar_cotizacion(
         self,
-        datos_cotizacion: Dict[str, Any],
+        datos_cotizacion: Optional[Dict[str, Any]] = None,
         opciones: Optional[Dict[str, Any]] = None,
-        logo_base64: Optional[str] = None
+        logo_base64: Optional[str] = None,
+        datos: Optional[Dict[str, Any]] = None,
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         🔄 CONSERVADO - Método original para compatibilidad
-        
+
         Redirige al nuevo sistema PILI pero mantiene interfaz original.
+        Acepta tanto datos_cotizacion como datos para compatibilidad.
         """
-        
+
         try:
+            # Compatibilidad: usar datos o datos_cotizacion
+            datos_entrada = datos or datos_cotizacion or {}
+
             # Convertir datos antiguos a formato PILI JSON
             datos_json = {
-                "datos_extraidos": datos_cotizacion,
+                "datos_extraidos": datos_entrada,
                 "agente_responsable": "PILI Cotizadora",
                 "tipo_servicio": "cotizacion-simple",
                 "timestamp": datetime.now().isoformat()
             }
-            
-            # Usar nuevo método PILI
+
+            # Usar nuevo método PILI con ruta personalizada
             return self.generar_desde_json_pili(
                 datos_json=datos_json,
                 tipo_documento="cotizacion",
                 opciones=opciones,
-                logo_base64=logo_base64
+                logo_base64=logo_base64,
+                ruta_salida=ruta_salida
             )
-            
+
         except Exception as e:
             logger.error(f"Error en método legacy generar_cotizacion: {e}")
             return {
@@ -823,31 +842,37 @@ class WordGenerator:
     
     def generar_informe_proyecto(
         self,
-        datos_proyecto: Dict[str, Any],
+        datos_proyecto: Optional[Dict[str, Any]] = None,
         opciones: Optional[Dict[str, Any]] = None,
-        logo_base64: Optional[str] = None
+        logo_base64: Optional[str] = None,
+        datos: Optional[Dict[str, Any]] = None,
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         🔄 CONSERVADO - Método original para compatibilidad
         """
-        
+
         try:
+            # Compatibilidad: usar datos o datos_proyecto
+            datos_entrada = datos or datos_proyecto or {}
+
             # Convertir a formato PILI JSON
             datos_json = {
-                "datos_extraidos": datos_proyecto,
+                "datos_extraidos": datos_entrada,
                 "agente_responsable": "PILI Coordinadora",
                 "tipo_servicio": "proyecto-simple",
                 "timestamp": datetime.now().isoformat()
             }
-            
+
             # Usar nuevo método PILI
             return self.generar_desde_json_pili(
                 datos_json=datos_json,
                 tipo_documento="proyecto",
                 opciones=opciones,
-                logo_base64=logo_base64
+                logo_base64=logo_base64,
+                ruta_salida=ruta_salida
             )
-            
+
         except Exception as e:
             logger.error(f"Error en método legacy generar_informe_proyecto: {e}")
             return {
@@ -858,31 +883,37 @@ class WordGenerator:
     
     def generar_informe_simple(
         self,
-        datos_informe: Dict[str, Any],
+        datos_informe: Optional[Dict[str, Any]] = None,
         opciones: Optional[Dict[str, Any]] = None,
-        logo_base64: Optional[str] = None
+        logo_base64: Optional[str] = None,
+        datos: Optional[Dict[str, Any]] = None,
+        ruta_salida: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         🔄 CONSERVADO - Método original para compatibilidad
         """
-        
+
         try:
+            # Compatibilidad: usar datos o datos_informe
+            datos_entrada = datos or datos_informe or {}
+
             # Convertir a formato PILI JSON
             datos_json = {
-                "datos_extraidos": datos_informe,
+                "datos_extraidos": datos_entrada,
                 "agente_responsable": "PILI Reportera",
                 "tipo_servicio": "informe-simple",
                 "timestamp": datetime.now().isoformat()
             }
-            
+
             # Usar nuevo método PILI
             return self.generar_desde_json_pili(
                 datos_json=datos_json,
                 tipo_documento="informe",
                 opciones=opciones,
-                logo_base64=logo_base64
+                logo_base64=logo_base64,
+                ruta_salida=ruta_salida
             )
-            
+
         except Exception as e:
             logger.error(f"Error en método legacy generar_informe_simple: {e}")
             return {
