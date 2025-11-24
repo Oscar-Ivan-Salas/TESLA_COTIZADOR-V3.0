@@ -1,0 +1,68 @@
+# TESLA COTIZADOR v4.0 - DOCKERFILE BACKEND
+# Imagen optimizada para produccion
+
+FROM python:3.11-slim
+
+# Metadata
+LABEL maintainer="Tesla Electricidad"
+LABEL version="4.0"
+LABEL description="Sistema de generacion de documentos profesional"
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV ENVIRONMENT=production
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Para compilacion
+    build-essential \
+    gcc \
+    g++ \
+    # Para OCR
+    tesseract-ocr \
+    tesseract-ocr-spa \
+    # Para PDF
+    poppler-utils \
+    # Para healthcheck
+    curl \
+    # Limpiar cache
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements
+COPY backend/requirements_professional.txt /app/requirements.txt
+
+# Instalar dependencias Python
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Descargar modelo spaCy en español
+RUN python -m spacy download es_core_news_sm
+
+# Copiar codigo
+COPY backend /app
+
+# Crear directorios necesarios
+RUN mkdir -p /app/storage/uploads \
+    /app/storage/generated \
+    /app/storage/embeddings \
+    /app/storage/temp \
+    /app/ml_models
+
+# Usuario no-root para seguridad
+RUN useradd -m -u 1000 tesla && chown -R tesla:tesla /app
+USER tesla
+
+# Puerto
+EXPOSE 8000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Comando de inicio
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
