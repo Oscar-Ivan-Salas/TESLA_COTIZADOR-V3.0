@@ -199,7 +199,7 @@ const CotizadorTesla30 = () => {
         contextoPrincipal += `, Proyecto: ${proyectoSeleccionado}, Formato: ${formatoInforme}`;
       }
 
-      const response = await fetch('http://localhost:8000/api/chat/chat-contextualizado', {
+      const response = await fetch('http://localhost:8000/api/chat/mensaje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

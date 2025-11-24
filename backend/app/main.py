@@ -588,6 +588,19 @@ async def general_exception_handler(request, exc):
 # ═══════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
+    # Inicializar base de datos automáticamente
+    try:
+        from app.core.database import init_db, check_db_connection
+        logger.info("🗄️  Verificando base de datos...")
+        if check_db_connection():
+            init_db()
+            logger.info("✅ Base de datos inicializada correctamente")
+        else:
+            logger.warning("⚠️  No se pudo conectar a la base de datos")
+    except Exception as e:
+        logger.warning(f"⚠️  Error al inicializar base de datos: {e}")
+        logger.info("💡 Continuando sin base de datos (modo demo)")
+
     # Configurar puerto desde settings o usar por defecto
     puerto = getattr(settings, 'BACKEND_PORT', 8000)
     host = getattr(settings, 'BACKEND_HOST', '0.0.0.0')
