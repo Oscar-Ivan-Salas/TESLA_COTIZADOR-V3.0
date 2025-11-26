@@ -1,7 +1,7 @@
 # CLAUDE.md - Tesla Cotizador V3.0
 
 > **Guía completa para asistentes de IA trabajando en este repositorio**
-> Última actualización: 2025-11-25
+> Última actualización: 2025-11-26
 > Versión del proyecto: 3.0.0
 
 ---
@@ -137,7 +137,7 @@ TESLA_COTIZADOR-V3.0/
 │   │   │   └── __init__.py
 │   │   │
 │   │   ├── routers/             # Endpoints API (controladores)
-│   │   │   ├── chat.py         # PILI - Chat IA (1917 líneas)
+│   │   │   ├── chat.py         # PILI - Chat IA (~2000 líneas)
 │   │   │   ├── cotizaciones.py # CRUD cotizaciones
 │   │   │   ├── proyectos.py    # CRUD proyectos
 │   │   │   ├── informes.py     # Generación de informes
@@ -544,6 +544,17 @@ git commit -m "refactor(services): separar lógica de Gemini en módulo"
 ---
 
 ## 🔄 Flujos de Trabajo de Desarrollo
+
+### Información Importante sobre Branches
+
+**IMPORTANTE para Asistentes de IA**:
+- Cuando trabajes en este proyecto, siempre verifica el branch actual con `git branch`
+- Los branches de Claude Code siguen el patrón: `claude/claude-md-{id}-{session-id}`
+- **NUNCA** hagas push a main/master directamente
+- **SIEMPRE** usa el branch designado para tu sesión de trabajo
+- Al finalizar cambios importantes, se debe crear un Pull Request para revisión
+
+**Branch actual de trabajo**: Verificar con `git status` o `git branch`
 
 ### Flujo de Desarrollo Local
 
@@ -1240,31 +1251,92 @@ server {
 
 ### Variables de Entorno Importantes
 
+**IMPORTANTE**:
+- Copia `backend/.env.example` a `backend/.env` antes de configurar
+- **NUNCA** commitees el archivo `.env` con API keys reales
+- El archivo `.env.example` es la plantilla oficial
+
 **Desarrollo** (`backend/.env`):
 ```env
+# Entorno
 ENVIRONMENT=development
 DEBUG=True
-GEMINI_API_KEY=tu_gemini_api_key
-FRONTEND_URL=http://localhost:3000
+LOG_LEVEL=INFO
+
+# IA (configura AL MENOS una)
+GEMINI_API_KEY=tu_gemini_api_key_aqui
+GEMINI_MODEL=gemini-1.5-pro
+TEMPERATURE=0.3
+MAX_TOKENS=4000
+
+# Alternativas (opcional)
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...
+# GROQ_API_KEY=gsk_...  # GRATIS
+# TOGETHER_API_KEY=...   # GRATIS
+# COHERE_API_KEY=...     # GRATIS
+
+# Servidor
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
+FRONTEND_URL=http://localhost:3000
+
+# Seguridad
+SECRET_KEY=cambia-esto-en-produccion-por-algo-muy-seguro
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Archivos
+ALLOWED_EXTENSIONS=pdf,docx,xlsx,png,jpg,jpeg
+MAX_UPLOAD_SIZE_MB=10
 ```
 
 **Producción** (`backend/.env`):
 ```env
 ENVIRONMENT=production
 DEBUG=False
+LOG_LEVEL=WARNING
+
 GEMINI_API_KEY=tu_gemini_api_key_produccion
 PROD_DATABASE_URL=postgresql://user:password@host:5432/tesla_cotizador
-SECRET_KEY=clave-secreta-muy-segura-cambiar
+SECRET_KEY=clave-secreta-muy-segura-cambiar-con-valor-aleatorio
 FRONTEND_URL=https://teslacotizador.com
+
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
+
+ALLOWED_EXTENSIONS=pdf,docx,xlsx,png,jpg,jpeg
+MAX_UPLOAD_SIZE_MB=10
 ```
 
 ---
 
 ## 🤖 Notas Importantes para IA
+
+### Primeros Pasos para Asistentes de IA
+
+**Antes de comenzar cualquier tarea**:
+
+1. **Verifica el branch actual**: `git branch` o `git status`
+2. **Revisa la estructura real**: El proyecto puede tener archivos `copy` o backups (ej. `main copy.py`, `chat copy.py`) que NO deben modificarse
+3. **Archivos principales a modificar**:
+   - `backend/app/main.py` - Aplicación principal FastAPI
+   - `backend/app/routers/*.py` - Routers sin sufijo "copy"
+   - `backend/app/services/*.py` - Servicios sin sufijo "copy"
+   - `frontend/src/App.jsx` - Aplicación principal React
+   - `frontend/src/components/*.jsx` - Componentes React
+
+4. **Archivos que NO debes modificar**:
+   - Cualquier archivo con sufijo `copy`, `copy 2`, etc.
+   - Archivos en `storage/generados/`
+   - Archivos `.env` (solo modificar `.env.example` si es necesario)
+   - Base de datos directamente (usar SQLAlchemy)
+
+5. **Antes de hacer cambios importantes**:
+   - Lee el código existente primero
+   - Verifica que no haya duplicados o versiones antiguas
+   - Asegúrate de entender el flujo completo
+   - Considera el impacto en otras partes del sistema
 
 ### Contexto del Negocio
 
@@ -1404,6 +1476,9 @@ return FileResponse(
 5. **NO** olvidar type hints en Python
 6. **NO** crear migraciones manualmente, usar Alembic
 7. **NO** modificar base de datos directamente, usar SQLAlchemy
+8. **NO** hacer push directo a main/master - siempre usar branches de trabajo
+9. **NO** eliminar archivos `.env.example` - son plantillas importantes
+10. **NO** commitear archivos `.env` con API keys reales
 
 ### Debugging
 
@@ -1460,27 +1535,108 @@ console.error("Error");
 
 ## 📝 Changelog
 
-### [3.0.0] - 2025-10-XX
+### [3.0.0] - 2025-11-XX
 
 **Agregado**:
 - Sistema PILI (agente IA conversacional)
-- Soporte multi-IA (Gemini, OpenAI, Claude, etc.)
+- Soporte multi-IA (Gemini, OpenAI, Claude, Groq, Together AI, Cohere)
 - Generación automática de documentos Word/PDF
 - RAG con ChromaDB para búsqueda semántica
 - Sistema de proyectos complejos
 - Dashboard con estadísticas
+- Documentación completa (README_PROFESSIONAL.md, CLAUDE.md, README_TESIS.md)
+- Plantillas de documentos profesionales
+- Sistema de upload y análisis de documentos con OCR
 
 **Cambiado**:
 - Migración de arquitectura monolítica a modular
 - Actualización a React 18
 - Actualización a FastAPI 0.115+
 - Nueva UI con Tailwind CSS
+- Mejoras en el sistema de configuración con .env.example
 
 **Deprecado**:
 - Versiones anteriores (V1.0, V2.0)
+
+### Actualizaciones Recientes - Noviembre 2025
+
+- **2025-11-26**: Actualización de CLAUDE.md con información práctica para asistentes de IA
+- **2025-11-25**: Creación inicial de CLAUDE.md con guía completa del proyecto
+- **2025-11-XX**: Documentación profesional completa (README_PROFESSIONAL.md v4.0)
+
+---
+
+## 🚀 Referencia Rápida para IA
+
+### Comandos Más Comunes
+
+```bash
+# Ver estado actual
+git status
+git branch
+
+# Ejecutar backend
+cd backend
+uvicorn app.main:app --reload
+
+# Ejecutar frontend
+cd frontend
+npm start
+
+# Instalar dependencias backend
+cd backend
+pip install -r requirements.txt
+
+# Instalar dependencias frontend
+cd frontend
+npm install
+
+# Tests
+cd backend
+pytest
+```
+
+### Archivos Clave para Modificar
+
+| Archivo | Propósito | Cuándo Modificar |
+|---------|-----------|------------------|
+| `backend/app/main.py` | App principal FastAPI | Agregar routers, middleware, CORS |
+| `backend/app/routers/chat.py` | Chat con PILI | Modificar lógica de conversación |
+| `backend/app/services/gemini_service.py` | Cliente Gemini | Cambiar prompts o configuración IA |
+| `frontend/src/App.jsx` | App principal React | Agregar pantallas, cambiar flujo |
+| `frontend/src/components/ChatIA.jsx` | Componente chat | Modificar UI del chat |
+| `backend/.env` | Configuración | **NO commitear** - solo local |
+| `backend/.env.example` | Plantilla config | Agregar nuevas variables |
+
+### Rutas API Principales
+
+```
+POST   /api/chat/mensaje                    - Chat con PILI
+POST   /api/chat/generar-cotizacion-rapida  - Cotización rápida
+GET    /api/cotizaciones/                   - Listar cotizaciones
+POST   /api/cotizaciones/                   - Crear cotización
+GET    /api/proyectos/                      - Listar proyectos
+POST   /api/documentos/upload               - Subir documentos
+GET    /api/system/health                   - Health check
+```
+
+### Estructura de Response Típica
+
+```json
+{
+  "exito": true,
+  "mensaje": "Operación exitosa",
+  "datos": { /* ... */ },
+  "error": null
+}
+```
 
 ---
 
 **Fin de CLAUDE.md**
 
 _Documento vivo - Actualizar cuando haya cambios significativos en arquitectura o convenciones._
+
+**Versión**: 3.0.0
+**Última revisión**: 2025-11-26
+**Mantenido por**: Tesla Electricidad y Automatización S.A.C.
