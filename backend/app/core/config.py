@@ -20,7 +20,7 @@ from logging.handlers import RotatingFileHandler
 # BASE_DIR apunta a tu_proyecto/backend
 BASE_DIR = Path(__file__).resolve().parent.parent
 # PROJECT_ROOT apunta a tu_proyecto (La raíz real del proyecto)
-PROJECT_ROOT = BASE_DIR.parent
+PROJECT_ROOT = BASE_DIR.parent.parent
 
 # =======================================
 # CONFIGURACIÓN DE LOGGING

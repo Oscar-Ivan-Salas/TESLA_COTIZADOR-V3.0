@@ -1,881 +1,450 @@
-# 🚀 Tesla Cotizador V3
+# 🚀 TESLA COTIZADOR V3.0 - Sistema Profesional de Generación de Documentos
 
-Sistema de cotización inteligente con IA (Gemini 1.5 Pro) para generación automática de cotizaciones profesionales.
-
-![Python](https://img.shields.io/badge/Python-3.11+-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green)
-![React](https://img.shields.io/badge/React-18+-61dafb)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791)
-![License](https://img.shields.io/badge/License-Proprietary-red)
+> **Estado**: ✅ **SISTEMA OPERATIVO** - Frontend conectado con Backend Profesional v4.0  
+> **Última actualización**: 25 de Noviembre, 2025  
+> **Versión**: 3.0.0 (Backend Profesional v4.0 integrado)
 
 ---
 
 ## 📋 Tabla de Contenidos
 
-- [Características](#-características)
-- [Arquitectura](#-arquitectura)
-- [Requisitos](#-requisitos)
-- [Instalación](#-instalación)
-- [Uso](#-uso)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [API Documentation](#-api-documentation)
-- [Contribución](#-contribución)
+1. [Descripción General](#-descripción-general)
+2. [Estado Actual del Sistema](#-estado-actual-del-sistema)
+3. [Características Principales](#-características-principales)
+4. [Inicio Rápido](#-inicio-rápido)
+5. [Arquitectura](#-arquitectura)
+6. [Documentación Detallada](#-documentación-detallada)
+7. [Solución de Problemas](#-solución-de-problemas)
 
 ---
 
-## ✨ Características
+## 🎯 Descripción General
 
-### 🤖 Inteligencia Artificial
-- ✅ Generación automática de cotizaciones con Gemini 1.5 Pro
-- ✅ Chat conversacional para refinar cotizaciones
-- ✅ Análisis inteligente de documentos
-- ✅ Sugerencias de servicios y precios
+TESLA COTIZADOR v3.0 es un **sistema inteligente de generación de documentos** que combina:
 
-### 📄 Procesamiento de Documentos
-- ✅ Upload y análisis de PDF, Word, Excel
-- ✅ OCR para imágenes y documentos escaneados
-- ✅ Extracción automática de información
-- ✅ Búsqueda semántica con RAG (ChromaDB)
-
-### 📊 Gestión Completa
-- ✅ CRUD de cotizaciones y proyectos
-- ✅ Estados de cotización (borrador, enviada, aprobada, rechazada)
-- ✅ Dashboard con estadísticas
-- ✅ Historial y versionado
-
-### 📥 Exportación Profesional
-- ✅ Generación de PDF profesional
-- ✅ Documentos Word editables
-- ✅ Informes ejecutivos
-- ✅ Plantillas personalizables
+- 🤖 **IA Local (PILIBrain)**: Generación automática de cotizaciones sin internet
+- 📊 **6 Tipos de Documentos**: Cotizaciones, Proyectos e Informes (simples y complejos)
+- 🧠 **ML Local**: Clasificación automática de servicios con spaCy + sklearn
+- 🔍 **RAG Local**: Búsqueda semántica con ChromaDB
+- 📈 **Gráficas Profesionales**: Gantt, KPIs, matrices con Plotly
+- 📄 **Multi-formato**: Procesa PDF, Word, Excel, imágenes con OCR
 
 ---
 
-## 🏗️ Arquitectura
+## ✅ Estado Actual del Sistema
+
+### Correcciones Aplicadas (25/Nov/2025)
+
+| Componente | Estado | Descripción |
+|------------|--------|-------------|
+| **Frontend** | ✅ OPERATIVO | Conectado con backend profesional |
+| **Backend Profesional** | ✅ ACTIVO | PILIBrain funcionando |
+| **Integración** | ✅ CONECTADO | Endpoint `/api/chat/chat-contextualizado` activo |
+| **Generación Items** | ✅ AUTOMÁTICA | ML Engine detecta y genera items |
+| **Vista Previa** | ✅ PROFESIONAL | HTML generado por backend |
+| **RAG Engine** | ✅ DISPONIBLE | ChromaDB listo para indexar documentos |
+
+### Última Auditoría
+
+Se realizó una auditoría completa el 25/Nov/2025 que identificó y corrigió:
+- ✅ Desconexión entre frontend y backend profesional
+- ✅ Endpoint de chat actualizado a versión profesional
+- ✅ Formato de historial ajustado para PILIBrain
+- ✅ Sistema v4.0 completamente integrado
+
+📄 **Ver**: [`implementation_plan.md`](./implementation_plan.md) para detalles de la auditoría
+
+---
+
+## 🌟 Características Principales
+
+### 1. Generación Automática con IA
+
 ```
-TESLA-COTIZADOR-V3/
-│
-├── frontend/          # React + Tailwind CSS
-├── backend/           # FastAPI + Python
-├── database/          # PostgreSQL Scripts
-└── docker-compose.yml # Orquestación de servicios
+Usuario: "Cotización para casa de 150m2"
+   ↓
+PILIBrain analiza y detecta: "eléctrico-residencial"
+   ↓
+Genera automáticamente:
+  ✅ 15x Punto de luz LED 18W
+  ✅ 12x Tomacorriente doble
+  ✅ 8x Interruptor simple
+  ✅ 1x Tablero eléctrico
+  ✅ 150m Cable THW 2.5mm²
 ```
 
-### Stack Tecnológico
+### 2. 6 Tipos de Documentos
 
-**Frontend:**
-- React 18
-- Tailwind CSS
-- Lucide Icons
-- Fetch API
+| Tipo | Simple | Complejo |
+|------|--------|----------|
+| **Cotización** | Lista items + precios | + Cronograma + Garantías |
+| **Proyecto** | 5 fases básicas | 6 fases PMI + Gantt + KPIs |
+| **Informe** | 5 secciones técnicas | Formato APA + ROI/TIR + Gráficas |
 
-**Backend:**
-- FastAPI
-- SQLAlchemy (ORM)
-- Pydantic (Validación)
-- Google Gemini AI
-- ChromaDB (Vector DB)
-- Python-docx / ReportLab
+### 3. 10 Servicios Soportados
 
-**Database:**
-- PostgreSQL 15
-- Full-text search
-- JSON fields
+- ⚡ Eléctrico (residencial, comercial, industrial)
+- 🔥 Contraincendios
+- 🏠 Domótica
+- 📋 Expedientes técnicos
+- 🚰 Saneamiento
+- 🏢 ITSE
+- 🔌 Pozo a tierra
+- 📹 CCTV
+- 🌐 Redes
+- ⚙️ Automatización industrial
 
-**Infraestructura:**
-- Docker & Docker Compose
-- Nginx (Producción)
+### 4. Procesamiento de Archivos
 
----
-
-## 📦 Requisitos
-
-### Desarrollo Local
-
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL 15+
-- Tesseract OCR
-- API Key de Gemini
-
-### Docker (Recomendado)
-
-- Docker 24+
-- Docker Compose 2.20+
+Sube archivos de referencia y el sistema los procesa automáticamente:
+- 📄 **PDF**: Extrae texto y tablas
+- 📝 **Word**: Lee párrafos y tablas
+- 📊 **Excel**: Procesa todas las hojas
+- 📷 **Imágenes**: OCR con Tesseract
+- 🔍 **RAG**: Indexa en ChromaDB para búsqueda semántica
 
 ---
 
-## 🚀 Instalación
+## 🚀 Inicio Rápido
 
-### Opción 1: Docker (Recomendado)
+### Requisitos Previos
+
+- **Python**: 3.11+
+- **Node.js**: 16+
+- **RAM**: 8GB mínimo (16GB recomendado)
+- **Disco**: 2GB libres
+
+### Instalación
+
 ```bash
 # 1. Clonar repositorio
-git clone <repo-url>
-cd TESLA-COTIZADOR-V3
+git clone https://github.com/Oscar-Ivan-Salas/TESLA_COTIZADOR-V3.0.git
+cd TESLA_COTIZADOR-V3.0
 
-# 2. Configurar variables de entorno
-cp .env.example .env
-# Editar .env y agregar tu GEMINI_API_KEY
-
-# 3. Levantar servicios
-docker-compose up -d
-
-# 4. Verificar servicios
-docker-compose ps
-
-# Acceder a:
-# - Frontend: http://localhost:3000
-# - Backend API: http://localhost:8000
-# - API Docs: http://localhost:8000/docs
-# - ChromaDB: http://localhost:8001
-```
-
-### Opción 2: Instalación Manual
-
-#### Backend
-```bash
+# 2. Instalar dependencias del backend
 cd backend
+pip install -r requirements_professional.txt
+python -m spacy download es_core_news_sm
 
-# Crear entorno virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# o
-venv\Scripts\activate  # Windows
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Configurar .env
-cp .env.example .env
-
-# Inicializar base de datos
-cd ../database
-psql -U postgres -f init.sql
-
-# Ejecutar backend
-cd ../backend
-uvicorn app.main:app --reload
-```
-
-#### Frontend
-```bash
-cd frontend
-
-# Instalar dependencias
+# 3. Instalar dependencias del frontend
+cd ../frontend
 npm install
 
-# Configurar variables
-echo "REACT_APP_API_URL=http://localhost:8000" > .env.local
-
-# Ejecutar frontend
-npm start
+# 4. Configurar variables de entorno
+cp backend/.env.example backend/.env
+# Editar backend/.env según necesidades
 ```
 
----
+### Ejecutar el Sistema
 
-## 🎯 Uso
+#### Opción 1: Scripts de inicio (Windows)
 
-### 1. Crear una Cotización Rápida
 ```bash
-# Desde la interfaz web
-1. Clic en "Cotización Rápida"
-2. Describe tu proyecto
-3. La IA generará automáticamente los items
-4. Edita si es necesario
-5. Exporta a PDF o Word
-```
+# Terminal 1: Backend
+.\run_backend.bat
 
-### 2. Chat Conversacional
-```bash
-# Refinamiento iterativo
-1. Clic en "Cotización Compleja"
-2. Sube documentos relevantes (opcional)
-3. Chatea con la IA para refinar
-4. La cotización se actualiza en tiempo real
-```
-
-### 3. Gestión de Proyectos
-```bash
-1. Crear proyecto
-2. Subir documentos
-3. Generar múltiples cotizaciones
-4. Ver dashboard con estadísticas
-5. Exportar informes ejecutivos
-```
-
----
-
-## 📁 Estructura del Proyecto
-```
-TESLA-COTIZADOR-V3/
-│
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/       # Componentes React
-│   │   │   ├── ChatIA.jsx
-│   │   │   ├── UploadZone.jsx
-│   │   │   ├── CotizacionEditor.jsx
-│   │   │   ├── VistaPrevia.jsx
-│   │   │   └── Alerta.jsx
-│   │   ├── services/
-│   │   │   └── api.js        # Cliente API
-│   │   ├── App.jsx           # Componente principal
-│   │   └── index.js
-│   └── package.json
-│
-├── backend/
-│   ├── app/
-│   │   ├── core/             # Configuración
-│   │   │   ├── config.py
-│   │   │   └── database.py
-│   │   ├── models/           # Modelos SQLAlchemy
-│   │   │   ├── cotizacion.py
-│   │   │   ├── proyecto.py
-│   │   │   ├── documento.py
-│   │   │   └── item.py
-│   │   ├── schemas/          # Schemas Pydantic
-│   │   ├── services/         # Lógica de negocio
-│   │   │   ├── gemini_service.py
-│   │   │   ├── word_generator.py
-│   │   │   ├── pdf_generator.py
-│   │   │   ├── file_processor.py
-│   │   │   └── rag_service.py
-│   │   ├── routers/          # Endpoints API
-│   │   │   ├── cotizaciones.py
-│   │   │   ├── proyectos.py
-│   │   │   ├── documentos.py
-│   │   │   ├── chat.py
-│   │   │   └── informes.py
-│   │   ├── utils/            # Utilidades
-│   │   │   ├── ocr.py
-│   │   │   └── helpers.py
-│   │   └── main.py
-│   ├── storage/              # Archivos
-│   ├── templates/            # Plantillas Word
-│   ├── requirements.txt
-│   └── Dockerfile
-│
-├── database/
-│   ├── init.sql              # Script inicial
-│   └── migrations/           # Migraciones
-│
-├── docker-compose.yml
-├── .gitignore
-├── .env.example
-└── README.md
-```
-
----
-
-## 📚 API Documentation
-
-### Endpoints Principales
-
-#### Cotizaciones
-```
-POST   /api/cotizaciones/              # Crear cotización
-GET    /api/cotizaciones/              # Listar cotizaciones
-GET    /api/cotizaciones/{id}          # Obtener cotización
-PUT    /api/cotizaciones/{id}          # Actualizar cotización
-DELETE /api/cotizaciones/{id}          # Eliminar cotización
-POST   /api/cotizaciones/{id}/duplicar # Duplicar cotización
-```
-
-#### Chat IA
-```
-POST   /api/chat/generar-cotizacion        # Chat conversacional
-POST   /api/chat/generar-cotizacion-rapida # Generación rápida
-POST   /api/chat/refinar-cotizacion        # Refinar existente
-```
-
-#### Documentos
-```
-POST   /api/documentos/upload          # Subir documento
-GET    /api/documentos/                # Listar documentos
-GET    /api/documentos/buscar/semantica # Búsqueda RAG
-```
-
-#### Informes
-```
-POST   /api/informes/generar-pdf/{id}  # Generar PDF
-POST   /api/informes/generar-word/{id} # Generar Word
-```
-
-**Documentación completa:** http://localhost:8000/docs
-
----
-
-## 🧪 Testing
-```bash
-# Backend
-cd backend
-pytest
-
-# Frontend
-cd frontend
-npm test
-```
-
----
-
-## 🔒 Seguridad
-
-- ✅ Validación de archivos subidos
-- ✅ Sanitización de inputs
-- ✅ Rate limiting en endpoints
-- ✅ Tokens JWT (preparado para autenticación)
-- ✅ Variables de entorno para secretos
-
----
-
-## 🚀 Deployment
-
-### Producción con Docker
-```bash
-# Build para producción
-docker-compose -f docker-compose.prod.yml up -d
-
-# Con Nginx reverse proxy
-# Ver documentación en /docs/deployment.md
-```
-
----
-
-## 📝 Licencia
-
-Propietario - Tesla Cotizador © 2025
-
----
-
-## 👥 Equipo
-
-Desarrollado con ❤️ por el equipo de Tesla Cotizador
-
----
-
-## 📞 Soporte
-
-- 📧 Email: soporte@teslacotizador.com
-- 📱 WhatsApp: +51 999 888 777
-- 🌐 Web: www.teslacotizador.com
-
----
-
-## 🎯 Roadmap
-
-- [ ] Autenticación multi-usuario
-- [ ] Integración con WhatsApp
-- [ ] Dashboard analytics avanzado
-- [ ] App móvil (React Native)
-- [ ] Integración con sistemas contables
-- [ ] Firma digital de cotizaciones
-
-DEV_DATABASE_URL="sqlite:///./database/tesla_cotizador.db"
-```
-
-Esto crea la BD dentro de `backend/` porque `.` es relativo al lugar donde se ejecuta.
-
----
-
-## 🎨 DIAGRAMA DE FLUJO COMPLETO - COMO DEBERÍA FUNCIONAR
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    TESLA COTIZADOR V3.0                         │
-│                  ARQUITECTURA COMPLETA                          │
-└─────────────────────────────────────────────────────────────────┘
-
-╔═══════════════════════════════════════════════════════════════╗
-║                       MÓDULO 1: COTIZACIÓN RÁPIDA             ║
-╚═══════════════════════════════════════════════════════════════╝
-
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 1: Usuario ingresa descripción                         │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ "Necesito cotizar instalación eléctrica para oficina"  │ │
-│ │ "con 20 puntos de luz LED y 10 tomacorrientes"         │ │
-│ └─────────────────────────────────────────────────────────┘ │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 2: Frontend envía al Backend                           │
-│                                                              │
-│ POST /api/chat/generar-rapida                               │
-│ Body: { "descripcion_proyecto": "..." }                     │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 3: Backend procesa con Gemini IA                       │
-│                                                              │
-│ gemini_service.generar_cotizacion()                         │
-│   ├─ Analiza descripción                                    │
-│   ├─ Extrae servicios necesarios                            │
-│   ├─ Calcula cantidades                                     │
-│   ├─ Asigna precios realistas                               │
-│   └─ Retorna JSON estructurado                              │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 4: Backend GUARDA en Base de Datos                     │
-│                                                              │
-│ 1. Crear registro Cotizacion                                │
-│    ├─ numero: "COT-202501-0001"  (auto-generado)          │
-│    ├─ cliente: extraído o "Cliente Nuevo"                  │
-│    ├─ proyecto: extraído o "Proyecto Nuevo"                │
-│    └─ estado: "borrador"                                    │
-│                                                              │
-│ 2. Crear registros Item (por cada servicio)                 │
-│    ├─ Item 1: "Punto de luz LED 18W"                       │
-│    ├─ Item 2: "Tomacorriente doble"                        │
-│    └─ ...                                                   │
-│                                                              │
-│ 3. Calcular totales                                         │
-│    ├─ subtotal = suma(items)                               │
-│    ├─ igv = subtotal * 0.18                                │
-│    └─ total = subtotal + igv                               │
-│                                                              │
-│ 4. Guardar todo en BD                                       │
-│    db.add(cotizacion)                                       │
-│    db.commit()                                              │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 5: Frontend recibe respuesta                           │
-│                                                              │
-│ {                                                            │
-│   "success": true,                                           │
-│   "cotizacion_id": 1,                                        │
-│   "numero": "COT-202501-0001",                              │
-│   "items": [...],                                            │
-│   "total": 5847.50                                           │
-│ }                                                            │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 6: Frontend muestra Vista Previa EDITABLE              │
-│                                                              │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │ COTIZACIÓN: COT-202501-0001                            │ │
-│ │                                                        │ │
-│ │ Cliente: [Cliente Nuevo________] [Editar]             │ │
-│ │ Proyecto: [Proyecto Nuevo______] [Editar]             │ │
-│ │                                                        │ │
-│ │ ITEMS:                                                 │ │
-│ │ 1. Punto de luz LED 18W                                │ │
-│ │    Cant: [20] Und: [und] P.U: [S/45.00] [❌]         │ │
-│ │                                                        │ │
-│ │ 2. Tomacorriente doble                                 │ │
-│ │    Cant: [10] Und: [und] P.U: [S/35.00] [❌]         │ │
-│ │                                                        │ │
-│ │ [➕ Agregar Item]                                      │ │
-│ │                                                        │ │
-│ │ Subtotal: S/ 1,250.00                                  │ │
-│ │ IGV (18%): S/ 225.00                                   │ │
-│ │ TOTAL: S/ 1,475.00                                     │ │
-│ │                                                        │ │
-│ │ [💾 Guardar Cambios] [📄 Generar Word] [🔄 Regenerar] │ │
-│ └────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────┘
-
-
-╔═══════════════════════════════════════════════════════════════╗
-║              MÓDULO 2: EDICIÓN DE COTIZACIÓN                  ║
-╚═══════════════════════════════════════════════════════════════╝
-
-Cuando usuario hace click en [Editar] o [💾 Guardar Cambios]:
-
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 1: Usuario modifica datos                              │
-│                                                              │
-│ - Cambia cliente: "Constructora ABC"                        │
-│ - Modifica cantidad de item 1: 20 → 25                      │
-│ - Agrega nuevo item: "Cable THW 2.5mm"                      │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 2: Frontend envía actualización                        │
-│                                                              │
-│ PUT /api/cotizaciones/1                                      │
-│ Body: {                                                      │
-│   "cliente": "Constructora ABC",                            │
-│   "items": [                                                 │
-│     {"descripcion": "Punto de luz", "cantidad": 25, ...},   │
-│     {"descripcion": "Tomacorriente", "cantidad": 10, ...},  │
-│     {"descripcion": "Cable THW", "cantidad": 100, ...}      │
-│   ]                                                          │
-│ }                                                            │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 3: Backend actualiza BD                                │
-│                                                              │
-│ 1. Buscar cotización por ID                                 │
-│ 2. Actualizar campos (cliente, proyecto, etc.)              │
-│ 3. Eliminar items viejos                                    │
-│ 4. Crear items nuevos                                       │
-│ 5. Recalcular totales                                       │
-│ 6. db.commit()                                              │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 4: Frontend actualiza vista                            │
-│                                                              │
-│ - Muestra los nuevos valores                                │
-│ - Recalcula totales en pantalla                             │
-│ - Mensaje: "✅ Cotización actualizada"                      │
-└──────────────────────────────────────────────────────────────┘
-
-
-╔═══════════════════════════════════════════════════════════════╗
-║         MÓDULO 3: GENERACIÓN DE DOCUMENTOS (CRÍTICO)          ║
-╚═══════════════════════════════════════════════════════════════╝
-
-Cuando usuario hace click en [📄 Generar Word]:
-
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 1: Usuario selecciona opciones                         │
-│                                                              │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │ OPCIONES DE DOCUMENTO:                                 │ │
-│ │                                                        │ │
-│ │ ☑ Mostrar precios unitarios                           │ │
-│ │ ☑ Mostrar precios totales                             │ │
-│ │ ☑ Mostrar IGV                                         │ │
-│ │ ☑ Mostrar subtotal                                    │ │
-│ │ ☑ Incluir logo                                        │ │
-│ │                                                        │ │
-│ │ Logo: [📎 Subir logo.png] o usar predeterminado      │ │
-│ │                                                        │ │
-│ │ [✅ Generar Documento]                                 │ │
-│ └────────────────────────────────────────────────────────┘ │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 2: Frontend envía petición                             │
-│                                                              │
-│ POST /api/cotizaciones/1/generar-word                       │
-│ Body: {                                                      │
-│   "opciones": {                                              │
-│     "mostrarPreciosUnitarios": true,                        │
-│     "mostrarPreciosTotales": true,                          │
-│     "mostrarIGV": true,                                     │
-│     "mostrarSubtotal": true,                                │
-│     "mostrarLogo": true                                     │
-│   },                                                         │
-│   "logo_base64": "data:image/png;base64,iVBOR..."          │
-│ }                                                            │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 3: Backend busca cotización en BD                      │
-│                                                              │
-│ cotizacion = db.query(Cotizacion).filter(id==1).first()    │
-│ ├─ Si NO existe → Error 404                                 │
-│ └─ Si existe → Continuar                                    │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 4: Backend genera archivo Word                         │
-│                                                              │
-│ 1. Preparar ruta de salida:                                 │
-│    E:\TESLA_COTIZADOR-V3.0\                                 │
-│    └─ storage\                                              │
-│       └─ generados\                                         │
-│          └─ COT-202501-0001_20250119_143025.docx           │
-│                                                              │
-│ 2. Llamar word_generator:                                   │
-│    word_generator.generar_cotizacion(                       │
-│      datos=cotizacion.to_dict(),                            │
-│      ruta_salida=ruta_archivo,                              │
-│      opciones=opciones,                                     │
-│      logo_base64=logo                                       │
-│    )                                                         │
-│                                                              │
-│ 3. word_generator crea el documento:                        │
-│    ├─ Portada con logo (si aplica)                         │
-│    ├─ Datos del cliente                                     │
-│    ├─ Tabla de items                                        │
-│    │   └─ Oculta columnas según opciones                   │
-│    ├─ Resumen financiero                                    │
-│    │   └─ Muestra solo si opciones.mostrarIGV = true       │
-│    └─ Términos y condiciones                               │
-│                                                              │
-│ 4. Guardar archivo físico en disco                          │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 5: Backend retorna archivo                             │
-│                                                              │
-│ return FileResponse(                                         │
-│   path=ruta_archivo,                                         │
-│   filename="COT-202501-0001.docx",                          │
-│   media_type="application/vnd...document"                   │
-│ )                                                            │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 6: Frontend descarga el archivo                        │
-│                                                              │
-│ - Navegador abre diálogo "Guardar como..."                  │
-│ - Usuario guarda el archivo .docx                           │
-│ - Mensaje: "✅ Documento generado exitosamente"             │
-└──────────────────────────────────────────────────────────────┘
-
-
-╔═══════════════════════════════════════════════════════════════╗
-║           MÓDULO 4: PROYECTOS COMPLEJOS                       ║
-╚═══════════════════════════════════════════════════════════════╝
-
-Cuando usuario crea un PROYECTO COMPLEJO:
-
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 1: Usuario crea proyecto                               │
-│                                                              │
-│ POST /api/proyectos/                                         │
-│ Body: {                                                      │
-│   "nombre": "Torre Empresarial Plaza Mayor",                │
-│   "cliente": "Constructora XYZ",                            │
-│   "descripcion": "Instalación eléctrica completa"           │
-│ }                                                            │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 2: Backend crea proyecto Y su estructura de carpetas   │
-│                                                              │
-│ 1. Guardar en BD:                                           │
-│    proyecto = Proyecto(nombre="Torre...", cliente="...")    │
-│    db.add(proyecto)                                          │
-│    db.commit()                                              │
-│    → proyecto.id = 1                                        │
-│                                                              │
-│ 2. Crear estructura de carpetas:                            │
-│    E:\TESLA_COTIZADOR-V3.0\                                 │
-│    └─ storage\                                              │
-│       └─ proyectos\                                         │
-│          └─ proyecto_1_torre-empresarial\                   │
-│             ├─ documentos\                                  │
-│             ├─ cotizaciones\                                │
-│             ├─ informes\                                    │
-│             └─ archivos_originales\                         │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 3: Usuario sube documentos del proyecto                │
-│                                                              │
-│ POST /api/documentos/upload                                  │
-│ Files: plano.pdf, especificaciones.docx, fotos.zip          │
-│ Body: { "proyecto_id": 1 }                                   │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 4: Backend procesa y guarda archivos                   │
-│                                                              │
-│ Para cada archivo:                                           │
-│   1. Validar extensión y tamaño                             │
-│   2. Guardar físicamente en:                                │
-│      storage/proyectos/proyecto_1_torre-empresarial/        │
-│      archivos_originales/plano.pdf                          │
-│   3. Extraer texto (OCR si es imagen/PDF)                   │
-│   4. Crear registro en BD:                                  │
-│      Documento(nombre="plano.pdf",                          │
-│                ruta="storage/proyectos/...",                │
-│                contenido_texto="...",                       │
-│                proyecto_id=1)                               │
-│   5. Indexar en ChromaDB (RAG) para búsqueda semántica      │
-└────────────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-┌──────────────────────────────────────────────────────────────┐
-│ PASO 5: Usuario genera cotizaciones dentro del proyecto     │
-│                                                              │
-│ - Crear cotización nueva con proyecto_id=1                  │
-│ - Backend guarda cotización en:                             │
-│   storage/proyectos/proyecto_1/cotizaciones/                │
-│   COT-202501-0001.docx                                      │
-└──────────────────────────────────────────────────────────────┘
-
-
-
-
-
-
-
-
-
-
-# 🚀 TESLA COTIZADOR V3.0
-
-Sistema profesional de cotización y gestión de proyectos con IA integrada.
-
-## 📋 Descripción
-
-Sistema completo para generar cotizaciones, gestionar proyectos e informes técnicos profesionales usando:
-- **IA Gemini 1.5 Pro** para análisis inteligente
-- **RAG** para aprender de proyectos históricos
-- **Generación automática** de documentos Word/PDF
-- **Chat conversacional** para guiar al usuario
-
-## 🎯 Características
-
-### ⚡ Cotizaciones
-- **Cotización Rápida**: Proceso simplificado (5-15 min)
-- **Cotización Compleja**: Análisis detallado con IA
-
-### 📁 Proyectos
-- **Proyecto Simple**: Gestión básica
-- **Proyecto Complejo**: Con carpetas automáticas, Gantt, hitos
-
-### 📄 Informes
-- **Informe Simple**: PDF básico
-- **Informe Ejecutivo**: Word con formato APA, tablas y gráficos
-
-## 🛠️ Stack Tecnológico
-
-### Backend
-- Python 3.11+
-- FastAPI
-- SQLAlchemy
-- Google Gemini 1.5 Pro
-- ChromaDB (Vector Database)
-- python-docx / ReportLab
-
-### Frontend
-- React 18
-- Tailwind CSS
-- Lucide Icons
-
-### Base de Datos
-- SQLite (desarrollo)
-- PostgreSQL (producción)
-
-## 📦 Instalación
-
-### 1. Requisitos Previos
-```bash
-- Python 3.11 o superior
-- Node.js 18 o superior
-- pip y npm actualizados
-```
-
-### 2. Configuración Backend
-```bash
-# Activar entorno virtual
-# Windows:
-venv\Scripts\activate
-
-# Linux/Mac:
-source venv/bin/activate
-
-# Instalar dependencias (ya instaladas por el script)
-# pip install -r backend/requirements.txt
-
-# Configurar .env
-# Edita backend/.env y agrega tu GEMINI_API_KEY
-```
-
-### 3. Configuración Frontend
-```bash
-cd frontend
-npm install
-```
-
-### 4. Ejecutar Aplicación
-
-**Backend:**
-```bash
-# Desde la raíz del proyecto
-# Windows:
-venv\Scripts\python backend/app/main.py
-
-# Linux/Mac:
-venv/bin/python backend/app/main.py
-
-# O con uvicorn directamente:
-# Windows:
-venv\Scripts\uvicorn backend.app.main:app --reload
-
-# Linux/Mac:
-venv/bin/uvicorn backend.app.main:app --reload
-```
-
-**Frontend:**
-```bash
+# Terminal 2: Frontend
 cd frontend
 npm start
 ```
 
-## 🌐 Acceso
+#### Opción 2: Manual
+
+```bash
+# Terminal 1: Backend
+cd backend
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2: Frontend
+cd frontend
+npm start
+```
+
+### Acceder a la Aplicación
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **Documentación API**: http://localhost:8000/docs
 
-## 📁 Estructura del Proyecto
+---
+
+## 🏗️ Arquitectura
+
+### Diagrama de Componentes
 
 ```
-TESLA_COTIZADOR-V3.0/
-├── backend/              # API FastAPI
-│   ├── app/
-│   │   ├── core/        # Configuración
-│   │   ├── models/      # Modelos BD
-│   │   ├── schemas/     # Schemas Pydantic
-│   │   ├── services/    # Lógica de negocio
-│   │   ├── routers/     # Endpoints API
-│   │   └── utils/       # Utilidades
-│   ├── templates/       # Plantillas Word
-│   ├── storage/         # Archivos subidos/generados
-│   └── .env            # Configuración
-├── frontend/            # React App
-├── database/            # Scripts SQL
-├── venv/               # Entorno virtual Python
-└── docs/               # Documentación
-
+┌─────────────────────────────────────────┐
+│  FRONTEND (React + TailwindCSS)         │
+│  - Chat con PILI                        │
+│  - Vista previa editable                │
+│  - Gestión de archivos                  │
+└─────────────────────────────────────────┘
+              ↓ HTTP/REST
+┌─────────────────────────────────────────┐
+│  BACKEND PROFESIONAL (FastAPI)          │
+│  ┌─────────────────────────────────┐   │
+│  │ PILIBrain (IA Local)            │   │
+│  │ - Generación automática         │   │
+│  │ - Detección de servicios        │   │
+│  └─────────────────────────────────┘   │
+│  ┌─────────────────────────────────┐   │
+│  │ RAG Engine (ChromaDB)           │   │
+│  │ - Búsqueda semántica            │   │
+│  │ - Indexación de documentos      │   │
+│  └─────────────────────────────────┘   │
+│  ┌─────────────────────────────────┐   │
+│  │ ML Engine (spaCy + sklearn)     │   │
+│  │ - Clasificación de servicios    │   │
+│  │ - Extracción de entidades       │   │
+│  └─────────────────────────────────┘   │
+│  ┌─────────────────────────────────┐   │
+│  │ Chart Engine (Plotly)           │   │
+│  │ - Gantt, KPIs, Matrices         │   │
+│  └─────────────────────────────────┘   │
+│  ┌─────────────────────────────────┐   │
+│  │ Word/PDF Generator              │   │
+│  │ - Documentos profesionales      │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│  STORAGE                                │
+│  - PostgreSQL (datos)                   │
+│  - ChromaDB (vectores)                  │
+│  - Filesystem (archivos)                │
+└─────────────────────────────────────────┘
 ```
 
-## 🔐 Configuración de Variables de Entorno
+### Flujo de Generación de Cotización
 
-Edita `backend/.env` y configura:
-
-```env
-# API KEY DE GEMINI (OBLIGATORIO)
-GEMINI_API_KEY=tu_api_key_aqui
-
-# Otras configuraciones están listas por defecto
+```mermaid
+graph LR
+    A[Usuario escribe mensaje] --> B[PILIBrain]
+    B --> C[ML Engine: Detecta servicio]
+    C --> D[Genera items automáticamente]
+    D --> E[HTML Preview]
+    E --> F[Usuario edita]
+    F --> G[Genera Word/PDF]
 ```
-
-## 🚀 Próximos Pasos
-
-1. ✅ Estructura creada
-2. ⏳ Implementar routers del backend
-3. ⏳ Integrar Gemini API
-4. ⏳ Crear generadores Word/PDF
-5. ⏳ Implementar RAG
-6. ⏳ Conectar frontend con backend
-
-## 📞 Soporte
-
-TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.
-- Email: ingenieria.teslaelectricidad@gmail.com
-- Teléfono: 906315961
 
 ---
 
-**Versión**: 3.0.0  
-**Fecha**: Octubre 2025  
-**Estado**: En Desarrollo - Estructura Base Completada
+## 📚 Documentación Detallada
+
+### Documentos Principales
+
+| Documento | Descripción | Ubicación |
+|-----------|-------------|-----------|
+| **README_PROFESSIONAL.md** | Documentación técnica completa del sistema v4.0 | [`README_PROFESSIONAL.md`](./README_PROFESSIONAL.md) |
+| **implementation_plan.md** | Auditoría y correcciones aplicadas | [`implementation_plan.md`](./implementation_plan.md) |
+| **walkthrough.md** | Guía de cambios y verificación | [`walkthrough.md`](./walkthrough.md) |
+
+### Endpoints Principales
+
+#### Chat con PILI (Profesional)
+```http
+POST /api/chat/chat-contextualizado
+Content-Type: application/json
+
+{
+  "tipo_flujo": "cotizacion-simple",
+  "mensaje": "Cotización para casa de 150m2",
+  "historial": [],
+  "contexto_adicional": "",
+  "generar_html": true
+}
+```
+
+#### Generar Documento Word
+```http
+POST /api/cotizaciones/{id}/generar-word
+```
+
+#### Subir Archivos
+```http
+POST /api/documentos/upload
+Content-Type: multipart/form-data
+```
+
+---
+
+## 🔧 Solución de Problemas
+
+### Problema: Chat no genera items automáticamente
+
+**Solución**: Verificar que el endpoint profesional esté activo
+
+```bash
+# Verificar endpoint
+curl -X POST http://localhost:8000/api/chat/chat-contextualizado \
+  -H "Content-Type: application/json" \
+  -d '{"tipo_flujo":"cotizacion-simple","mensaje":"test","historial":[],"generar_html":true}'
+
+# Debe responder con JSON que incluye "cotizacion_generada"
+```
+
+### Problema: Error de conexión con backend
+
+**Solución**: Verificar que el backend está corriendo
+
+```bash
+# Verificar estado
+curl http://localhost:8000/
+
+# Debe responder:
+# {"message":"Tesla Cotizador API v3.0","status":"online",...}
+```
+
+### Problema: Vista previa no aparece
+
+**Solución**: Verificar en consola del navegador (F12)
+
+1. Abrir DevTools
+2. Ver tab "Console"
+3. Buscar errores relacionados con `html_preview`
+4. Verificar que `data.html_preview` existe en la respuesta
+
+### Problema: Modelos ML no cargan
+
+**Solución**: Descargar modelo spaCy
+
+```bash
+python -m spacy download es_core_news_sm
+```
+
+---
+
+## 🧪 Pruebas
+
+### Prueba Rápida del Sistema
+
+```bash
+# 1. Abrir http://localhost:3000
+# 2. Seleccionar "Cotización Simple"
+# 3. Escribir: "Cotización para casa de 150m2"
+# 4. Verificar que:
+#    ✅ PILI responde
+#    ✅ Se generan items automáticamente
+#    ✅ Vista previa HTML aparece
+#    ✅ Items tienen descripciones reales
+```
+
+### Verificar Logs del Backend
+
+```bash
+# Deberías ver en la terminal del backend:
+🤖 PILI chat contextualizado para cotizacion-simple
+✅ PILIBrain generó 5 items para cotización
+📊 Servicio detectado: electrico-residencial
+```
+
+---
+
+## 📊 Rendimiento
+
+| Operación | Tiempo Promedio |
+|-----------|----------------|
+| Clasificación ML | < 100ms |
+| Búsqueda RAG | < 500ms |
+| Generar gráficas | 1-3s |
+| Documento completo | 5-10s |
+| OCR de imagen | 2-5s |
+
+---
+
+## 🔐 Seguridad
+
+- ✅ CORS configurado para localhost
+- ✅ Validación de archivos subidos
+- ✅ Límite de tamaño de archivos (10MB)
+- ✅ Sanitización de inputs
+- ⚠️ **Producción**: Configurar HTTPS y autenticación
+
+---
+
+## 🚀 Despliegue en Producción
+
+### Docker
+
+```bash
+# Construir y levantar
+docker-compose -f docker-compose.production.yml up -d
+
+# Ver logs
+docker-compose -f docker-compose.production.yml logs -f
+```
+
+### Variables de Entorno Importantes
+
+```env
+# Backend
+DATABASE_URL=postgresql://user:pass@localhost/tesla
+GEMINI_API_KEY=your_key_here  # Opcional
+STORAGE_PATH=./storage
+
+# Frontend
+REACT_APP_API_URL=https://api.tudominio.com
+```
+
+---
+
+## 📝 Changelog
+
+### v3.0.0 (25/Nov/2025) - Integración Backend Profesional
+
+**Añadido**:
+- ✅ Integración completa con PILIBrain
+- ✅ Generación automática de items con ML
+- ✅ RAG Engine con ChromaDB
+- ✅ Chart Engine con Plotly
+- ✅ Procesamiento multi-formato de archivos
+
+**Corregido**:
+- ✅ Conexión frontend-backend profesional
+- ✅ Formato de historial para PILIBrain
+- ✅ Endpoint de chat actualizado
+
+**Mejorado**:
+- ✅ Vista previa HTML profesional
+- ✅ Detección automática de servicios
+- ✅ Documentación completa
+
+---
+
+## 👥 Equipo
+
+- **Desarrollador Principal**: Oscar Ivan Salas
+- **Empresa**: Tesla Electricidad y Automatización S.A.C.
+- **Email**: ingenieria.teslaelectricidad@gmail.com
+- **Teléfono**: 906315961
+
+---
+
+## 📄 Licencia
+
+Copyright © 2024 Tesla Electricidad y Automatización S.A.C.  
+Todos los derechos reservados.
+
+---
+
+## 🙏 Agradecimientos
+
+- **FastAPI**: Framework backend
+- **React**: Framework frontend
+- **ChromaDB**: Vector database
+- **spaCy**: NLP en español
+- **Plotly**: Gráficas profesionales
+- **Tesseract**: OCR
+
+---
+
+## 📞 Soporte
+
+¿Necesitas ayuda? Contacta:
+- 📧 Email: ingenieria.teslaelectricidad@gmail.com
+- 📱 WhatsApp: +51 906315961
+- 📍 Ubicación: Huancayo, Junín - Perú
+
+---
+
+**¡Sistema listo para generar documentos profesionales!** 🎉
