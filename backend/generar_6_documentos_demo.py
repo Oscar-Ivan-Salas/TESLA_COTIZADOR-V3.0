@@ -11,6 +11,7 @@ from services.pili_brain import pili_brain
 from services.word_generator import word_generator
 from datetime import datetime
 import json
+import shutil
 
 print("=" * 80)
 print("🎯 GENERANDO LOS 6 TIPOS DE DOCUMENTOS - PRUEBA FINAL")
@@ -41,15 +42,22 @@ try:
     )
 
     # Generar documento Word
-    filepath_cot_simple = word_generator.generar_desde_json_pili(
+    result_cot_simple = word_generator.generar_desde_json_pili(
         datos_json=cot_simple_json["datos"],
         tipo_documento="cotizacion",
         opciones={"complejidad": "simple"}
     )
 
+    # Obtener ruta del archivo (el generador puede devolver un dict con 'ruta_archivo')
+    if isinstance(result_cot_simple, dict):
+        filepath_cot_simple = result_cot_simple.get("ruta_archivo") or result_cot_simple.get("ruta") or result_cot_simple.get("nombre_archivo")
+    else:
+        filepath_cot_simple = result_cot_simple
+
     # Mover a carpeta demo
-    import shutil
     dest = os.path.join(output_dir, "1_Cotizacion_Simple.docx")
+    if not filepath_cot_simple:
+        raise Exception(f"No se recibió ruta de archivo generada: {result_cot_simple}")
     shutil.copy(filepath_cot_simple, dest)
 
     print(f"✅ GENERADO: {dest}")
@@ -80,13 +88,20 @@ try:
         complejidad="complejo"
     )
 
-    filepath_cot_compleja = word_generator.generar_desde_json_pili(
+    result_cot_compleja = word_generator.generar_desde_json_pili(
         datos_json=cot_compleja_json["datos"],
         tipo_documento="cotizacion",
         opciones={"complejidad": "complejo"}
     )
 
+    if isinstance(result_cot_compleja, dict):
+        filepath_cot_compleja = result_cot_compleja.get("ruta_archivo") or result_cot_compleja.get("ruta") or result_cot_compleja.get("nombre_archivo")
+    else:
+        filepath_cot_compleja = result_cot_compleja
+
     dest = os.path.join(output_dir, "2_Cotizacion_Compleja.docx")
+    if not filepath_cot_compleja:
+        raise Exception(f"No se recibió ruta de archivo generada: {result_cot_compleja}")
     shutil.copy(filepath_cot_compleja, dest)
 
     print(f"✅ GENERADO: {dest}")
@@ -116,13 +131,20 @@ try:
         complejidad="simple"
     )
 
-    filepath_proy_simple = word_generator.generar_desde_json_pili(
+    result_proy_simple = word_generator.generar_desde_json_pili(
         datos_json=proy_simple_json["datos"],
         tipo_documento="proyecto",
         opciones={"complejidad": "simple"}
     )
 
+    if isinstance(result_proy_simple, dict):
+        filepath_proy_simple = result_proy_simple.get("ruta_archivo") or result_proy_simple.get("ruta") or result_proy_simple.get("nombre_archivo")
+    else:
+        filepath_proy_simple = result_proy_simple
+
     dest = os.path.join(output_dir, "3_Proyecto_Simple.docx")
+    if not filepath_proy_simple:
+        raise Exception(f"No se recibió ruta de archivo generada: {result_proy_simple}")
     shutil.copy(filepath_proy_simple, dest)
 
     print(f"✅ GENERADO: {dest}")
@@ -153,13 +175,20 @@ try:
         complejidad="complejo"
     )
 
-    filepath_proy_complejo = word_generator.generar_desde_json_pili(
+    result_proy_complejo = word_generator.generar_desde_json_pili(
         datos_json=proy_complejo_json["datos"],
         tipo_documento="proyecto",
         opciones={"complejidad": "complejo"}
     )
 
+    if isinstance(result_proy_complejo, dict):
+        filepath_proy_complejo = result_proy_complejo.get("ruta_archivo") or result_proy_complejo.get("ruta") or result_proy_complejo.get("nombre_archivo")
+    else:
+        filepath_proy_complejo = result_proy_complejo
+
     dest = os.path.join(output_dir, "4_Proyecto_Complejo_PMI.docx")
+    if not filepath_proy_complejo:
+        raise Exception(f"No se recibió ruta de archivo generada: {result_proy_complejo}")
     shutil.copy(filepath_proy_complejo, dest)
 
     print(f"✅ GENERADO: {dest}")
@@ -191,13 +220,20 @@ try:
         complejidad="simple"
     )
 
-    filepath_inf_simple = word_generator.generar_desde_json_pili(
+    result_inf_simple = word_generator.generar_desde_json_pili(
         datos_json=inf_simple_json["datos"],
         tipo_documento="informe",
         opciones={"complejidad": "simple"}
     )
 
+    if isinstance(result_inf_simple, dict):
+        filepath_inf_simple = result_inf_simple.get("ruta_archivo") or result_inf_simple.get("ruta") or result_inf_simple.get("nombre_archivo")
+    else:
+        filepath_inf_simple = result_inf_simple
+
     dest = os.path.join(output_dir, "5_Informe_Tecnico.docx")
+    if not filepath_inf_simple:
+        raise Exception(f"No se recibió ruta de archivo generada: {result_inf_simple}")
     shutil.copy(filepath_inf_simple, dest)
 
     print(f"✅ GENERADO: {dest}")
@@ -228,13 +264,20 @@ try:
         complejidad="complejo"
     )
 
-    filepath_inf_ejecutivo = word_generator.generar_desde_json_pili(
+    result_inf_ejecutivo = word_generator.generar_desde_json_pili(
         datos_json=inf_ejecutivo_json["datos"],
         tipo_documento="informe",
         opciones={"complejidad": "complejo"}
     )
 
+    if isinstance(result_inf_ejecutivo, dict):
+        filepath_inf_ejecutivo = result_inf_ejecutivo.get("ruta_archivo") or result_inf_ejecutivo.get("ruta") or result_inf_ejecutivo.get("nombre_archivo")
+    else:
+        filepath_inf_ejecutivo = result_inf_ejecutivo
+
     dest = os.path.join(output_dir, "6_Informe_Ejecutivo_APA.docx")
+    if not filepath_inf_ejecutivo:
+        raise Exception(f"No se recibió ruta de archivo generada: {result_inf_ejecutivo}")
     shutil.copy(filepath_inf_ejecutivo, dest)
 
     print(f"✅ GENERADO: {dest}")

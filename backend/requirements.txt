@@ -24,7 +24,8 @@ requests==2.32.5
 python-docx==1.1.2
 
 # Documentos - PDF  
-reportlab==4.2.6
+# reportlab pinned to 4.2.6 originally; update to a compatible available release
+reportlab==4.4.5
 weasyprint==63.1
 
 # Documentos - Procesamiento (SIN unstructured para evitar conflictos)
@@ -62,7 +63,8 @@ sentence-transformers==3.4.0
 python-dotenv==1.0.1
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-python-dateutil==2.10.0
+# Ajuste: usar python-dateutil disponible en PyPI
+python-dateutil==2.8.2
 
 # Excel (opcional)
 openpyxl==3.1.5
@@ -72,4 +74,5 @@ pytest==8.3.5
 pytest-asyncio==0.25.3
 
 # Logging y monitoring
-colorlog==6.10.2
+# Ajuste: usar colorlog disponible en PyPI
+colorlog==6.10.1

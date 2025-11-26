@@ -16,7 +16,7 @@ const handleResponse = async (response) => {
     const error = await response.text();
     throw new Error(error || `HTTP Error: ${response.status}`);
   }
-  
+
   // Si es un archivo (blob), retornarlo directamente
   const contentType = response.headers.get('content-type');
   if (contentType && (
@@ -26,12 +26,12 @@ const handleResponse = async (response) => {
   )) {
     return response.blob();
   }
-  
+
   // Si es JSON, parsearlo
   if (contentType && contentType.includes('application/json')) {
     return response.json();
   }
-  
+
   return response.text();
 };
 
@@ -60,7 +60,7 @@ export const cotizacionesAPI = {
   listar: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
     const url = `${API_BASE_URL}/api/cotizaciones?${queryParams}`;
-    
+
     const response = await fetch(url);
     return handleResponse(response);
   },
@@ -112,12 +112,63 @@ export const cotizacionesAPI = {
   },
 
   /**
+   * NUEVO: Generar documento directo (sin BD)
+   */
+  generarDocumentoDirecto: async (datos, formato = 'word') => {
+    try {
+      console.log(`Generando documento directo (${formato})...`);
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/generar-documento-directo?formato=${formato}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(datos),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${await response.text()}`);
+      }
+
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = `documento_${new Date().getTime()}.${formato === 'word' ? 'docx' : 'pdf'}`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch && filenameMatch.length > 1) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      const blob = await response.blob();
+      downloadFile(blob, filename);
+
+      console.log(`✅ Documento generado: ${filename}`);
+      return { success: true, filename };
+
+    } catch (error) {
+      console.error('Error generando documento directo:', error);
+      throw error;
+    }
+  },
+
+  /**
    * NUEVO: Generar documento Word de cotización
    */
   generarWord: async (id, opciones = {}) => {
     try {
+      // Si el ID es temporal o no válido, usar generación directa
+      if (!id || id.toString().startsWith('temp_') || typeof id === 'object') {
+        console.log('Usando generación directa para Word...');
+        const datos = typeof id === 'object' ? id : opciones;
+        return await this.generarDocumentoDirecto(datos, 'word');
+      }
+
       console.log(`Generando Word para cotización ${id}...`);
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/cotizaciones/${id}/generar-word`,
         {
@@ -144,10 +195,10 @@ export const cotizacionesAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ Word generado: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al generar Word:', error);
       throw error;
@@ -159,8 +210,15 @@ export const cotizacionesAPI = {
    */
   generarPDF: async (id, opciones = {}) => {
     try {
+      // Si el ID es temporal o no válido, usar generación directa
+      if (!id || id.toString().startsWith('temp_') || typeof id === 'object') {
+        console.log('Usando generación directa para PDF...');
+        const datos = typeof id === 'object' ? id : opciones;
+        return await this.generarDocumentoDirecto(datos, 'pdf');
+      }
+
       console.log(`Generando PDF para cotización ${id}...`);
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/cotizaciones/${id}/generar-pdf`,
         {
@@ -187,10 +245,10 @@ export const cotizacionesAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ PDF generado: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al generar PDF:', error);
       throw error;
@@ -209,7 +267,7 @@ export const proyectosAPI = {
   listar: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
     const url = `${API_BASE_URL}/api/proyectos?${queryParams}`;
-    
+
     const response = await fetch(url);
     return handleResponse(response);
   },
@@ -242,7 +300,7 @@ export const proyectosAPI = {
   obtenerAnalisisIA: async (id) => {
     try {
       console.log(`Obteniendo análisis IA para proyecto ${id}...`);
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/proyectos/${id}/analisis-ia`
       );
@@ -254,7 +312,7 @@ export const proyectosAPI = {
       const data = await response.json();
       console.log('✅ Análisis IA obtenido');
       return data;
-      
+
     } catch (error) {
       console.error('Error al obtener análisis IA:', error);
       throw error;
@@ -267,7 +325,7 @@ export const proyectosAPI = {
   generarInformeWord: async (id, opciones = {}) => {
     try {
       console.log(`Generando informe Word para proyecto ${id}...`);
-      
+
       const defaultOpciones = {
         incluir_cotizaciones: true,
         incluir_documentos: true,
@@ -275,7 +333,7 @@ export const proyectosAPI = {
         incluir_analisis_ia: true, // ⭐ ACTIVAR ANÁLISIS IA
         ...opciones
       };
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/proyectos/${id}/generar-informe-word`,
         {
@@ -302,10 +360,10 @@ export const proyectosAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ Informe Word generado: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al generar informe Word:', error);
       throw error;
@@ -318,7 +376,7 @@ export const proyectosAPI = {
   generarInformePDF: async (id, opciones = {}) => {
     try {
       console.log(`Generando informe PDF para proyecto ${id}...`);
-      
+
       const defaultOpciones = {
         incluir_cotizaciones: true,
         incluir_documentos: true,
@@ -326,7 +384,7 @@ export const proyectosAPI = {
         incluir_analisis_ia: true, // ⭐ ACTIVAR ANÁLISIS IA
         ...opciones
       };
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/proyectos/${id}/generar-informe-pdf`,
         {
@@ -353,10 +411,10 @@ export const proyectosAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ Informe PDF generado: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al generar informe PDF:', error);
       throw error;
@@ -393,7 +451,7 @@ export const documentosAPI = {
   listar: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
     const url = `${API_BASE_URL}/api/documentos?${queryParams}`;
-    
+
     const response = await fetch(url);
     return handleResponse(response);
   },
@@ -404,7 +462,7 @@ export const documentosAPI = {
   generarInformeAnalisisWord: async (id, opciones = {}) => {
     try {
       console.log(`Generando informe de análisis Word para documento ${id}...`);
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/documentos/${id}/generar-informe-analisis-word`,
         {
@@ -431,10 +489,10 @@ export const documentosAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ Informe de análisis generado: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al generar informe de análisis:', error);
       throw error;
@@ -447,7 +505,7 @@ export const documentosAPI = {
   generarInformeAnalisisPDF: async (id, opciones = {}) => {
     try {
       console.log(`Generando informe de análisis PDF para documento ${id}...`);
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/documentos/${id}/generar-informe-analisis-pdf`,
         {
@@ -474,10 +532,10 @@ export const documentosAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ Informe de análisis PDF generado: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al generar informe de análisis PDF:', error);
       throw error;
@@ -522,7 +580,7 @@ export const plantillasAPI = {
   listar: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat/listar-plantillas`);
-      
+
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${await response.text()}`);
       }
@@ -540,7 +598,7 @@ export const plantillasAPI = {
   usarEnCotizacion: async (cotizacionId, nombrePlantilla, opciones = {}) => {
     try {
       console.log(`Usando plantilla ${nombrePlantilla} en cotización ${cotizacionId}...`);
-      
+
       const response = await fetch(
         `${API_BASE_URL}/api/chat/usar-plantilla/${cotizacionId}`,
         {
@@ -570,10 +628,10 @@ export const plantillasAPI = {
 
       const blob = await response.blob();
       downloadFile(blob, filename);
-      
+
       console.log(`✅ Cotización generada con plantilla: ${filename}`);
       return { success: true, filename };
-      
+
     } catch (error) {
       console.error('Error al usar plantilla:', error);
       throw error;
@@ -616,10 +674,10 @@ export const plantillasAPI = {
  */
 export const descargarInforme = async (param1, param2) => {
   console.warn('⚠️ descargarInforme() está deprecado. Usa api.cotizaciones.generarWord() o generarPDF()');
-  
+
   // Detectar automáticamente cuál es el tipo y cuál es el ID
   let tipo, cotizacionId;
-  
+
   if (typeof param1 === 'string' && (param1 === 'word' || param1 === 'pdf')) {
     tipo = param1;
     cotizacionId = param2;
@@ -629,9 +687,9 @@ export const descargarInforme = async (param1, param2) => {
   } else {
     throw new Error(`Parámetros inválidos. Debes pasar 'word' o 'pdf' y un ID numérico. Recibido: ${param1}, ${param2}`);
   }
-  
+
   console.log(`📄 Generando documento ${tipo.toUpperCase()} para cotización ${cotizacionId}`);
-  
+
   if (tipo === 'word') {
     return await cotizacionesAPI.generarWord(cotizacionId);
   } else if (tipo === 'pdf') {
