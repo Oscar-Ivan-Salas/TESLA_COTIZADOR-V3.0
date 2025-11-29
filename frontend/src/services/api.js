@@ -664,6 +664,106 @@ export const plantillasAPI = {
 };
 
 // ═══════════════════════════════════════════════════════════
+// ENDPOINTS DE CHAT PILI v3.0
+// ═══════════════════════════════════════════════════════════
+
+export const chatAPI = {
+  /**
+   * Chat contextualizado con PILI
+   * 
+   * @param {Object} params - Parámetros del chat
+   * @param {string} params.tipo_flujo - Tipo de flujo (cotizacion-simple, proyecto-simple, etc.)
+   * @param {string} params.mensaje - Mensaje del usuario
+   * @param {Array} params.historial - Historial de mensajes previos
+   * @param {string} params.contexto_adicional - Contexto adicional opcional
+   * @param {number} params.cotizacion_id - ID de cotización opcional
+   * @param {boolean} params.generar_html - Si debe generar vista previa HTML
+   */
+  enviarMensaje: async (params) => {
+    const response = await fetch(`${API_BASE_URL}/api/chat/chat-contextualizado`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tipo_flujo: params.tipo_flujo || 'cotizacion-simple',
+        mensaje: params.mensaje,
+        historial: params.historial || [],
+        contexto_adicional: params.contexto_adicional || '',
+        cotizacion_id: params.cotizacion_id || null,
+        archivos_procesados: params.archivos_procesados || [],
+        generar_html: params.generar_html || false,
+      }),
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Obtener presentación de PILI
+   */
+  presentacion: async () => {
+    const response = await fetch(`${API_BASE_URL}/api/chat/pili/presentacion`);
+    return handleResponse(response);
+  },
+
+  /**
+   * Obtener botones contextuales para un tipo de flujo
+   */
+  obtenerBotones: async (tipo_flujo, etapa = 'inicial') => {
+    const response = await fetch(
+      `${API_BASE_URL}/api/chat/botones-contextuales/${tipo_flujo}?etapa=${etapa}`
+    );
+    return handleResponse(response);
+  },
+
+  /**
+   * Iniciar flujo inteligente
+   */
+  iniciarFlujo: async (params) => {
+    const response = await fetch(`${API_BASE_URL}/api/chat/iniciar-flujo-inteligente`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tipo_flujo: params.tipo_flujo,
+        servicio: params.servicio || 'electricidad',
+        industria: params.industria || 'general',
+        descripcion_inicial: params.descripcion_inicial || '',
+      }),
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Procesar archivos con OCR
+   */
+  procesarArchivos: async (tipo_servicio, archivos, contexto_adicional = '') => {
+    const formData = new FormData();
+    formData.append('tipo_servicio', tipo_servicio);
+    formData.append('contexto_adicional', contexto_adicional);
+
+    archivos.forEach((archivo) => {
+      formData.append('archivos', archivo);
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/chat/pili/procesar-archivos`, {
+      method: 'POST',
+      body: formData,
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Obtener estadísticas de aprendizaje de PILI
+   */
+  estadisticasAprendizaje: async () => {
+    const response = await fetch(`${API_BASE_URL}/api/chat/estadisticas-aprendizaje`);
+    return handleResponse(response);
+  },
+};
+
+// ═══════════════════════════════════════════════════════════
 // FUNCIÓN DE COMPATIBILIDAD (para código antiguo)
 // ═══════════════════════════════════════════════════════════
 
@@ -706,4 +806,5 @@ export default {
   proyectos: proyectosAPI,
   documentos: documentosAPI,
   plantillas: plantillasAPI,
+  chat: chatAPI,
 };
