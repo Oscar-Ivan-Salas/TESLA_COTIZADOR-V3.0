@@ -1116,8 +1116,8 @@ const CotizadorTesla30 = () => {
                         key={servicio.id}
                         onClick={() => setServicioSeleccionado(servicio.id)}
                         className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${servicioSeleccionado === servicio.id
-                            ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl scale-105'
-                            : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
+                          ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl scale-105'
+                          : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
                           }`}>
                         <div className="text-2xl mb-2">{servicio.icon}</div>
                         <div className="text-sm font-semibold">{servicio.nombre.split(' ').slice(1).join(' ')}</div>
@@ -1134,8 +1134,8 @@ const CotizadorTesla30 = () => {
                         key={industria.id}
                         onClick={() => setIndustriaSeleccionada(industria.id)}
                         className={`p-3 rounded-xl border-2 transition-all duration-300 ${industriaSeleccionada === industria.id
-                            ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl'
-                            : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
+                          ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl'
+                          : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
                           }`}>
                         <div className="text-sm font-semibold">{industria.nombre}</div>
                       </button>
@@ -1252,8 +1252,8 @@ const CotizadorTesla30 = () => {
                           {conversacion.map((mensaje, index) => (
                             <div key={index} className={`flex ${mensaje.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}>
                               <div className={`max-w-[85%] p-3 rounded-2xl ${mensaje.tipo === 'usuario'
-                                  ? 'bg-yellow-600 text-black'
-                                  : 'bg-white border-2 border-gray-300 text-gray-800'
+                                ? 'bg-yellow-600 text-black'
+                                : 'bg-white border-2 border-gray-300 text-gray-800'
                                 }`}>
                                 <p className="text-sm">{mensaje.mensaje}</p>
                               </div>
