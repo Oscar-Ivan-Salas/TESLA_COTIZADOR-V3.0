@@ -616,19 +616,70 @@ const CotizadorTesla30 = () => {
         entidadId = entidadGuardada.id;
       }
 
-      // Generar documento
+      // Generar documento - LÓGICA HÍBRIDA PROFESIONAL
       console.log(`📄 Generando ${formato.toUpperCase()}`);
       setExito(`Generando ${formato.toUpperCase()}...`);
 
-      const endpoint = tipoDocumento === 'cotizacion' ? 'cotizaciones' :
-        tipoDocumento === 'proyecto' ? 'proyectos' : 'informes';
+      let docResponse;
 
-      const docResponse = await fetch(`http://localhost:8000/api/${endpoint}/${entidadId}/generar-${formato}`, {
-        method: 'POST'
-      });
+      // Método 1: Intentar generar desde BD si tenemos ID
+      if (entidadId) {
+        try {
+          const endpoint = tipoDocumento === 'cotizacion' ? 'cotizaciones' :
+            tipoDocumento === 'proyecto' ? 'proyectos' : 'informes';
 
-      if (!docResponse.ok) {
-        throw new Error(`Error al generar ${formato}`);
+          console.log(`🗄️ Intentando generar desde BD (ID: ${entidadId})...`);
+          docResponse = await fetch(`http://localhost:8000/api/${endpoint}/${entidadId}/generar-${formato}`, {
+            method: 'POST'
+          });
+
+          if (!docResponse.ok) {
+            throw new Error(`Error en generación desde BD`);
+          }
+
+          console.log(`✅ Documento generado desde BD`);
+        } catch (errorBD) {
+          console.warn(`⚠️ BD no disponible, usando generación directa...`, errorBD);
+          entidadId = null; // Forzar uso de generación directa
+        }
+      }
+
+      // Método 2: Generación directa (fallback o principal)
+      if (!entidadId) {
+        console.log(`🚀 Generando documento directo (sin BD)...`);
+
+        // Preparar datos finales para generación directa
+        const datosParaGeneracion = {
+          tipo_documento: tipoDocumento,
+          numero: datosFinales?.numero || `${tipoDocumento.toUpperCase()}-${Date.now()}`,
+          cliente: clienteProyecto || datosFinales?.cliente || '[Cliente]',
+          proyecto: nombreProyecto || datosFinales?.proyecto || '[Proyecto]',
+          descripcion: contextoUsuario || datosFinales?.descripcion || '',
+          items: datosFinales?.items || [],
+          subtotal: datosFinales?.subtotal || 0,
+          igv: datosFinales?.igv || 0,
+          total: datosFinales?.total || 0,
+          observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
+          fecha: new Date().toLocaleDateString('es-PE'),
+          vigencia: '30 días'
+        };
+
+        // Agregar logo si existe
+        if (logoBase64) {
+          datosParaGeneracion.logo_base64 = logoBase64;
+        }
+
+        docResponse = await fetch(`http://localhost:8000/api/generar-documento-directo?formato=${formato}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datosParaGeneracion)
+        });
+
+        if (!docResponse.ok) {
+          throw new Error(`Error al generar ${formato}`);
+        }
+
+        console.log(`✅ Documento generado directamente`);
       }
 
       const blob = await docResponse.blob();
