@@ -1333,17 +1333,39 @@ async def chat_contextualizado(
         # ✅ GENERACIÓN DE DATOS ESTRUCTURADOS CON PILI BRAIN
         datos_generados = None
         html_preview = None
+        documento_data = None  # ✅ Scope más amplio para usar en fallback
 
+        # ✅ GENERACIÓN ESPECÍFICA POR TIPO DE DOCUMENTO (6 TIPOS)
         # Siempre intentar generar estructura si es flujo de cotización/proyecto/informe
         if any(keyword in tipo_flujo for keyword in ["cotizacion", "proyecto", "informe"]):
             try:
                 logger.info(f"🧠 Generando estructura con PILIBrain para {tipo_flujo}...")
                 servicio_detectado = pili_brain.detectar_servicio(mensaje)
                 complejidad = "compleja" if "complejo" in tipo_flujo or "compleja" in tipo_flujo else "simple"
-                cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, complejidad)
+
+                # ✅ LLAMAR AL MÉTODO CORRECTO SEGÚN EL TIPO
+                if "cotizacion" in tipo_flujo:
+                    # 1. COTIZACIÓN SIMPLE o 2. COTIZACIÓN COMPLEJA
+                    documento_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, complejidad)
+                    logger.info(f"✅ Cotización {complejidad} generada")
+
+                elif "proyecto" in tipo_flujo:
+                    # 3. PROYECTO SIMPLE o 4. PROYECTO COMPLEJO
+                    documento_data = pili_brain.generar_proyecto(mensaje, servicio_detectado, complejidad)
+                    logger.info(f"✅ Proyecto {complejidad} generado")
+
+                elif "informe" in tipo_flujo:
+                    # 5. INFORME SIMPLE o 6. INFORME EJECUTIVO
+                    documento_data = pili_brain.generar_informe(mensaje, servicio_detectado, complejidad)
+                    logger.info(f"✅ Informe {complejidad} generado")
+
+                else:
+                    # Fallback por si acaso
+                    documento_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, complejidad)
+                    logger.warning(f"⚠️ Tipo no reconocido, usando generar_cotizacion como fallback")
 
                 # ✅ EXTRAER DATOS ESTRUCTURADOS
-                datos_generados = cotizacion_data.get('datos', {})
+                datos_generados = documento_data.get('datos', {})
                 logger.info(f"✅ Datos estructurados generados: {len(datos_generados.get('items', []))} items")
 
                 # ✅ GENERAR HTML PREVIEW CON DATOS REALES
@@ -1356,6 +1378,7 @@ async def chat_contextualizado(
             except Exception as e_pili:
                 logger.warning(f"⚠️ No se pudo generar estructura con PILIBrain: {e_pili}")
                 datos_generados = None
+                documento_data = None
 
         # Enviar a Gemini con contexto especializado, con fallback a PILIBrain
         try:
@@ -1374,14 +1397,24 @@ async def chat_contextualizado(
             logger.warning(f"⚠️ Gemini no disponible, usando PILIBrain local: {e}")
 
             # Si ya generamos datos antes, usarlos
-            if datos_generados:
-                respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
+            if datos_generados and documento_data:
+                respuesta = {'mensaje': documento_data['conversacion']['mensaje_pili']}
             else:
-                # Generar ahora si no se hizo antes
+                # ✅ GENERAR AHORA CON EL MÉTODO CORRECTO SEGÚN TIPO
                 servicio_detectado = pili_brain.detectar_servicio(mensaje)
-                cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, "simple")
-                datos_generados = cotizacion_data.get('datos', {})
-                respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
+                complejidad_fallback = "compleja" if "complejo" in tipo_flujo or "compleja" in tipo_flujo else "simple"
+
+                if "cotizacion" in tipo_flujo:
+                    documento_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, complejidad_fallback)
+                elif "proyecto" in tipo_flujo:
+                    documento_data = pili_brain.generar_proyecto(mensaje, servicio_detectado, complejidad_fallback)
+                elif "informe" in tipo_flujo:
+                    documento_data = pili_brain.generar_informe(mensaje, servicio_detectado, complejidad_fallback)
+                else:
+                    documento_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, complejidad_fallback)
+
+                datos_generados = documento_data.get('datos', {})
+                respuesta = {'mensaje': documento_data['conversacion']['mensaje_pili']}
 
         # Determinar etapa y botones sugeridos
         tiene_cotizacion = cotizacion_id is not None
