@@ -54,8 +54,16 @@ async def generar_documento_directo(
             filepath = storage_path / filename
             
             if hasattr(word_generator, 'generar_desde_json_pili'):
+                # 🛠️ FIX: Empaquetar datos para estructura PILI
+                datos_pili = {
+                    "datos_extraidos": datos,
+                    "agente_responsable": "PILI (Generación Directa)",
+                    "tipo_servicio": "cotizacion-simple",
+                    "timestamp": datetime.now().isoformat()
+                }
+                
                 resultado = word_generator.generar_desde_json_pili(
-                    datos_json=datos,
+                    datos_json=datos_pili,
                     tipo_documento=tipo_documento,
                     ruta_salida=str(filepath)
                 )

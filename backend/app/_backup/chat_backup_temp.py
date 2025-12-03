@@ -1,5 +1,5 @@
 """
-🤖 PILI AGENTE IA v3.0 - SISTEMA COMPLETO FINAL
+🤖 PILI AGENTE IA v3.0 - SISTEMA COMPLETO
 📁 RUTA: backend/app/routers/chat.py
 
 PILI (Procesadora Inteligente de Licitaciones Industriales) es un agente IA multifunción
@@ -207,543 +207,266 @@ CONTEXTOS_SERVICIOS = {
         """
     },
 
-    # 📊 PROYECTO SIMPLE - PILI COORDINADORA
+    # 📁 PROYECTO SIMPLE - PILI COORDINADORA
     "proyecto-simple": {
         "nombre_pili": "PILI Coordinadora",
-        "personalidad": "¡Hola! 📊 Soy PILI Coordinadora, especialista en gestión de proyectos eléctricos simples. Te ayudo a estructurar proyectos, crear cronogramas y coordinar recursos de manera eficiente.",
+        "personalidad": "¡Hola! 📁 Soy PILI Coordinadora, tu experta en gestión de proyectos eléctricos. Te ayudo a organizar, dar seguimiento y documentar tus proyectos de forma simple y efectiva.",
         
-        "rol_ia": """Eres PILI Coordinadora, agente IA especializada en gestión de proyectos eléctricos.
-        Tu enfoque es organizacional y práctico, creando estructuras de trabajo claras y cronogramas realistas.
-        Mantienes la conversación centrada en la organización y ejecución del proyecto.""",
-        
-        "elementos_proyecto": [
-            "Alcance del proyecto claramente definido",
-            "Cronograma con fases y actividades",
-            "Recursos humanos y materiales necesarios",
-            "Presupuesto desglosado por actividades",
-            "Riesgos identificados y mitigaciones",
-            "Entregables y fechas de entrega"
-        ],
+        "rol_ia": """Eres PILI Coordinadora, especialista en gestión de proyectos eléctricos simples.
+        Tu enfoque es organizacional: crear estructura, asignar responsabilidades, hacer seguimiento.
+        Mantienes la conversación enfocada en la gestión eficiente del proyecto.""",
         
         "botones_contextuales": {
             "inicial": [
-                "🎯 Definir alcance del proyecto",
-                "📅 Crear cronograma básico",
-                "👥 Asignar recursos",
-                "💰 Estimar presupuesto",
+                "📋 Crear proyecto nuevo",
+                "📂 Organizar estructura carpetas", 
+                "👥 Asignar responsabilidades",
+                "📅 Definir cronograma básico",
+                "💰 Establecer presupuesto",
+                "📊 Configurar seguimiento"
+            ],
+            "planificacion": [
+                "📋 Completar plan de trabajo",
+                "📅 Ajustar fechas y hitos",
+                "👥 Definir equipo de trabajo",
+                "💰 Revisar presupuesto",
+                "📊 Configurar métricas"
+            ],
+            "seguimiento": [
+                "📈 Ver estado del proyecto",
+                "📋 Actualizar avances",
+                "💰 Controlar costos", 
+                "📅 Revisar cronograma",
+                "📊 Generar reporte avance",
                 "⚠️ Identificar riesgos"
             ],
-            "planificacion": [
-                "📋 Desglosar actividades",
-                "⏱️ Estimar duraciones",
-                "🔗 Definir dependencias",
-                "📊 Crear diagrama Gantt",
-                "🎯 Establecer hitos"
-            ],
-            "refinamiento": [
-                "👷 Optimizar recursos",
-                "💰 Ajustar presupuesto",
-                "⏰ Revisar cronograma",
-                "📋 Validar entregables",
-                "🔄 Planes de contingencia"
-            ],
-            "generacion": [
-                "📄 Generar documento proyecto",
-                "📈 Crear dashboard seguimiento",
-                "📊 Exportar cronograma",
-                "📋 Lista de verificación"
+            "documentacion": [
+                "📄 Acta de inicio del proyecto",
+                "📋 Plan de trabajo simplificado", 
+                "📅 Cronograma en Excel",
+                "👥 Matriz de responsabilidades",
+                "📊 Reporte de avance semanal"
             ]
         },
         
         "prompt_especializado": """
-        Como PILI Coordinadora de Tesla Electricidad:
+        Como PILI Coordinadora para gestión de proyectos simples:
         
-        1. 🎯 ESTRUCTURA el proyecto en fases lógicas
-        2. 📅 CREA cronogramas realistas y factibles
-        3. 👥 ASIGNA recursos humanos especializados
-        4. 💰 ESTIMA presupuestos por actividades
-        5. ⚠️ IDENTIFICA riesgos y planes de contingencia
-        6. 📋 DEFINE entregables claros y medibles
-        7. 🔄 ESTABLECE puntos de control y seguimiento
+        1. 🔍 ORGANIZA estructura de carpetas lógica
+        2. 📅 CREA cronograma realista con hitos
+        3. 👥 DEFINE roles y responsabilidades claras
+        4. 📊 ESTABLECE métricas de seguimiento
+        5. 💰 CONTROLA presupuesto y costos
+        6. 📋 GESTIONA entregables y documentación
         
-        METODOLOGÍA:
-        - Enfoque ágil adaptado a electricidad
-        - Fases: Diseño → Materiales → Instalación → Pruebas
-        - Control de calidad en cada etapa
-        - Documentación técnica especializada
-        
-        ESPECIALIDAD: Proyectos 1-12 semanas, equipos 2-8 personas
+        ESTRUCTURA ESTÁNDAR:
+        - Carpeta: Documentos del Cliente
+        - Carpeta: Planos y Diseños
+        - Carpeta: Cotizaciones y Presupuestos
+        - Carpeta: Órdenes de Compra
+        - Carpeta: Reportes de Avance
+        - Carpeta: Certificados y Pruebas
+        - Carpeta: Documentos Finales
         """
     },
 
-    # 🎯 PROYECTO COMPLEJO - PILI PROJECT MANAGER
+    # 📊 PROYECTO COMPLEJO - PILI PROJECT MANAGER
     "proyecto-complejo": {
         "nombre_pili": "PILI Project Manager",
-        "personalidad": "¡Hola! 🎯 Soy PILI Project Manager, especialista en proyectos eléctricos complejos y de gran envergadura. Aplico metodologías PMI, gestiono múltiples stakeholders y aseguro el éxito de proyectos críticos.",
+        "personalidad": "¡Hola! 📊 Soy PILI Project Manager, directora de proyectos senior especializada en gestión integral de proyectos de gran envergadura. Manejo múltiples stakeholders, cronogramas complejos y riesgos significativos.",
         
-        "rol_ia": """Eres PILI Project Manager, agente IA senior especializada en proyectos eléctricos complejos.
-        Aplicas metodologías PMI, gestionas riesgos avanzados y coordinas múltiples equipos especializados.
-        Tu enfoque es estratégico y orientado a resultados empresariales.""",
-        
-        "areas_conocimiento": [
-            "Gestión de Integración del Proyecto",
-            "Gestión del Alcance y Requerimientos", 
-            "Gestión del Cronograma y Recursos",
-            "Gestión de Costos y Presupuestos",
-            "Gestión de Calidad y Estándares",
-            "Gestión de Recursos Humanos",
-            "Gestión de Comunicaciones",
-            "Gestión de Riesgos",
-            "Gestión de Adquisiciones",
-            "Gestión de Stakeholders"
-        ],
+        "rol_ia": """Eres PILI Project Manager, directora de proyectos senior especializada en gestión integral de proyectos de gran envergadura.
+        Manejas múltiples stakeholders, cronogramas complejos y riesgos significativos usando metodología PMI.
+        Tu enfoque es estratégico y ejecutivo.""",
         
         "botones_contextuales": {
-            "inicial": [
-                "📋 Charter del proyecto",
-                "🎯 Análisis de stakeholders", 
-                "📊 Estructura de desglose trabajo",
-                "⚠️ Registro de riesgos",
-                "📈 Plan de gestión proyecto"
-            ],
             "planificacion": [
+                "📋 Plan maestro del proyecto",
+                "📊 Diagrama de Gantt detallado",
+                "💰 Control presupuestal avanzado",
+                "📈 Análisis de riesgos completo",
+                "🎯 Definir hitos críticos",
+                "👥 Gestión de stakeholders"
+            ],
+            "seguimiento": [
+                "📊 Dashboard ejecutivo en tiempo real",
+                "📈 Curva S de avance vs. planificado",
+                "💰 Análisis de valor ganado (EVM)",
+                "⚖️ Matriz de riesgos actualizada",
+                "📋 Reporte ejecutivo semanal"
+            ],
+            "documentacion": [
+                "📋 Project Charter completo",
+                "📊 WBS (Work Breakdown Structure)", 
                 "📅 Cronograma maestro",
-                "💰 Línea base presupuesto",
-                "👥 Matriz RACI",
-                "📊 Plan gestión calidad",
-                "🔄 Plan gestión cambios"
-            ],
-            "ejecucion": [
-                "📈 Dashboard ejecutivo",
-                "📊 Reportes de avance",
-                "⚠️ Gestión de issues",
-                "🔄 Control de cambios",
-                "👥 Gestión de equipos"
-            ],
-            "control": [
-                "📊 Análisis valor ganado",
-                "📈 Métricas de performance",
-                "⚠️ Escalamiento de riesgos",
-                "💰 Control de costos",
-                "📋 Auditorías de calidad"
+                "💰 Baseline de costos",
+                "⚖️ Registro de riesgos",
+                "👥 Plan de comunicaciones"
             ]
         },
         
         "prompt_especializado": """
-        Como PILI Project Manager de Tesla Electricidad para proyectos complejos:
+        Como PILI Project Manager senior:
         
-        1. 📋 DESARROLLA Charter completo del proyecto
-        2. 🎯 GESTIONA stakeholders y expectativas
-        3. 📊 CREA EDT (Work Breakdown Structure)
-        4. 📅 PLANIFICA cronograma maestro con rutas críticas
-        5. 💰 ESTABLECE líneas base de costo y alcance
-        6. ⚠️ GESTIONA riesgos con análisis cuanti/cualitativo
-        7. 📈 IMPLEMENTA métricas de valor ganado (EVM)
-        8. 🔄 CONTROLA cambios con governance
-        9. 👥 LIDERA equipos multidisciplinarios
-        10. 📊 REPORTA a nivel ejecutivo
+        1. 📋 DESARROLLA plan maestro integral
+        2. 📊 CREA WBS detallado con entregables
+        3. 📅 PROGRAMA actividades con dependencias
+        4. 💰 ESTABLECE baseline y control de costos
+        5. ⚖️ IDENTIFICA y mitiga riesgos críticos
+        6. 👥 GESTIONA comunicación con stakeholders
+        7. 📊 IMPLEMENTA dashboard de control
         
-        METODOLOGÍAS:
-        - PMI PMBOK 7ma Edición
-        - Agile/Scrum para desarrollo técnico
-        - Lean Construction para instalaciones
-        - ISO 21500 para gestión de proyectos
+        METODOLOGÍA PMI:
+        - Iniciación: Charter y stakeholders
+        - Planificación: Scope, tiempo, costo, calidad
+        - Ejecución: Gestión de equipos y comunicación
+        - Monitoreo: Control integrado de cambios  
+        - Cierre: Lecciones aprendidas y entregables
         
-        ESPECIALIDAD: Proyectos >$100K, >6 meses, equipos >10 personas
+        HERRAMIENTAS AVANZADAS:
+        - Diagrama de Gantt con ruta crítica
+        - Análisis de valor ganado (EVM)
+        - Matriz de riesgos cuantificada
+        - Dashboard de KPIs en tiempo real
         """
     },
 
-    # 📋 INFORME SIMPLE - PILI REPORTERA
+    # 📄 INFORME SIMPLE - PILI REPORTERA
     "informe-simple": {
         "nombre_pili": "PILI Reportera",
-        "personalidad": "¡Hola! 📋 Soy PILI Reportera, especialista en informes técnicos eléctricos claros y concisos. Transformo datos complejos en reportes comprensibles para clientes y autoridades.",
+        "personalidad": "¡Hola! 📄 Soy PILI Reportera, tu especialista en documentos técnicos claros y profesionales. Genero informes técnicos desde datos de proyectos y cotizaciones con un enfoque claro y directo.",
         
-        "rol_ia": """Eres PILI Reportera, agente IA especializada en redacción técnica y informes eléctricos.
-        Tu enfoque es comunicacional, creando documentos claros, bien estructurados y técnicamente precisos.
-        Adaptas el lenguaje según la audiencia: técnica, gerencial o regulatoria.""",
-        
-        "tipos_informes": [
-            "Informe de inspección eléctrica",
-            "Reporte de mediciones y pruebas",
-            "Informe de cumplimiento normativo",
-            "Reporte de incidentes técnicos",
-            "Informe de avance de obra",
-            "Reporte de verificación ITSE"
-        ],
+        "rol_ia": """Eres PILI Reportera, especialista en creación de documentos técnicos claros.
+        Tu enfoque es comunicacional: información clara, estructurada y profesional.
+        Mantienes el foco en generar documentos útiles y bien estructurados.""",
         
         "botones_contextuales": {
             "inicial": [
-                "📋 Seleccionar tipo de informe",
-                "🎯 Definir audiencia objetivo",
-                "📊 Identificar datos disponibles",
-                "⚖️ Verificar normativas aplicables",
-                "📝 Establecer estructura"
+                "📋 Seleccionar proyecto/cotización",
+                "📊 Definir contenido informe",
+                "🎨 Elegir plantilla",
+                "📄 Vista previa PDF",
+                "✅ Generar informe final"
             ],
-            "desarrollo": [
-                "📊 Analizar datos técnicos",
-                "📈 Crear gráficos y tablas",
-                "📸 Incluir evidencia fotográfica",
-                "🔍 Verificar cálculos",
-                "📝 Redactar hallazgos"
+            "configuracion": [
+                "📊 Incluir métricas básicas",
+                "📈 Agregar gráficos simples",
+                "📋 Definir secciones",
+                "🎨 Personalizar formato",
+                "✅ Confirmar estructura"
             ],
-            "revision": [
-                "✏️ Revisar redacción técnica",
-                "📊 Validar datos y cálculos",
-                "🎨 Aplicar formato profesional",
-                "📋 Verificar completitud",
-                "🔍 Control de calidad"
-            ],
-            "finalizacion": [
-                "📄 Generar PDF final",
-                "📱 Versión ejecutiva",
-                "📋 Lista de verificación",
-                "📧 Preparar para envío"
+            "generacion": [
+                "📄 Vista previa Word",
+                "📑 Generar PDF final",
+                "📧 Preparar para envío",
+                "💾 Guardar como plantilla"
             ]
         },
         
         "prompt_especializado": """
-        Como PILI Reportera de Tesla Electricidad:
+        Como PILI Reportera para informes técnicos:
         
-        1. 📋 ESTRUCTURA informes según estándares técnicos
-        2. 📊 PRESENTA datos de manera clara y visual
-        3. 📝 REDACTA en lenguaje técnico apropiado
-        4. 📈 INCLUYE gráficos y tablas profesionales
-        5. 🔍 VERIFICA precisión técnica y normativa
-        6. 📸 INTEGRA evidencia fotográfica relevante
-        7. 📋 APLICA formatos estándar de la industria
+        1. 📊 SELECCIONA datos relevantes del proyecto
+        2. 📋 ESTRUCTURA información lógicamente
+        3. 📈 INCLUYE gráficos explicativos básicos
+        4. 📝 REDACTA con claridad técnica
+        5. 🎨 APLICA formato profesional
+        6. ✅ VALIDA completitud y coherencia
         
-        ELEMENTOS CLAVE:
-        - Resumen ejecutivo claro
-        - Metodología de inspección/medición
-        - Hallazgos técnicos detallados
-        - Conclusiones fundamentadas
-        - Recomendaciones específicas
-        - Anexos con evidencia
-        
-        ESTÁNDARES:
-        - Normas CNE peruanas
-        - Formatos oficiales (OSINERGMIN, MEM)
-        - Protocolos de medición IEEE
-        - Estándares de redacción técnica
-        
-        ESPECIALIDAD: Informes 5-20 páginas, formato profesional
+        ESTRUCTURA ESTÁNDAR:
+        - Resumen ejecutivo
+        - Descripción del proyecto
+        - Metodología aplicada
+        - Resultados obtenidos
+        - Conclusiones técnicas
+        - Recomendaciones
+        - Anexos técnicos
         """
     },
 
-    # 📊 INFORME EJECUTIVO - PILI ANALISTA SENIOR
+    # 💼 INFORME EJECUTIVO - PILI ANALISTA SENIOR
     "informe-ejecutivo": {
         "nombre_pili": "PILI Analista Senior",
-        "personalidad": "¡Hola! 📊 Soy PILI Analista Senior, especialista en informes ejecutivos y análisis estratégico. Creo documentos de alto nivel con análisis profundo, formato APA y presentación ejecutiva para toma de decisiones estratégicas.",
+        "personalidad": "¡Hola! 💼 Soy PILI Analista Senior, creadora de informes ejecutivos de alto nivel. Genero documentos con gráficos avanzados, métricas clave, análisis financiero y recomendaciones estratégicas en formato APA.",
         
-        "rol_ia": """Eres PILI Analista Senior, agente IA especializada en análisis estratégico e informes ejecutivos.
-        Tu enfoque es analítico y estratégico, creando documentos de alto valor para la toma de decisiones.
-        Combinas expertise técnico con visión de negocios para generar insights accionables.""",
-        
-        "capacidades_analisis": [
-            "Análisis estratégico de proyectos",
-            "Evaluación de rentabilidad y ROI",
-            "Análisis de riesgos cuantitativos",
-            "Benchmarking de mercado",
-            "Proyecciones financieras",
-            "Análisis de tendencias tecnológicas",
-            "Evaluación de cumplimiento regulatorio",
-            "Análisis de competitividad"
-        ],
+        "rol_ia": """Eres PILI Analista Senior, especialista en informes ejecutivos de alto nivel.
+        Tu enfoque es estratégico: análisis profundo, recomendaciones fundamentadas, presentación ejecutiva.
+        Mantienes un nivel de sofisticación apropiado para audiencias ejecutivas.""",
         
         "botones_contextuales": {
-            "inicial": [
-                "🎯 Definir objetivos del análisis",
-                "📊 Identificar métricas clave",
-                "🔍 Establecer metodología",
-                "📈 Fuentes de información",
-                "👥 Audiencia ejecutiva"
-            ],
-            "investigacion": [
-                "📊 Análisis de datos cuantitativos",
-                "📈 Investigación de mercado",
-                "💰 Análisis financiero",
-                "⚠️ Evaluación de riesgos",
-                "🏆 Benchmarking competitivo"
+            "configuracion": [
+                "📊 Configurar métricas KPI",
+                "📈 Incluir gráficos estadísticos", 
+                "💰 Análisis financiero ROI",
+                "🎯 Definir recomendaciones",
+                "📋 Seleccionar formato APA"
             ],
             "analisis": [
-                "📊 Análisis estadístico avanzado",
-                "📈 Modelado de escenarios",
-                "💡 Generación de insights",
-                "🎯 Identificación de oportunidades",
-                "⚖️ Evaluación de alternativas"
+                "📊 Dashboard ejecutivo",
+                "📈 Análisis de tendencias",
+                "💰 Evaluación financiera",
+                "⚖️ Análisis de riesgos",
+                "🎯 Recomendaciones estratégicas"
             ],
-            "presentacion": [
-                "📋 Resumen ejecutivo",
-                "📊 Dashboard de métricas",
-                "📈 Recomendaciones estratégicas",
-                "🎨 Diseño ejecutivo",
-                "📄 Formato APA completo"
+            "generacion": [
+                "📊 Vista previa con gráficos",
+                "📄 Generar Word ejecutivo",
+                "📑 Generar PDF no editable",
+                "📧 Preparar para envío",
+                "💾 Guardar como plantilla"
             ]
         },
         
         "prompt_especializado": """
-        Como PILI Analista Senior de Tesla Electricidad para informes ejecutivos:
+        Como PILI Analista Senior para informes ejecutivos:
         
-        1. 🎯 ANALIZA objetivos estratégicos del negocio
-        2. 📊 DESARROLLA métricas y KPIs relevantes
-        3. 📈 REALIZA análisis cuantitativo profundo
-        4. 💡 GENERA insights y recomendaciones
-        5. 🎨 PRESENTA en formato ejecutivo profesional
-        6. 📋 ESTRUCTURA según estándares APA
-        7. 📊 INCLUYE análisis visual avanzado
-        8. 💰 EVALÚA impacto financiero y ROI
-        9. ⚠️ IDENTIFICA riesgos y oportunidades
-        10. 🚀 PROPONE planes de acción
+        1. 📊 ANALIZA datos con profundidad estadística
+        2. 📈 CREA gráficos avanzados (tendencias, comparaciones)
+        3. 💰 EVALÚA aspectos financieros y ROI
+        4. 🎯 FORMULA recomendaciones estratégicas
+        5. 📋 APLICA formato APA profesional
+        6. ⚖️ INCLUYE análisis de riesgos
+        7. 🔮 PROYECTA escenarios futuros
         
-        METODOLOGÍAS:
-        - Análisis SWOT/PESTEL
-        - Análisis de valor económico (EVA)
-        - Análisis de sensibilidad y escenarios
-        - Benchmarking estratégico
-        - Análisis de riesgo cuantitativo
+        ESTRUCTURA EJECUTIVA:
+        - Executive Summary (1 página)
+        - Análisis de situación actual
+        - Métricas clave y KPIs
+        - Análisis financiero detallado
+        - Evaluación de riesgos y oportunidades
+        - Recomendaciones estratégicas
+        - Plan de implementación
+        - Anexos con datos de soporte
         
-        FORMATO:
-        - Estilo APA 7ma edición
-        - Gráficos ejecutivos (dashboard style)
-        - Tablas de análisis profesionales
-        - Referencias académicas y técnicas
-        - Anexos con análisis detallado
-        
-        ESPECIALIDAD: Informes 20-50 páginas, nivel C-Suite, decisiones >$50K
+        FORMATO: APA 7ma edición + gráficos profesionales
         """
     }
 }
 
-# ═══════════════════════════════════════════════════════════════
-# 🛠️ FUNCIONES AUXILIARES PILI
-# ═══════════════════════════════════════════════════════════════
-
-def obtener_contexto_servicio(tipo_flujo: str) -> Dict[str, Any]:
-    """Obtiene el contexto especializado para el tipo de flujo"""
+def obtener_contexto_servicio(tipo_flujo: str) -> dict:
+    """Retorna el contexto específico para un tipo de servicio"""
     return CONTEXTOS_SERVICIOS.get(tipo_flujo, {})
 
-def determinar_etapa_conversacion(historial: List[Dict], tiene_cotizacion: bool = False) -> str:
-    """Determina la etapa actual de la conversación para botones contextuales"""
-    
-    if not historial:
+def determinar_etapa_conversacion(historial_mensajes: List[Dict], cotizacion_existente: bool = False) -> str:
+    """Determina en qué etapa de la conversación está el usuario"""
+    if not historial_mensajes:
         return "inicial"
-    
-    if tiene_cotizacion:
-        return "generacion"
-    
-    if len(historial) >= 3:
+    elif cotizacion_existente:
+        return "generacion" 
+    elif len(historial_mensajes) >= 3:
         return "refinamiento"
-    
-    return "inicial"
+    else:
+        return "inicial"
 
 def obtener_botones_para_etapa(tipo_flujo: str, etapa: str) -> List[str]:
-    """Obtiene los botones contextuales para la etapa actual"""
-    
+    """Retorna botones contextuales para una etapa específica"""
     contexto = obtener_contexto_servicio(tipo_flujo)
     botones_config = contexto.get("botones_contextuales", {})
-    
     return botones_config.get(etapa, [])
 
-def generar_preview_html_editable(datos: Dict[str, Any], agente: str) -> str:
-    """
-    🆕 NUEVO PILI v3.0 - Genera vista previa HTML editable
-    
-    Esta función crea HTML que el frontend puede mostrar y editar,
-    permitiendo al usuario modificar la cotización antes de generar el Word final.
-    """
-    
-    items = datos.get('items', [])
-    cliente = datos.get('cliente', 'Cliente')
-    proyecto = datos.get('proyecto', 'Proyecto Eléctrico')
-    total = datos.get('total', 0)
-    
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Vista Previa - {agente}</title>
-        <style>
-            body {{ font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f8f9fa; }}
-            .container {{ background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-            .header {{ border-bottom: 3px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }}
-            .company {{ color: #007bff; font-size: 24px; font-weight: bold; }}
-            .agent {{ color: #6c757d; font-size: 14px; margin-top: 5px; }}
-            .title {{ color: #343a40; font-size: 20px; margin: 20px 0; }}
-            .info-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }}
-            .info-item {{ background: #f8f9fa; padding: 15px; border-radius: 5px; }}
-            .info-label {{ font-weight: bold; color: #495057; }}
-            .info-value {{ color: #007bff; font-size: 16px; }}
-            .items-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-            .items-table th {{ background: #007bff; color: white; padding: 12px; text-align: left; }}
-            .items-table td {{ padding: 10px; border-bottom: 1px solid #dee2e6; }}
-            .items-table tr:hover {{ background: #f8f9fa; }}
-            .total-section {{ background: #e3f2fd; padding: 20px; border-radius: 5px; margin-top: 20px; }}
-            .total-row {{ display: flex; justify-content: space-between; margin: 5px 0; }}
-            .total-final {{ font-size: 20px; font-weight: bold; color: #007bff; }}
-            .edit-note {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-top: 20px; }}
-            .agent-signature {{ text-align: right; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div class="company">⚡ TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
-                <div class="agent">🤖 Generado por {agente}</div>
-            </div>
-            
-            <h2 class="title">💰 COTIZACIÓN ELÉCTRICA</h2>
-            
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">👤 Cliente:</div>
-                    <div class="info-value">{cliente}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">📋 Proyecto:</div>
-                    <div class="info-value">{proyecto}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">📅 Fecha:</div>
-                    <div class="info-value">{datetime.now().strftime('%d/%m/%Y')}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">🤖 Especialista:</div>
-                    <div class="info-value">{agente}</div>
-                </div>
-            </div>
-            
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>📋 Descripción</th>
-                        <th>🔢 Cantidad</th>
-                        <th>📏 Unidad</th>
-                        <th>💰 Precio Unit.</th>
-                        <th>💰 Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-    """
-    
-    subtotal = 0
-    for item in items:
-        cantidad = item.get('cantidad', 0)
-        precio = item.get('precio_unitario', 0)
-        item_total = cantidad * precio
-        subtotal += item_total
-        
-        html += f"""
-                    <tr>
-                        <td>{item.get('descripcion', '')}</td>
-                        <td>{cantidad}</td>
-                        <td>{item.get('unidad', 'und')}</td>
-                        <td>S/ {precio:.2f}</td>
-                        <td>S/ {item_total:.2f}</td>
-                    </tr>
-        """
-    
-    igv = subtotal * 0.18
-    total_final = subtotal + igv
-    
-    html += f"""
-                </tbody>
-            </table>
-            
-            <div class="total-section">
-                <div class="total-row">
-                    <span>💰 Subtotal:</span>
-                    <span>S/ {subtotal:.2f}</span>
-                </div>
-                <div class="total-row">
-                    <span>📋 IGV (18%):</span>
-                    <span>S/ {igv:.2f}</span>
-                </div>
-                <div class="total-row total-final">
-                    <span>🏆 TOTAL:</span>
-                    <span>S/ {total_final:.2f}</span>
-                </div>
-            </div>
-            
-            <div class="edit-note">
-                ✏️ <strong>Edición Disponible:</strong> Puedes modificar cantidades, precios y descripciones desde el panel izquierdo. 
-                Los cambios se reflejarán instantáneamente en esta vista previa.
-            </div>
-            
-            <div class="agent-signature">
-                <div style="color: #6c757d; font-size: 12px;">
-                    Documento generado por {agente} v3.0<br>
-                    {datetime.now().strftime('%d/%m/%Y %H:%M')}
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return html
-
-def generar_preview_informe(datos: Dict[str, Any], agente: str) -> str:
-    """Genera vista previa HTML para informes"""
-    
-    titulo = datos.get('titulo', 'Informe Técnico')
-    cliente = datos.get('cliente', 'Cliente')
-    fecha = datetime.now().strftime('%d/%m/%Y')
-    
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Vista Previa Informe - {agente}</title>
-        <style>
-            body {{ font-family: 'Times New Roman', serif; margin: 40px; line-height: 1.6; }}
-            .header {{ text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; }}
-            .title {{ font-size: 24px; font-weight: bold; color: #333; margin: 20px 0; }}
-            .info {{ margin: 20px 0; }}
-            .section {{ margin: 30px 0; }}
-            .section h3 {{ color: #007bff; border-bottom: 1px solid #007bff; padding-bottom: 5px; }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <h1>⚡ TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</h1>
-            <p>🤖 {agente} - Sistema de Informes Técnicos</p>
-        </div>
-        
-        <h2 class="title">📋 {titulo}</h2>
-        
-        <div class="info">
-            <p><strong>Cliente:</strong> {cliente}</p>
-            <p><strong>Fecha:</strong> {fecha}</p>
-            <p><strong>Elaborado por:</strong> {agente}</p>
-        </div>
-        
-        <div class="section">
-            <h3>1. RESUMEN EJECUTIVO</h3>
-            <p>Este informe presenta el análisis técnico realizado por {agente}, 
-            especialista en {agente.lower().replace('pili ', '')}...</p>
-        </div>
-        
-        <div class="section">
-            <h3>2. METODOLOGÍA</h3>
-            <p>El análisis se realizó aplicando normativas técnicas peruanas...</p>
-        </div>
-        
-        <div class="section">
-            <h3>3. HALLAZGOS</h3>
-            <p>Los principales hallazgos identificados son...</p>
-        </div>
-        
-        <div class="section">
-            <h3>4. RECOMENDACIONES</h3>
-            <p>Se recomienda implementar las siguientes acciones...</p>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return html
+# ════════════════════════════════════════════════════════════════
+# 🔄 FUNCIONES AUXILIARES EXISTENTES (CONSERVADAS)
+# ════════════════════════════════════════════════════════════════
 
 def generar_numero_cotizacion(db: Session) -> str:
     """Generar número único de cotización"""
@@ -765,14 +488,14 @@ def generar_numero_cotizacion(db: Session) -> str:
     
     return f"{prefijo}-{nuevo_num:04d}"
 
-# ═══════════════════════════════════════════════════════════════
-# 🤖 ENDPOINTS PILI CORE (RESTAURADOS)
-# ═══════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════
+# 🤖 NUEVOS ENDPOINTS PILI v3.0
+# ════════════════════════════════════════════════════════════════
 
 @router.get("/pili/presentacion")
 async def presentacion_pili():
     """
-    🤖 RESTAURADO - Presentación de PILI y sus capacidades
+    🤖 NUEVO PILI v3.0 - Presentación de PILI y sus capacidades
     
     Muestra información sobre PILI y los 6 agentes especializados disponibles.
     """
@@ -813,7 +536,7 @@ async def procesar_archivos_ocr(
     db: Session = Depends(get_db)
 ):
     """
-    🤖 RESTAURADO - Procesamiento OCR multimodal
+    🤖 NUEVO PILI v3.0 - Procesamiento OCR multimodal
     
     PILI procesa múltiples tipos de archivos:
     - 📷 Fotos (manuscritos, planos, documentos)
@@ -970,7 +693,7 @@ async def generar_json_preview(
     db: Session = Depends(get_db)
 ):
     """
-    🤖 RESTAURADO - Generar JSON estructurado + Vista previa HTML
+    🤖 NUEVO PILI v3.0 - Generar JSON estructurado + Vista previa HTML
     
     PILI toma la información procesada y la estructura en formato JSON optimizado
     para el tipo de servicio, además de generar una vista previa HTML editable.
@@ -1056,21 +779,24 @@ async def generar_json_preview(
             })
         
         # Generar vista previa HTML editable
-        if "cotizacion" in tipo_servicio:
-            html_preview = generar_preview_html_editable(datos_json["datos_extraidos"], contexto.get("nombre_pili", "PILI"))
-        elif "informe" in tipo_servicio:
-            html_preview = generar_preview_informe(datos_json["datos_extraidos"], contexto.get("nombre_pili", "PILI"))
-        else:
-            html_preview = f"<p>Vista previa no disponible para {tipo_servicio}</p>"
+        html_preview = generar_preview_html(datos_json)
         
         # Guardar para aprendizaje PILI
-        aprendizaje_id = None
         try:
-            # Simular guardado para aprendizaje
-            aprendizaje_id = f"pili_{tipo_servicio}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            logger.info(f"PILI aprendizaje guardado: {aprendizaje_id}")
+            from app.models.documento import Documento
+            aprendizaje = Documento(
+                nombre=f"PILI_Aprendizaje_{tipo_servicio}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                tipo_archivo="application/json",
+                content_text=json.dumps(datos_json, ensure_ascii=False, indent=2),
+                procesado=True,
+                fecha_upload=datetime.now()
+            )
+            db.add(aprendizaje)
+            db.commit()
+            aprendizaje_id = aprendizaje.id
         except Exception as e:
             logger.warning(f"No se pudo guardar aprendizaje: {e}")
+            aprendizaje_id = None
         
         nombre_pili = contexto.get("nombre_pili", "PILI")
         
@@ -1107,39 +833,230 @@ async def generar_json_preview(
             detail=f"Error PILI: {str(e)}"
         )
 
-# ═══════════════════════════════════════════════════════════════
-# 🔄 ENDPOINTS CONSERVADOS v2.0 + MEJORADOS PILI v3.0
-# ═══════════════════════════════════════════════════════════════
+def generar_preview_html(datos_json: Dict[str, Any]) -> str:
+    """Genera vista previa HTML editable según tipo de servicio"""
+    
+    tipo_servicio = datos_json.get("tipo_servicio", "")
+    datos = datos_json.get("datos_extraidos", {})
+    agente = datos_json.get("agente_responsable", "PILI")
+    
+    if "cotizacion" in tipo_servicio:
+        return generar_preview_cotizacion(datos, agente)
+    elif "proyecto" in tipo_servicio:
+        return generar_preview_proyecto(datos, agente)
+    elif "informe" in tipo_servicio:
+        return generar_preview_informe(datos, agente)
+    else:
+        return f"<p>Vista previa no disponible para {tipo_servicio}</p>"
+
+def generar_filas_items(items: List[Dict[str, Any]]) -> str:
+    """Genera las filas de items dinámicamente desde el array de items"""
+    if not items:
+        return """
+        <tr>
+            <td colspan="5" style="border: 1px solid #333; padding: 20px; text-align: center; color: #666; font-style: italic;">
+                No hay items generados aún. PILI está esperando más información...
+            </td>
+        </tr>
+        """
+
+    filas_html = ""
+    for item in items:
+        descripcion = item.get('descripcion', item.get('item', 'Item sin descripción'))
+        cantidad = item.get('cantidad', item.get('cant', 0))
+        unidad = item.get('unidad', 'und')
+        precio_unitario = item.get('precio_unitario', item.get('precioUnitario', 0))
+        total = item.get('total', cantidad * precio_unitario)
+
+        filas_html += f"""
+        <tr>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; background: #fff3cd; cursor: text; color: #000;">{descripcion}</td>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; text-align: center; background: #fff3cd; cursor: text; color: #000; font-weight: bold;">{cantidad}</td>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; text-align: center; background: #fff3cd; cursor: text; color: #000;">{unidad}</td>
+            <td contenteditable="true" style="border: 1px solid #333; padding: 8px; text-align: right; background: #fff3cd; cursor: text; color: #000; font-weight: bold;">S/ {precio_unitario:.2f}</td>
+            <td style="border: 1px solid #333; padding: 8px; text-align: right; background: #e8e8e8; font-weight: bold; color: #000; font-size: 15px;">S/ {total:.2f}</td>
+        </tr>
+        """
+
+    return filas_html
+
+def generar_preview_cotizacion(datos: Dict[str, Any], agente: str) -> str:
+    """Genera HTML preview editable para cotización"""
+
+    html = f"""
+    <div class="cotizacion-preview" style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+        <div class="pili-header" style="text-align: center; background: linear-gradient(135deg, #d4af37, #f4e37e); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px;">🤖 {agente} - Vista Previa Editable</h2>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Puedes editar cualquier campo resaltado en amarillo</p>
+        </div>
+        
+        <div class="header" style="text-align: center; border-bottom: 2px solid #d4af37; padding-bottom: 15px; margin-bottom: 20px;">
+            <h1 style="color: #d4af37; margin: 0;">TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</h1>
+            <p style="margin: 5px 0; color: #666;">RUC: 20601138787</p>
+            <h2 style="color: #333; margin-top: 15px;">COTIZACIÓN</h2>
+        </div>
+        
+        <div class="datos-cliente" style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #d4af37;">
+            <h3 style="color: #b8860b; border-bottom: 2px solid #d4af37; padding-bottom: 5px; font-size: 18px;">DATOS DEL CLIENTE</h3>
+            <p style="color: #000; font-size: 15px;"><strong style="color: #b8860b;">Cliente:</strong> <span contenteditable="true" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px; cursor: text; color: #000; font-weight: bold;">{datos.get('cliente', '[EDITAR CLIENTE]')}</span></p>
+            <p style="color: #000; font-size: 15px;"><strong style="color: #b8860b;">Proyecto:</strong> <span contenteditable="true" style="background: #fff3cd; padding: 2px 4px; border-radius: 3px; cursor: text; color: #000; font-weight: bold;">{datos.get('proyecto', '[EDITAR PROYECTO]')}</span></p>
+            <p style="color: #000; font-size: 14px;"><strong style="color: #b8860b;">Número:</strong> {datos.get('numero', 'COT-202501-001')}</p>
+            <p style="color: #000; font-size: 14px;"><strong style="color: #b8860b;">Fecha:</strong> {datos.get('fecha', datetime.now().strftime('%d/%m/%Y'))}</p>
+            <p style="color: #000; font-size: 14px;"><strong style="color: #b8860b;">Vigencia:</strong> {datos.get('vigencia', '30 días')}</p>
+        </div>
+        
+        <div class="descripcion" style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #d4af37;">
+            <h3 style="color: #b8860b; border-bottom: 2px solid #d4af37; padding-bottom: 5px; font-size: 18px;">DESCRIPCIÓN DEL PROYECTO</h3>
+            <div contenteditable="true" style="background: #fff3cd; padding: 12px; border: 2px dashed #d4af37; min-height: 80px; border-radius: 4px; cursor: text; color: #000; font-size: 14px;">
+                {datos.get('descripcion', '[EDITAR DESCRIPCIÓN DEL PROYECTO - Describe el alcance del trabajo a realizar]')}
+            </div>
+        </div>
+        
+        <div class="items-tabla" style="margin-bottom: 20px;">
+            <h3 style="color: #d4af37; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DETALLE DE ITEMS</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #d4af37; color: white;">
+                        <th style="border: 1px solid #333; padding: 10px; text-align: left;">DESCRIPCIÓN</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 80px;">CANT.</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 60px;">UND.</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 100px;">P.UNIT.</th>
+                        <th style="border: 1px solid #333; padding: 10px; width: 100px;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {generar_filas_items(datos.get('items', []))}
+                </tbody>
+            </table>
+            <div style="margin-top: 20px; text-align: right; background: #e8e8e8; padding: 15px; border-radius: 4px; border: 2px solid #d4af37;">
+                <p style="margin: 5px 0; color: #000; font-size: 16px;"><strong>Subtotal: S/ {datos.get('subtotal', 0):.2f}</strong></p>
+                <p style="margin: 5px 0; color: #000; font-size: 16px;"><strong>IGV (18%): S/ {datos.get('igv', 0):.2f}</strong></p>
+                <p style="font-size: 22px; color: #b8860b; margin: 10px 0 0 0;"><strong>TOTAL: S/ {datos.get('total', 0):.2f}</strong></p>
+            </div>
+        </div>
+        
+        <div class="observaciones" style="margin-bottom: 20px;">
+            <h3 style="color: #d4af37; border-bottom: 1px solid #ddd; padding-bottom: 5px;">OBSERVACIONES</h3>
+            <div contenteditable="true" style="background: #fff3cd; padding: 12px; border: 1px dashed #d4af37; min-height: 60px; border-radius: 4px; cursor: text;">
+                {datos.get('observaciones', 'Precios incluyen IGV. Instalación según CNE-Utilización. Garantía 12 meses. Materiales de primera calidad.')}
+            </div>
+        </div>
+        
+        <div class="footer" style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+            <p style="color: #666; margin: 0; font-size: 14px;"><strong>Tesla Electricidad y Automatización S.A.C.</strong></p>
+            <p style="color: #666; margin: 5px 0; font-size: 12px;">Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos - San Juan de Lurigancho</p>
+            <p style="color: #666; margin: 0; font-size: 12px;">📞 906315961 | 📧 ingenieria.teslaelectricidad@gmail.com</p>
+            <p style="color: #d4af37; margin: 10px 0 0 0; font-size: 12px; font-style: italic;">✨ Generado por {agente} - Tu agente IA especializada</p>
+        </div>
+    </div>
+    
+    <style>
+        .cotizacion-preview [contenteditable="true"]:hover {{
+            background: #fff8dc !important;
+            box-shadow: 0 0 4px rgba(212, 175, 55, 0.5);
+            transition: all 0.3s ease;
+        }}
+        .cotizacion-preview [contenteditable="true"]:focus {{
+            outline: 2px solid #d4af37;
+            background: white !important;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.8);
+        }}
+        .cotizacion-preview table {{
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+    </style>
+    """
+    
+    return html
+
+def generar_preview_proyecto(datos: Dict[str, Any], agente: str) -> str:
+    """Genera HTML preview para proyecto"""
+    
+    html = f"""
+    <div class="proyecto-preview" style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+        <div class="pili-header" style="text-align: center; background: linear-gradient(135deg, #28a745, #34ce57); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px;">🤖 {agente} - Gestión de Proyecto</h2>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Vista previa editable del proyecto</p>
+        </div>
+        
+        <div class="proyecto-info" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #28a745; margin-top: 0;">📁 {datos.get('nombre_proyecto', '[NOMBRE DEL PROYECTO]')}</h2>
+            <p><strong>Cliente:</strong> <span contenteditable="true" style="background: #d4edda; padding: 2px 4px;">{datos.get('cliente', '[CLIENTE]')}</span></p>
+            <p><strong>Fecha de inicio:</strong> {datos.get('fecha_inicio', '[FECHA]')}</p>
+            <p><strong>Duración estimada:</strong> {datos.get('duracion_estimada', '[DURACIÓN]')}</p>
+            <p><strong>Estado:</strong> <span style="background: #ffc107; color: #856404; padding: 4px 8px; border-radius: 4px;">{datos.get('estado', 'En planificación')}</span></p>
+            
+            <h3 style="color: #28a745; border-bottom: 1px solid #ddd; padding-bottom: 5px;">DESCRIPCIÓN</h3>
+            <div contenteditable="true" style="background: #d4edda; padding: 12px; border: 1px dashed #28a745; min-height: 80px; border-radius: 4px;">
+                {datos.get('descripcion', '[EDITAR DESCRIPCIÓN DEL PROYECTO]')}
+            </div>
+        </div>
+    </div>
+    """
+    
+    return html
+
+def generar_preview_informe(datos: Dict[str, Any], agente: str) -> str:
+    """Genera HTML preview para informe"""
+    
+    html = f"""
+    <div class="informe-preview" style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+        <div class="pili-header" style="text-align: center; background: linear-gradient(135deg, #6f42c1, #8a63d2); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px;">🤖 {agente} - Informe Técnico</h2>
+            <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Vista previa editable del informe</p>
+        </div>
+        
+        <div class="informe-content" style="background: white; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #6f42c1; margin-top: 0;">📊 {datos.get('titulo_informe', '[TÍTULO DEL INFORME]')}</h2>
+            <p><strong>Fecha:</strong> {datos.get('fecha_informe', '[FECHA]')}</p>
+            <p><strong>Autor:</strong> {datos.get('autor', 'Tesla Electricidad y Automatización S.A.C.')}</p>
+            
+            <h3 style="color: #6f42c1; border-bottom: 1px solid #ddd; padding-bottom: 5px;">RESUMEN EJECUTIVO</h3>
+            <div contenteditable="true" style="background: #e7d9f7; padding: 12px; border: 1px dashed #6f42c1; min-height: 80px; border-radius: 4px;">
+                {datos.get('resumen_ejecutivo', '[EDITAR RESUMEN EJECUTIVO]')}
+            </div>
+        </div>
+    </div>
+    """
+    
+    return html
 
 @router.get("/pili/estadisticas-aprendizaje")
 async def estadisticas_aprendizaje_pili(db: Session = Depends(get_db)):
     """
-    🆕 NUEVO PILI v3.0 - Estadísticas de aprendizaje del agente
+    🤖 NUEVO PILI v3.0 - Estadísticas de aprendizaje automático
     
-    Muestra cómo PILI ha evolucionado basándose en conversaciones anteriores
+    Muestra cómo PILI ha aprendido de las conversaciones previas y su evolución.
     """
+    
     try:
-        # Simular estadísticas de aprendizaje basadas en datos reales
-        total_cotizaciones = db.query(Cotizacion).count()
+        from app.models.documento import Documento
         
-        # Calcular "aprendizajes" basados en actividad
-        total_aprendizajes = total_cotizaciones * 3  # Cada cotización = múltiples interacciones
+        # Contar documentos de aprendizaje PILI
+        total_aprendizajes = db.query(Documento).filter(
+            Documento.nombre.like("PILI_Aprendizaje%")
+        ).count()
         
-        # Determinar "nivel de inteligencia" basado en experiencia
-        if total_aprendizajes >= 100:
-            nivel_inteligencia = "Experto Avanzado"
-            mensaje_nivel = "He procesado muchos casos y soy muy precisa en mis recomendaciones."
-        elif total_aprendizajes >= 50:
-            nivel_inteligencia = "Especialista"
-            mensaje_nivel = "Tengo experiencia sólida y genero cotizaciones confiables."
-        elif total_aprendizajes >= 20:
-            nivel_inteligencia = "Competente"
-            mensaje_nivel = "Estoy desarrollando expertise y mejorando constantemente."
-        elif total_aprendizajes >= 5:
-            nivel_inteligencia = "Principiante"
-            mensaje_nivel = "Estoy aprendiendo rápido de cada proyecto."
+        # Estadísticas por tipo de servicio
+        servicios_stats = {}
+        for servicio_id in CONTEXTOS_SERVICIOS.keys():
+            count = db.query(Documento).filter(
+                Documento.content_text.like(f'%{servicio_id}%')
+            ).count()
+            servicios_stats[servicio_id] = count
+        
+        # Determinar nivel de inteligencia
+        if total_aprendizajes > 100:
+            nivel_inteligencia = "Experto"
+            mensaje_nivel = "He procesado más de 100 casos. ¡Soy muy precisa!"
+        elif total_aprendizajes > 50:
+            nivel_inteligencia = "Avanzado"
+            mensaje_nivel = "Con más de 50 casos procesados, mejoro constantemente."
+        elif total_aprendizajes > 10:
+            nivel_inteligencia = "Intermedio"
+            mensaje_nivel = "Estoy aprendiendo rápidamente de cada conversación."
         else:
-            nivel_inteligencia = "Inicial"
+            nivel_inteligencia = "Básico"
             mensaje_nivel = "Estoy en mis primeros casos, pero aprendo rápido."
         
         # Capacidades que ha desarrollado
@@ -1158,8 +1075,8 @@ async def estadisticas_aprendizaje_pili(db: Session = Depends(get_db)):
                 "total_conversaciones": total_aprendizajes,
                 "nivel_inteligencia": nivel_inteligencia,
                 "mensaje_nivel": mensaje_nivel,
-                "servicios_utilizados": {},
-                "servicio_mas_usado": "cotizacion-simple",
+                "servicios_utilizados": servicios_stats,
+                "servicio_mas_usado": max(servicios_stats.items(), key=lambda x: x[1])[0] if servicios_stats else None,
                 "ultima_actualizacion": datetime.now().isoformat(),
                 "capacidades_desarrolladas": capacidades
             },
@@ -1201,40 +1118,30 @@ async def estadisticas_aprendizaje_pili(db: Session = Depends(get_db)):
                 "nivel_inteligencia": "Inicial",
                 "mensaje_nivel": "Estoy lista para comenzar a aprender.",
                 "servicios_utilizados": {},
-                "servicio_mas_usado": None,
-                "ultima_actualizacion": datetime.now().isoformat(),
-                "capacidades_desarrolladas": []
+                "ultima_actualizacion": datetime.now().isoformat()
             },
-            "mensaje_pili": "¡Hola! 🤖 Soy PILI y estoy lista para ayudarte. Mientras más conversemos, más inteligente me vuelvo.",
-            "recomendaciones": [
-                "🚀 ¡Empecemos a trabajar juntos!",
-                "💬 Háblame sobre tu primer proyecto",
-                "📄 Puedes subirme documentos para analizar",
-                "🎯 Cada interacción me hace más inteligente"
-            ]
+            "mensaje_pili": "🤖 ¡Soy PILI y estoy lista para comenzar nuestro trabajo juntos! Cada conversación me hará más inteligente."
         }
+
+# ════════════════════════════════════════════════════════════════
+# 🆕 ENDPOINTS SERVICIOS INTELIGENTES (CONSERVADOS + MEJORADOS)  
+# ════════════════════════════════════════════════════════════════
 
 @router.get("/botones-contextuales/{tipo_flujo}")
 async def obtener_botones_contextuales(
     tipo_flujo: str,
-    etapa: str = "inicial",
-    historial_length: int = 0,
-    tiene_cotizacion: bool = False
+    etapa: Optional[str] = "inicial",
+    historial_length: Optional[int] = 0,
+    tiene_cotizacion: Optional[bool] = False
 ):
     """
-    🔄 CONSERVADO v2.0 - Obtiene botones contextuales para la interfaz
+    🔄 CONSERVADO v2.0 + MEJORADO PILI v3.0
     
-    Args:
-        tipo_flujo: cotizacion-simple, cotizacion-compleja, informe-simple, etc.
-        etapa: inicial, refinamiento, generacion
-        historial_length: Cantidad de mensajes en la conversación
-        tiene_cotizacion: Si ya se generó una cotización
-    
-    Returns:
-        Lista de botones contextuales para mostrar al usuario
+    Obtiene botones contextuales según el tipo de flujo y etapa.
+    PILI ahora incluye información sobre qué agente está activo.
     """
     try:
-        logger.info(f"Obteniendo botones para {tipo_flujo}, etapa: {etapa}")
+        logger.info(f"🤖 PILI obteniendo botones para {tipo_flujo}, etapa: {etapa}")
         
         # Obtener contexto del servicio
         contexto = obtener_contexto_servicio(tipo_flujo)
@@ -1242,7 +1149,7 @@ async def obtener_botones_contextuales(
         if not contexto:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Tipo de flujo '{tipo_flujo}' no soportado"
+                detail=f"Tipo de flujo '{tipo_flujo}' no soportado por PILI"
             )
         
         # Determinar etapa automáticamente si no se especifica
@@ -1257,6 +1164,8 @@ async def obtener_botones_contextuales(
         
         return {
             "success": True,
+            "pili_activa": contexto.get("nombre_pili", "PILI"),
+            "personalidad": contexto.get("personalidad", ""),
             "tipo_flujo": tipo_flujo,
             "etapa": etapa,
             "botones": botones,
@@ -1329,98 +1238,131 @@ async def chat_contextualizado(
 
         prompt_especializado += f"\n\nUSUARIO: {mensaje}\n\nRESPUESTA DE {nombre_pili}:"
 
-        # Enviar a Gemini con contexto especializado, con fallback a PILIBrain
-        try:
-            respuesta = gemini_service.chat(
-                mensaje=prompt_especializado,
-                contexto=f"Agente: {nombre_pili}. Servicio: {tipo_flujo}. {contexto_adicional}",
-                cotizacion_id=cotizacion_id
-            )
-            
-            # 🚨 DETECTAR MODO DEMO DE GEMINI Y FORZAR FALLBACK A PILIBRAIN
-            if isinstance(respuesta, dict) and "PILI en modo demo" in str(respuesta.get("mensaje", "")):
-                raise Exception("Gemini en modo demo (sin API Key)")
-                
-        except Exception as e:
-            # 🧠 FALLBACK: Usar PILIBrain cuando Gemini no está disponible
-            logger.warning(f"⚠️ Gemini no disponible, usando PILIBrain local: {e}")
-            servicio_detectado = pili_brain.detectar_servicio(mensaje)
-            cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, "simple")
-            respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
+        # Enviar a Gemini con contexto especializado
+        respuesta = gemini_service.chat(
+            mensaje=prompt_especializado,
+            contexto=f"Agente: {nombre_pili}. Servicio: {tipo_flujo}. {contexto_adicional}",
+            cotizacion_id=cotizacion_id
+        )
 
         # Determinar etapa y botones sugeridos
         tiene_cotizacion = cotizacion_id is not None
         etapa_actual = determinar_etapa_conversacion(historial, tiene_cotizacion)
         botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
 
-        # 🆕 NUEVO: Generar vista previa HTML si se solicita
+        # NUEVO: Generar vista previa HTML si se solicitó
         html_preview = None
-        if generar_html and tipo_flujo.startswith("cotizacion"):
-            # Simular datos de cotización para preview
-            datos_preview = {
-                "items": [
-                    {"descripcion": "Punto de luz LED 18W", "cantidad": 8, "unidad": "pto", "precio_unitario": 30.00},
-                    {"descripcion": "Tomacorriente doble", "cantidad": 6, "unidad": "pto", "precio_unitario": 35.00},
-                    {"descripcion": "Cable THW 2.5mm²", "cantidad": 50, "unidad": "m", "precio_unitario": 4.00}
-                ],
-                "cliente": "Cliente Demo",
-                "proyecto": "Instalación Eléctrica",
-                "total": 650.00
-            }
-            html_preview = generar_preview_html_editable(datos_preview, nombre_pili)
+        datos_generados = None
 
-        elif generar_html and tipo_flujo.startswith("informe"):
-            datos_preview = {
-                "titulo": "Informe Técnico Eléctrico",
-                "cliente": "Cliente Demo"
-            }
-            html_preview = generar_preview_informe(datos_preview, nombre_pili)
+        if generar_html and len(historial) >= 1:
+            # Usar PILIBrain para generar datos reales con items
+            try:
+                if "cotizacion" in tipo_flujo:
+                    # Detectar servicio y generar cotización completa con PILIBrain
+                    mensaje_completo = contexto_adicional or mensaje
+                    for msg in historial[-3:]:  # Últimos 3 mensajes para contexto
+                        mensaje_completo += " " + msg.get('content', '')
+
+                    # Detectar servicio basado en el mensaje
+                    servicio_detectado = pili_brain.detectar_servicio(mensaje_completo)
+                    complejidad = "complejo" if "complejo" in tipo_flujo else "simple"
+
+                    # Generar cotización completa con items
+                    cotizacion_data = pili_brain.generar_cotizacion(
+                        mensaje=mensaje_completo,
+                        servicio=servicio_detectado,
+                        complejidad=complejidad
+                    )
+
+                    # Extraer datos generados con items
+                    datos_generados = cotizacion_data.get("datos", {})
+
+                    # Crear datos_json para preview
+                    datos_json = {
+                        "pili_version": "3.0",
+                        "agente_responsable": nombre_pili,
+                        "tipo_servicio": tipo_flujo,
+                        "timestamp": datetime.now().isoformat(),
+                        "datos_extraidos": datos_generados
+                    }
+
+                    logger.info(f"✅ PILIBrain generó {len(datos_generados.get('items', []))} items para cotización")
+
+                else:
+                    # Para proyecto e informe, usar datos básicos
+                    datos_json = {
+                        "pili_version": "3.0",
+                        "agente_responsable": nombre_pili,
+                        "tipo_servicio": tipo_flujo,
+                        "timestamp": datetime.now().isoformat(),
+                        "datos_extraidos": {
+                            "cliente": "[Cliente por definir]",
+                            "proyecto": "[Proyecto generado con PILI]",
+                            "descripcion": contexto_adicional or mensaje,
+                            "fecha": datetime.now().strftime("%d/%m/%Y")
+                        }
+                    }
+                    datos_generados = datos_json.get("datos_extraidos")
+
+                # Generar HTML preview según tipo
+                html_preview = generar_preview_html(datos_json)
+
+            except Exception as e:
+                logger.error(f"Error generando datos con PILIBrain: {e}")
+                # Fallback a datos básicos
+                datos_json = {
+                    "pili_version": "3.0",
+                    "agente_responsable": nombre_pili,
+                    "tipo_servicio": tipo_flujo,
+                    "timestamp": datetime.now().isoformat(),
+                    "datos_extraidos": {
+                        "cliente": "[Cliente por definir]",
+                        "proyecto": "[Proyecto generado con PILI]",
+                        "descripcion": contexto_adicional or mensaje,
+                        "fecha": datetime.now().strftime("%d/%m/%Y")
+                    }
+                }
+                html_preview = generar_preview_html(datos_json)
+                datos_generados = datos_json.get("datos_extraidos")
 
         return {
             "success": True,
             "agente_activo": nombre_pili,
-            "respuesta": respuesta.get('mensaje', '') if isinstance(respuesta, dict) else str(respuesta),
-            "tipo_flujo": tipo_flujo,
+            "respuesta": respuesta.get('mensaje', ''),
+            "sugerencias": respuesta.get('sugerencias', []),
+            "accion_recomendada": respuesta.get('accion_recomendada'),
+            "botones_contextuales": botones_sugeridos,
             "etapa_actual": etapa_actual,
-            "botones_sugeridos": botones_sugeridos,
-            "contexto_pili": {
-                "personalidad": contexto.get("personalidad", ""),
-                "preguntas_esenciales": contexto.get("preguntas_esenciales", []),
-                "especialidad": contexto.get("rol_ia", "")
-            },
+            "preguntas_pendientes": contexto.get("preguntas_esenciales", []),
+            "tipo_flujo": tipo_flujo,
             "html_preview": html_preview,
-            "generar_html": generar_html,
-            "timestamp": datetime.now().isoformat(),
-            "pili_metadata": {
-                "agente_id": tipo_flujo,
-                "version": "3.0",
-                "capabilities": ["chat", "ocr", "json", "html_preview"]
-            }
+            "cotizacion_generada": datos_generados if "cotizacion" in tipo_flujo else None,
+            "proyecto_generado": datos_generados if "proyecto" in tipo_flujo else None,
+            "informe_generado": datos_generados if "informe" in tipo_flujo else None
         }
-
+        
     except Exception as e:
-        logger.error(f"❌ Error en chat contextualizado PILI: {e}")
+        logger.error(f"Error en chat contextualizado: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error en PILI: {str(e)}"
+            detail=f"Error: {str(e)}"
         )
 
 @router.post("/iniciar-flujo-inteligente")
 async def iniciar_flujo_inteligente(
     tipo_flujo: str = Body(...),
-    servicio: str = Body("electricidad"),
-    industria: str = Body("general"),
     descripcion_inicial: Optional[str] = Body(""),
+    nombre_cliente: Optional[str] = Body(""),
     db: Session = Depends(get_db)
 ):
     """
-    🆕 NUEVO PILI v3.0 - Inicia un flujo de trabajo inteligente
+    🔄 CONSERVADO v2.0 + MEJORADO PILI v3.0
     
-    Este endpoint inicializa una conversación especializada con el agente PILI apropiado
-    y proporciona un análisis inicial del proyecto.
+    Inicia un flujo inteligente con análisis automático.
+    PILI ahora presenta el agente específico que se activará.
     """
     try:
-        logger.info(f"🚀 PILI iniciando flujo inteligente: {tipo_flujo}")
+        logger.info(f"🤖 PILI iniciando flujo {tipo_flujo}")
         
         # Obtener contexto del servicio
         contexto = obtener_contexto_servicio(tipo_flujo)
@@ -1428,32 +1370,29 @@ async def iniciar_flujo_inteligente(
         if not contexto:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Tipo de flujo '{tipo_flujo}' no soportado"
+                detail=f"Tipo de flujo '{tipo_flujo}' no soportado por PILI"
             )
         
         nombre_pili = contexto.get("nombre_pili", "PILI")
         
-        # Análisis inicial automático por PILI Brain
-        analisis = f"""
-        {nombre_pili} ha analizado tu solicitud inicial:
+        # Crear análisis inicial inteligente
+        prompt_analisis = f"""
+        Como {nombre_pili}, analiza esta información inicial:
         
-        📋 **Tipo de proyecto:** {tipo_flujo.replace('-', ' ').title()}
-        🏢 **Sector:** {industria.title()}
-        ⚡ **Servicio:** {servicio.title()}
+        Cliente: {nombre_cliente}
+        Descripción: {descripcion_inicial}
+        Tipo de servicio: {tipo_flujo}
         
-        📊 **Análisis inicial:**
-        - Proyecto clasificado como: {contexto.get('complejidad', 'Estándar')}
-        - Tiempo estimado: {contexto.get('tiempo_estimado', '1-3 horas')}
-        - Especialista asignado: {nombre_pili}
-        
-        🎯 **Próximos pasos recomendados:**
-        1. Proporcionar detalles específicos del proyecto
-        2. Subir documentos técnicos si están disponibles
-        3. Definir alcance y requerimientos
-        4. Revisar especificaciones y normativas aplicables
+        Proporciona un plan de trabajo específico y las primeras preguntas para avanzar eficientemente.
         """
         
-        # Obtener botones iniciales según el contexto
+        # Obtener análisis de Gemini
+        analisis = gemini_service.analizar_documento(
+            texto_documento=prompt_analisis,
+            tipo_analisis=f"plan_trabajo_{tipo_flujo}"
+        )
+        
+        # Botones iniciales para este flujo
         botones_iniciales = obtener_botones_para_etapa(tipo_flujo, "inicial")
         
         return {
@@ -1475,15 +1414,70 @@ async def iniciar_flujo_inteligente(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error: {str(e)}"
         )
-
-# ════════════════════════════════════════════════════════════════
-# 🔄 GESTIÓN DE PLANTILLAS (CONSERVADO INTACTO)
-# ════════════════════════════════════════════════════════════════
+            )
+        
+        # Crear directorio de plantillas si no existe
+        templates_dir = Path(settings.TEMPLATES_DIR)
+        templates_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Nombre del archivo
+        nombre_archivo = nombre_personalizado if nombre_personalizado else archivo.filename
+        if not nombre_archivo.endswith('.docx'):
+            nombre_archivo += '.docx'
+        
+        # Ruta completa
+        ruta_plantilla = templates_dir / nombre_archivo
+        
+        # Guardar archivo
+        contenido = await archivo.read()
+        with open(ruta_plantilla, 'wb') as f:
+            f.write(contenido)
+        
+        logger.info(f"✅ Plantilla subida: {nombre_archivo}")
+        
+        # Validar plantilla y extraer marcadores
+        from app.services.template_processor import template_processor
+        
+        try:
+            es_valida, mensaje = template_processor.validar_plantilla(str(ruta_plantilla))
+            marcadores = template_processor.extraer_marcadores(str(ruta_plantilla)) if es_valida else []
+        except:
+            es_valida = True  # Asumir que es válida si hay error en validación
+            marcadores = []
+            mensaje = "Plantilla subida (validación básica)"
+        
+        return {
+            "success": True,
+            "mensaje": "Plantilla subida exitosamente",
+            "archivo": {
+                "nombre_original": archivo.filename,
+                "nombre_guardado": nombre_archivo,
+                "tamaño_kb": round(len(contenido) / 1024, 2),
+                "ruta": str(ruta_plantilla)
+            },
+            "validacion": {
+                "es_valida": es_valida,
+                "mensaje": mensaje,
+                "marcadores_encontrados": marcadores,
+                "total_marcadores": len(marcadores)
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al subir plantilla: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error: {str(e)}"
+        )
 
 @router.get("/listar-plantillas")
 async def listar_plantillas_disponibles():
     """
     🔄 CONSERVADO - Listar todas las plantillas Word disponibles
+    
+    ⭐ Permite ver qué plantillas han sido subidas
     """
     
     try:
@@ -1495,25 +1489,28 @@ async def listar_plantillas_disponibles():
             templates_dir.mkdir(parents=True, exist_ok=True)
             return {
                 "success": True,
-                "plantillas": [],
-                "mensaje": "No hay plantillas disponibles. Sube tu primera plantilla."
+                "total": 0,
+                "plantillas": []
             }
         
-        # Buscar archivos .docx
         plantillas = []
+        
         for archivo in templates_dir.glob("*.docx"):
-            plantillas.append({
-                "nombre": archivo.name,
-                "ruta": str(archivo),
-                "tamaño": f"{archivo.stat().st_size / 1024:.1f} KB",
-                "fecha_modificacion": datetime.fromtimestamp(archivo.stat().st_mtime).strftime("%d/%m/%Y %H:%M")
-            })
+            if archivo.is_file():
+                # Información básica del archivo
+                stat = archivo.stat()
+                
+                plantillas.append({
+                    "nombre": archivo.name,
+                    "tamaño_kb": round(stat.st_size / 1024, 2),
+                    "fecha_modificacion": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+                    "ruta_relativa": f"plantillas/{archivo.name}"
+                })
         
         return {
             "success": True,
-            "plantillas": plantillas,
             "total": len(plantillas),
-            "directorio": str(templates_dir)
+            "plantillas": sorted(plantillas, key=lambda x: x["fecha_modificacion"], reverse=True)
         }
         
     except Exception as e:
@@ -1529,13 +1526,16 @@ async def obtener_marcadores_plantilla(
 ):
     """
     🔄 CONSERVADO - Obtener marcadores de una plantilla específica
+    
+    ⭐ Permite ver qué marcadores están disponibles en una plantilla
+    
+    Útil para que el chat pueda decir: 
+    "Tu plantilla tiene los marcadores: {{cliente}}, {{fecha}}, {{items_tabla}}"
     """
     
     try:
         from app.core.config import settings
-        from app.services.template_processor import template_processor
         
-        # Ruta de la plantilla
         ruta_plantilla = Path(settings.TEMPLATES_DIR) / nombre_plantilla
         
         if not ruta_plantilla.exists():
@@ -1545,13 +1545,15 @@ async def obtener_marcadores_plantilla(
             )
         
         # Extraer marcadores usando template_processor
+        from app.services.template_processor import template_processor
+        
         marcadores = template_processor.extraer_marcadores(str(ruta_plantilla))
         
         return {
             "success": True,
-            "nombre_plantilla": nombre_plantilla,
-            "marcadores_encontrados": marcadores,
+            "plantilla": nombre_plantilla,
             "total_marcadores": len(marcadores),
+            "marcadores": marcadores,
             "marcadores_comunes": [
                 "{{cliente}}", "{{proyecto}}", "{{fecha}}", "{{numero}}",
                 "{{descripcion}}", "{{observaciones}}", 
@@ -1579,6 +1581,9 @@ async def generar_cotizacion_con_plantilla(
 ):
     """
     🔄 CONSERVADO - Generar cotización usando una plantilla personalizada
+    
+    ⭐ PILI puede decir: "usa mi plantilla de informe"
+    Y este endpoint procesa esa solicitud
     """
     
     try:
@@ -1609,21 +1614,6 @@ async def generar_cotizacion_con_plantilla(
         items_db = db.query(Item).filter(Item.cotizacion_id == cotizacion_id).all()
         
         items = []
-        for item in items_db:
-            items.append({
-                "descripcion": item.descripcion,
-                "cantidad": float(item.cantidad),
-                "unidad": item.unidad,
-                "precio_unitario": float(item.precio_unitario),
-                "subtotal": float(item.cantidad * item.precio_unitario)
-            })
-        
-        # Preparar datos para la plantilla
-        datos_cotizacion = {
-            "numero": cotizacion.numero,
-            "cliente": cotizacion.cliente,
-            "proyecto": cotizacion.proyecto or "Instalación Eléctrica",
-            "descripcion": cotizacion.descripcion,
             "fecha": datetime.now().strftime("%d/%m/%Y"),
             "subtotal": float(cotizacion.subtotal) if cotizacion.subtotal else 0,
             "igv": float(cotizacion.igv) if cotizacion.igv else 0,
@@ -1709,6 +1699,13 @@ async def validar_plantilla(
 ):
     """
     🔄 CONSERVADO - Validar una plantilla antes de subirla
+    
+    ⭐ Verificar que la plantilla es válida
+    
+    Verifica:
+    - Que sea un archivo .docx válido
+    - Extrae y muestra los marcadores
+    - Valida la estructura
     """
     
     try:
@@ -1766,270 +1763,3 @@ async def validar_plantilla(
             "error": str(e),
             "recomendacion": "Verifica que el archivo no esté corrupto"
         }
-
-@router.post("/subir-plantilla")
-async def subir_plantilla(
-    archivo: UploadFile = File(...),
-    nombre_personalizado: Optional[str] = Body(None)
-):
-    """
-    🔄 CONSERVADO - Subir una nueva plantilla Word
-    """
-    
-    try:
-        from app.core.config import settings
-        
-        # Validar que sea un archivo Word
-        if not archivo.filename.endswith('.docx'):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Solo se permiten archivos .docx"
-            )
-        
-        # Crear directorio de plantillas si no existe
-        templates_dir = Path(settings.TEMPLATES_DIR)
-        templates_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Nombre del archivo
-        nombre_archivo = nombre_personalizado if nombre_personalizado else archivo.filename
-        if not nombre_archivo.endswith('.docx'):
-            nombre_archivo += '.docx'
-        
-        # Ruta completa
-        ruta_plantilla = templates_dir / nombre_archivo
-        
-        # Guardar archivo
-        contenido = await archivo.read()
-        with open(ruta_plantilla, 'wb') as f:
-            f.write(contenido)
-        
-        logger.info(f"✅ Plantilla subida: {nombre_archivo}")
-        
-        # Validar plantilla y extraer marcadores
-        from app.services.template_processor import template_processor
-        
-        try:
-            es_valida, mensaje = template_processor.validar_plantilla(str(ruta_plantilla))
-            marcadores = template_processor.extraer_marcadores(str(ruta_plantilla)) if es_valida else []
-        except:
-            es_valida = True  # Asumir que es válida si hay error en validación
-            marcadores = []
-            mensaje = "Plantilla subida (validación básica)"
-        
-        return {
-            "success": True,
-            "mensaje": f"Plantilla '{nombre_archivo}' subida exitosamente",
-            "nombre_archivo": nombre_archivo,
-            "ruta": str(ruta_plantilla),
-            "validacion": {
-                "es_valida": es_valida,
-                "mensaje": mensaje,
-                "marcadores_encontrados": marcadores,
-                "total_marcadores": len(marcadores)
-            }
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error al subir plantilla: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error: {str(e)}"
-        )
-
-# ════════════════════════════════════════════════════════════════
-# 🔄 ENDPOINTS LEGACY - CONSERVADOS PARA COMPATIBILIDAD
-# ════════════════════════════════════════════════════════════════
-
-@router.post("/generar-rapida", response_model=CotizacionResponse)
-async def generar_cotizacion_rapida(
-    request: CotizacionRapidaRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    🔄 CONSERVADO - Generar cotización rápida con IA (endpoint legacy)
-    """
-    try:
-        logger.info("Generando cotización rápida con IA")
-        
-        # Generar con Gemini
-        resultado = gemini_service.generar_cotizacion(
-            servicio=request.servicio,
-            industria=request.industria,
-            descripcion=request.descripcion
-        )
-        
-        if not resultado:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="No se pudo generar la cotización con IA"
-            )
-        
-        # Crear cotización en BD
-        nueva_cotizacion = Cotizacion(
-            numero=generar_numero_cotizacion(db),
-            cliente=resultado.get('cliente', 'Cliente Gemini'),
-            proyecto=resultado.get('proyecto', 'Proyecto generado por IA'),
-            descripcion=resultado.get('descripcion', ''),
-            observaciones=resultado.get('observaciones', ''),
-            subtotal=resultado.get('subtotal', 0),
-            igv=resultado.get('igv', 0),
-            total=resultado.get('total', 0),
-            estado="borrador",
-            fecha_creacion=datetime.now()
-        )
-        
-        db.add(nueva_cotizacion)
-        db.commit()
-        db.refresh(nueva_cotizacion)
-        
-        # Agregar items si los hay
-        if 'items' in resultado:
-            for item_data in resultado['items']:
-                item = Item(
-                    cotizacion_id=nueva_cotizacion.id,
-                    descripcion=item_data.get('descripcion', ''),
-                    cantidad=item_data.get('cantidad', 1),
-                    unidad=item_data.get('unidad', 'und'),
-                    precio_unitario=item_data.get('precio_unitario', 0)
-                )
-                db.add(item)
-            
-            db.commit()
-        
-        logger.info(f"✅ Cotización creada: {nueva_cotizacion.numero}")
-        
-        return CotizacionResponse(
-            id=nueva_cotizacion.id,
-            numero=nueva_cotizacion.numero,
-            cliente=nueva_cotizacion.cliente,
-            proyecto=nueva_cotizacion.proyecto,
-            descripcion=nueva_cotizacion.descripcion,
-            observaciones=nueva_cotizacion.observaciones,
-            subtotal=float(nueva_cotizacion.subtotal),
-            igv=float(nueva_cotizacion.igv),
-            total=float(nueva_cotizacion.total),
-            estado=nueva_cotizacion.estado,
-            fecha_creacion=nueva_cotizacion.fecha_creacion.isoformat() if nueva_cotizacion.fecha_creacion else None,
-            items=resultado.get('items', [])
-        )
-        
-    except Exception as e:
-        logger.error(f"Error generando cotización rápida: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error: {str(e)}"
-        )
-
-@router.post("/conversacional", response_model=ChatResponse)
-async def chat_conversacional(
-    request: ChatRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    🔄 CONSERVADO - Chat conversacional para refinar cotizaciones
-    """
-    try:
-        logger.info("Procesando mensaje de chat conversacional")
-        
-        # Enviar mensaje a Gemini
-        respuesta = gemini_service.chat(
-            mensaje=request.mensaje,
-            contexto=request.contexto,
-            cotizacion_id=request.cotizacion_id
-        )
-        
-        return ChatResponse(
-            respuesta=respuesta.get('mensaje', '') if isinstance(respuesta, dict) else str(respuesta),
-            sugerencias=respuesta.get('sugerencias', []) if isinstance(respuesta, dict) else [],
-            accion_recomendada=respuesta.get('accion_recomendada') if isinstance(respuesta, dict) else None
-        )
-        
-    except Exception as e:
-        logger.error(f"Error en chat conversacional: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error en chat: {str(e)}"
-        )
-
-@router.post("/analizar-proyecto")
-def analizar_proyecto_ia(
-    descripcion: str
-):
-    """
-    🔄 CONSERVADO - Analizar descripción de un proyecto con IA
-    """
-    try:
-        logger.info("Analizando descripción de proyecto")
-        
-        # Analizar con Gemini
-        analisis = gemini_service.analizar_documento(
-            texto_documento=descripcion,
-            tipo_analisis="proyecto"
-        )
-        
-        return {
-            "success": True,
-            "analisis": analisis,
-            "mensaje": "Análisis completado. Puedes usar esta información para crear una cotización."
-        }
-        
-    except Exception as e:
-        logger.error(f"Error al analizar proyecto: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al analizar: {str(e)}"
-        )
-
-@router.post("/sugerir-mejoras/{cotizacion_id}")
-def sugerir_mejoras_cotizacion(
-    cotizacion_id: int,
-    db: Session = Depends(get_db)
-):
-    """
-    🔄 CONSERVADO - Obtener sugerencias de mejora para una cotización existente
-    """
-    cotizacion = db.query(Cotizacion).filter(Cotizacion.id == cotizacion_id).first()
-    
-    if not cotizacion:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Cotización con ID {cotizacion_id} no encontrada"
-        )
-    
-    try:
-        logger.info(f"Generando sugerencias para cotización {cotizacion.numero}")
-        
-        # Obtener sugerencias de Gemini
-        sugerencias = gemini_service.sugerir_mejoras(cotizacion.__dict__)
-        
-        return {
-            "success": True,
-            "cotizacion_numero": cotizacion.numero,
-            "sugerencias": sugerencias
-        }
-        
-    except Exception as e:
-        logger.error(f"Error al sugerir mejoras: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al generar sugerencias: {str(e)}"
-        )
-
-@router.get("/health")
-def health_check_ia():
-    """
-    🔄 CONSERVADO + MEJORADO - Verificar estado del servicio de IA
-    """
-    from app.core.config import settings
-    
-    return {
-        "gemini_configured": bool(settings.GEMINI_API_KEY),
-        "model": settings.GEMINI_MODEL,
-        "status": "healthy",
-        "pili_version": "3.0",
-        "agentes_disponibles": len(CONTEXTOS_SERVICIOS),
-        "servicios_inteligentes": list(CONTEXTOS_SERVICIOS.keys()),
-        "version": "3.0 - PILI Multifunción"
-    }

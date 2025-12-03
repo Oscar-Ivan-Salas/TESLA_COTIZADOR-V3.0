@@ -6,15 +6,15 @@ const CotizadorTesla30 = () => {
   // ============================================
   // ESTADOS PRINCIPALES
   // ============================================
-  
+
   const [pantallaActual, setPantallaActual] = useState('inicio');
   const [tipoFlujo, setTipoFlujo] = useState(null);
-  
+
   // Estados de menús expandibles
   const [menuCotizaciones, setMenuCotizaciones] = useState(false);
   const [menuProyectos, setMenuProyectos] = useState(false);
   const [menuInformes, setMenuInformes] = useState(false);
-  
+
   // Estados del flujo general
   const [paso, setPaso] = useState(1);
   const [archivos, setArchivos] = useState([]);
@@ -29,7 +29,7 @@ const CotizadorTesla30 = () => {
   const [descargando, setDescargando] = useState(null);
   const [logoBase64, setLogoBase64] = useState('');
   const [botonesContextuales, setBotonesContextuales] = useState([]);
-  
+
   // Estados para vista previa HTML editable
   const [htmlPreview, setHtmlPreview] = useState('');
   const [mostrarPreview, setMostrarPreview] = useState(false);
@@ -37,32 +37,32 @@ const CotizadorTesla30 = () => {
   const [datosEditables, setDatosEditables] = useState(null);
   const [ocultarIGV, setOcultarIGV] = useState(false);
   const [ocultarPreciosUnitarios, setOcultarPreciosUnitarios] = useState(false);
-  
+
   // Estados específicos para cada tipo
   const [cotizacion, setCotizacion] = useState(null);
   const [proyecto, setProyecto] = useState(null);
   const [informe, setInforme] = useState(null);
-  
+
   // Estados específicos para proyectos
   const [nombreProyecto, setNombreProyecto] = useState('');
   const [clienteProyecto, setClienteProyecto] = useState('');
   const [presupuestoEstimado, setPresupuestoEstimado] = useState('');
   const [duracionMeses, setDuracionMeses] = useState('');
-  
+
   // Estados específicos para informes
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState('');
   const [formatoInforme, setFormatoInforme] = useState('word');
   const [incluirGraficos, setIncluirGraficos] = useState(true);
-  
+
   // Referencias
   const chatContainerRef = useRef(null);
   const fileInputLogoRef = useRef(null);
   const previewRef = useRef(null);
-  
+
   // ============================================
   // DATOS DE CONFIGURACIÓN
   // ============================================
-  
+
   const [datosEmpresa] = useState({
     nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
     ruc: '20601138787',
@@ -124,7 +124,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES PRINCIPALES
   // ============================================
-  
+
   const volverAlInicio = () => {
     setPantallaActual('inicio');
     setTipoFlujo(null);
@@ -166,7 +166,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES DEL CHAT + VISTA PREVIA
   // ============================================
-  
+
   const obtenerBotonesContextuales = async () => {
     try {
       const etapa = conversacion.length === 0 ? 'inicial' : 'refinamiento';
@@ -192,14 +192,14 @@ const CotizadorTesla30 = () => {
     try {
       // Preparar contexto según el tipo de flujo
       let contextoPrincipal = `Servicio: ${servicioSeleccionado}, Industria: ${industriaSeleccionada}, Contexto: ${contextoUsuario}`;
-      
+
       if (tipoFlujo.includes('proyecto')) {
         contextoPrincipal += `, Nombre: ${nombreProyecto}, Cliente: ${clienteProyecto}, Presupuesto: ${presupuestoEstimado}, Duración: ${duracionMeses} meses`;
       } else if (tipoFlujo.includes('informe')) {
         contextoPrincipal += `, Proyecto: ${proyectoSeleccionado}, Formato: ${formatoInforme}`;
       }
 
-      const response = await fetch('http://localhost:8000/api/chat/mensaje', {
+      const response = await fetch('http://localhost:8000/api/chat/chat-contextualizado', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -213,7 +213,7 @@ const CotizadorTesla30 = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         const mensajeIA = { tipo: 'asistente', mensaje: data.respuesta };
         setConversacion(prev => [...prev, mensajeIA]);
@@ -263,21 +263,21 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES DE EDICIÓN HTML
   // ============================================
-  
+
   const actualizarItem = (index, campo, valor) => {
     if (!datosEditables?.items) return;
-    
+
     const nuevosItems = [...datosEditables.items];
     nuevosItems[index][campo] = parseFloat(valor) || 0;
-    
+
     // Recalcular total del item
     if (campo === 'cantidad' || campo === 'precioUnitario') {
       nuevosItems[index].total = nuevosItems[index].cantidad * nuevosItems[index].precioUnitario;
     }
-    
+
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
-    
+
     // Actualizar estado específico
     if (tipoFlujo.includes('cotizacion')) {
       setCotizacion(nuevosDatos);
@@ -286,14 +286,14 @@ const CotizadorTesla30 = () => {
     } else if (tipoFlujo.includes('informe')) {
       setInforme(nuevosDatos);
     }
-    
+
     // Regenerar HTML
     regenerarHTML();
   };
 
   const agregarItem = () => {
     if (!datosEditables) return;
-    
+
     const nuevoItem = {
       descripcion: 'Nuevo item',
       cantidad: 1,
@@ -301,35 +301,35 @@ const CotizadorTesla30 = () => {
       total: 0,
       capitulo: 'GENERAL'
     };
-    
+
     const nuevosItems = [...(datosEditables.items || []), nuevoItem];
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
-    
+
     if (tipoFlujo.includes('cotizacion')) {
       setCotizacion(nuevosDatos);
     }
-    
+
     regenerarHTML();
   };
 
   const eliminarItem = (index) => {
     if (!datosEditables?.items) return;
-    
+
     const nuevosItems = datosEditables.items.filter((_, i) => i !== index);
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
-    
+
     if (tipoFlujo.includes('cotizacion')) {
       setCotizacion(nuevosDatos);
     }
-    
+
     regenerarHTML();
   };
 
   const regenerarHTML = () => {
     if (!datosEditables) return;
-    
+
     // Generar HTML actualizado basado en los datos editables
     let htmlActualizado = generarHTMLPreview(datosEditables);
     setHtmlPreview(htmlActualizado);
@@ -348,7 +348,7 @@ const CotizadorTesla30 = () => {
 
   const generarHTMLCotizacion = (datos) => {
     const totales = calcularTotales(datos?.items || []);
-    
+
     return `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
         <div style="border-bottom: 3px solid #8B0000; padding-bottom: 20px; margin-bottom: 20px;">
@@ -473,7 +473,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES DE ARCHIVOS
   // ============================================
-  
+
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
     files.forEach(file => {
@@ -481,7 +481,7 @@ const CotizadorTesla30 = () => {
         setError(`El archivo ${file.name} es demasiado grande (máx 10MB)`);
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const archivo = {
@@ -491,12 +491,12 @@ const CotizadorTesla30 = () => {
           contenido: e.target.result,
           contenidoTexto: file.type.includes('text') ? e.target.result : null
         };
-        
+
         setArchivos(prev => [...prev, archivo]);
         setExito(`Archivo ${file.name} procesado correctamente`);
         setTimeout(() => setExito(''), 3000);
       };
-      
+
       if (file.type.includes('text')) {
         reader.readAsText(file);
       } else {
@@ -512,7 +512,7 @@ const CotizadorTesla30 = () => {
         setError('El logo debe ser menor a 2MB');
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setLogoBase64(e.target.result);
@@ -526,14 +526,14 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES DE DESCARGA
   // ============================================
-  
+
   const handleDescargar = async (formato) => {
-    const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' : 
-                          tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
-    
-    const entidad = tipoDocumento === 'cotizacion' ? cotizacion : 
-                    tipoDocumento === 'proyecto' ? proyecto : informe;
-    
+    const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
+      tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
+
+    const entidad = tipoDocumento === 'cotizacion' ? cotizacion :
+      tipoDocumento === 'proyecto' ? proyecto : informe;
+
     if (!entidad && !datosEditables) {
       setError(`No hay ${tipoDocumento} para descargar`);
       return;
@@ -546,7 +546,7 @@ const CotizadorTesla30 = () => {
     try {
       // Determinar entidad según tipo de documento
       const entidadActual = tipoDocumento === 'cotizacion' ? cotizacion :
-                           tipoDocumento === 'proyecto' ? proyecto : informe;
+        tipoDocumento === 'proyecto' ? proyecto : informe;
 
       // Usar datos editables si existen, sino usar entidad del tipo correcto
       const datosFinales = datosEditables || entidadActual;
@@ -555,9 +555,9 @@ const CotizadorTesla30 = () => {
       // Si no tiene ID, guardar primero
       if (!entidadId) {
         console.log(`📝 Guardando ${tipoDocumento} en el backend...`);
-        
+
         let datosParaBackend = {};
-        
+
         if (tipoDocumento === 'cotizacion') {
           const totales = calcularTotales(datosFinales?.items || []);
           datosParaBackend = {
@@ -619,10 +619,10 @@ const CotizadorTesla30 = () => {
       // Generar documento
       console.log(`📄 Generando ${formato.toUpperCase()}`);
       setExito(`Generando ${formato.toUpperCase()}...`);
-      
-      const endpoint = tipoDocumento === 'cotizacion' ? 'cotizaciones' : 
-                      tipoDocumento === 'proyecto' ? 'proyectos' : 'informes';
-      
+
+      const endpoint = tipoDocumento === 'cotizacion' ? 'cotizaciones' :
+        tipoDocumento === 'proyecto' ? 'proyectos' : 'informes';
+
       const docResponse = await fetch(`http://localhost:8000/api/${endpoint}/${entidadId}/generar-${formato}`, {
         method: 'POST'
       });
@@ -654,12 +654,12 @@ const CotizadorTesla30 = () => {
   // ============================================
   // COMPONENTE ALERTA
   // ============================================
-  
+
   const Alerta = ({ tipo, mensaje, onClose }) => {
     if (!mensaje) return null;
     const estilos = tipo === 'error' ? 'bg-red-900 border-red-600' : 'bg-green-900 border-green-600';
     const Icono = tipo === 'error' ? AlertCircle : CheckCircle;
-    
+
     return (
       <div className={`${estilos} border-2 text-white px-4 py-3 rounded-lg mb-4 flex items-center justify-between backdrop-blur-sm bg-opacity-90`}>
         <div className="flex items-center gap-2">
@@ -674,7 +674,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // HOOKS
   // ============================================
-  
+
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -690,7 +690,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // RENDERIZADO - PANTALLA INICIO
   // ============================================
-  
+
   if (pantallaActual === 'inicio') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-red-950 to-black text-white p-6">
@@ -722,7 +722,7 @@ const CotizadorTesla30 = () => {
 
           {/* MENÚS EXPANDIBLES */}
           <div className="space-y-4">
-            
+
             {/* MENÚ 1: COTIZACIONES */}
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-yellow-700 shadow-xl backdrop-blur-md bg-opacity-90 overflow-hidden">
               <button
@@ -739,7 +739,7 @@ const CotizadorTesla30 = () => {
                 </div>
                 {menuCotizaciones ? <ChevronUp className="w-6 h-6 text-yellow-400" /> : <ChevronDown className="w-6 h-6 text-yellow-400" />}
               </button>
-              
+
               {menuCotizaciones && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
@@ -785,7 +785,7 @@ const CotizadorTesla30 = () => {
                 </div>
                 {menuProyectos ? <ChevronUp className="w-6 h-6 text-blue-400" /> : <ChevronDown className="w-6 h-6 text-blue-400" />}
               </button>
-              
+
               {menuProyectos && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
@@ -831,7 +831,7 @@ const CotizadorTesla30 = () => {
                 </div>
                 {menuInformes ? <ChevronUp className="w-6 h-6 text-green-400" /> : <ChevronDown className="w-6 h-6 text-green-400" />}
               </button>
-              
+
               {menuInformes && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
@@ -869,7 +869,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // PANTALLA: FLUJO DE PASOS MEJORADO
   // ============================================
-  
+
   if (pantallaActual === 'flujo-pasos') {
     const esCotizacion = tipoFlujo.includes('cotizacion');
     const esProyecto = tipoFlujo.includes('proyecto');
@@ -905,20 +905,19 @@ const CotizadorTesla30 = () => {
                   <p className="text-gray-300 text-sm">{config.desc}</p>
                 </div>
               </div>
-              
+
               {/* INDICADOR DE PASOS COMPACTO */}
               <div className="flex items-center gap-4">
                 {[1, 2, 3].map(num => (
                   <div key={num} className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      paso >= num ? 'bg-yellow-600 text-black' : 'border border-gray-600 text-gray-600'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso >= num ? 'bg-yellow-600 text-black' : 'border border-gray-600 text-gray-600'
+                      }`}>
                       {num}
                     </div>
                     {num < 3 && <div className={`w-8 h-1 ${paso > num ? 'bg-yellow-600' : 'bg-gray-600'}`} />}
                   </div>
                 ))}
-                
+
                 <button onClick={volverAlInicio} className="ml-6 px-4 py-2 bg-red-800 hover:bg-red-700 text-yellow-400 rounded-lg font-semibold flex items-center gap-2 transition-all">
                   <Home className="w-4 h-4" />
                   Inicio
@@ -938,20 +937,20 @@ const CotizadorTesla30 = () => {
             {/* PASO 1: CONFIGURACIÓN */}
             {paso === 1 && (
               <div className="max-w-5xl mx-auto space-y-6">
-                
+
                 {/* LOGO UNIVERSAL (TODOS LOS SERVICIOS) */}
                 <div className="bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl p-6 border-2 border-purple-500 shadow-xl">
                   <h2 className="text-2xl font-bold mb-4 text-purple-200 flex items-center gap-2">
                     🎨 Logo Empresa (Aparecerá en el documento final)
                   </h2>
-                  
+
                   <div className="flex gap-4 items-center">
                     <div className="flex-1">
-                      <input 
+                      <input
                         ref={fileInputLogoRef}
-                        type="file" 
-                        onChange={cargarLogo} 
-                        className="hidden" 
+                        type="file"
+                        onChange={cargarLogo}
+                        className="hidden"
                         accept="image/*"
                       />
                       <button
@@ -964,7 +963,7 @@ const CotizadorTesla30 = () => {
                         PNG, JPG, WebP - Máx 2MB • Se integrará automáticamente en Word
                       </p>
                     </div>
-                    
+
                     {logoBase64 && (
                       <div className="bg-white rounded-xl p-3 border-2 border-purple-400 shadow-lg">
                         <img src={logoBase64} alt="Logo" className="w-24 h-24 object-contain" />
@@ -981,7 +980,7 @@ const CotizadorTesla30 = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Nombre del Proyecto *</label>
-                        <input 
+                        <input
                           type="text"
                           value={nombreProyecto}
                           onChange={(e) => setNombreProyecto(e.target.value)}
@@ -991,7 +990,7 @@ const CotizadorTesla30 = () => {
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Cliente *</label>
-                        <input 
+                        <input
                           type="text"
                           value={clienteProyecto}
                           onChange={(e) => setClienteProyecto(e.target.value)}
@@ -1001,7 +1000,7 @@ const CotizadorTesla30 = () => {
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
-                        <input 
+                        <input
                           type="number"
                           value={presupuestoEstimado}
                           onChange={(e) => setPresupuestoEstimado(e.target.value)}
@@ -1011,7 +1010,7 @@ const CotizadorTesla30 = () => {
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
-                        <input 
+                        <input
                           type="number"
                           value={duracionMeses}
                           onChange={(e) => setDuracionMeses(e.target.value)}
@@ -1026,11 +1025,11 @@ const CotizadorTesla30 = () => {
                 {esInforme && (
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-green-700 shadow-xl">
                     <h2 className="text-2xl font-bold mb-4 text-green-400">📄 Configuración del Informe</h2>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-green-400 font-semibold mb-2">Proyecto Base *</label>
-                        <select 
+                        <select
                           value={proyectoSeleccionado}
                           onChange={(e) => setProyectoSeleccionado(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-950 border border-green-700 rounded-xl focus:ring-2 focus:ring-green-500 focus:outline-none text-white">
@@ -1041,10 +1040,10 @@ const CotizadorTesla30 = () => {
                           <option value="general">📋 Informe General</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label className="block text-green-400 font-semibold mb-2">Formato de Salida</label>
-                        <select 
+                        <select
                           value={formatoInforme}
                           onChange={(e) => setFormatoInforme(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-950 border border-green-700 rounded-xl focus:ring-2 focus:ring-green-500 focus:outline-none text-white">
@@ -1064,11 +1063,10 @@ const CotizadorTesla30 = () => {
                       <button
                         key={servicio.id}
                         onClick={() => setServicioSeleccionado(servicio.id)}
-                        className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                          servicioSeleccionado === servicio.id
+                        className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${servicioSeleccionado === servicio.id
                             ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl scale-105'
                             : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
-                        }`}>
+                          }`}>
                         <div className="text-2xl mb-2">{servicio.icon}</div>
                         <div className="text-sm font-semibold">{servicio.nombre.split(' ').slice(1).join(' ')}</div>
                       </button>
@@ -1083,11 +1081,10 @@ const CotizadorTesla30 = () => {
                       <button
                         key={industria.id}
                         onClick={() => setIndustriaSeleccionada(industria.id)}
-                        className={`p-3 rounded-xl border-2 transition-all duration-300 ${
-                          industriaSeleccionada === industria.id
+                        className={`p-3 rounded-xl border-2 transition-all duration-300 ${industriaSeleccionada === industria.id
                             ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl'
                             : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
-                        }`}>
+                          }`}>
                         <div className="text-sm font-semibold">{industria.nombre}</div>
                       </button>
                     ))}
@@ -1097,7 +1094,7 @@ const CotizadorTesla30 = () => {
                 {/* DESCRIPCIÓN */}
                 <div className={`bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-${colores.border} shadow-xl`}>
                   <h2 className={`text-2xl font-bold mb-4 text-${colores.primary}-400`}>📝 Descripción Detallada</h2>
-                  
+
                   {esCotizacion && servicioSeleccionado && basePreciosUniversal[servicioSeleccionado] && (
                     <div className="mb-4 p-4 bg-blue-950 bg-opacity-50 border border-blue-700 rounded-xl">
                       <p className="text-sm font-semibold text-blue-300 mb-2">
@@ -1110,15 +1107,15 @@ const CotizadorTesla30 = () => {
                       </div>
                     </div>
                   )}
-                  
-                  <textarea 
-                    value={contextoUsuario} 
+
+                  <textarea
+                    value={contextoUsuario}
                     onChange={(e) => setContextoUsuario(e.target.value)}
                     className="w-full h-32 px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none resize-none mb-4 text-white placeholder-gray-500"
                     placeholder={
                       esCotizacion ? "Describe el proyecto a cotizar detalladamente..." :
-                      esProyecto ? "Describe los objetivos y alcance del proyecto..." :
-                      "Describe el propósito y contenido del informe..."
+                        esProyecto ? "Describe los objetivos y alcance del proyecto..." :
+                          "Describe el propósito y contenido del informe..."
                     }
                   />
 
@@ -1142,8 +1139,8 @@ const CotizadorTesla30 = () => {
                               <FileText className="w-5 h-5 text-yellow-500" />
                               <span className="text-sm font-semibold">{archivo.nombre}</span>
                             </div>
-                            <button 
-                              onClick={() => setArchivos(prev => prev.filter((_, i) => i !== index))} 
+                            <button
+                              onClick={() => setArchivos(prev => prev.filter((_, i) => i !== index))}
                               className="text-red-400 hover:text-red-300">
                               <X className="w-5 h-5" />
                             </button>
@@ -1155,11 +1152,11 @@ const CotizadorTesla30 = () => {
                 </div>
 
                 {/* BOTÓN CONTINUAR */}
-                <button 
-                  onClick={() => setPaso(2)} 
-                  disabled={!servicioSeleccionado || !industriaSeleccionada || !contextoUsuario.trim() || 
-                           (esProyecto && (!nombreProyecto || !clienteProyecto)) ||
-                           (esInforme && !proyectoSeleccionado)}
+                <button
+                  onClick={() => setPaso(2)}
+                  disabled={!servicioSeleccionado || !industriaSeleccionada || !contextoUsuario.trim() ||
+                    (esProyecto && (!nombreProyecto || !clienteProyecto)) ||
+                    (esInforme && !proyectoSeleccionado)}
                   className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 disabled:from-gray-800 disabled:to-gray-700 disabled:cursor-not-allowed py-4 rounded-xl font-bold text-lg text-black shadow-2xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3">
                   <MessageSquare className="w-6 h-6" />
                   Comenzar Chat con Vista Previa
@@ -1171,7 +1168,7 @@ const CotizadorTesla30 = () => {
             {paso === 2 && (
               <div className="max-w-full mx-auto h-[calc(100vh-200px)]">
                 <div className="grid grid-cols-12 h-full gap-4">
-                  
+
                   {/* CHAT (IZQUIERDA) */}
                   <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                     <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
@@ -1182,7 +1179,7 @@ const CotizadorTesla30 = () => {
                         👑 PILI - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
                       </h3>
                     </div>
-                    
+
                     {/* CONVERSACIÓN */}
                     <div ref={chatContainerRef} className="flex-grow bg-gray-100 p-4 overflow-y-auto">
                       {conversacion.length === 0 ? (
@@ -1202,16 +1199,15 @@ const CotizadorTesla30 = () => {
                         <div className="space-y-3">
                           {conversacion.map((mensaje, index) => (
                             <div key={index} className={`flex ${mensaje.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-[85%] p-3 rounded-2xl ${
-                                mensaje.tipo === 'usuario' 
-                                  ? 'bg-yellow-600 text-black' 
+                              <div className={`max-w-[85%] p-3 rounded-2xl ${mensaje.tipo === 'usuario'
+                                  ? 'bg-yellow-600 text-black'
                                   : 'bg-white border-2 border-gray-300 text-gray-800'
-                              }`}>
+                                }`}>
                                 <p className="text-sm">{mensaje.mensaje}</p>
                               </div>
                             </div>
                           ))}
-                          
+
                           {analizando && (
                             <div className="flex justify-start">
                               <div className="bg-white border-2 border-gray-300 p-3 rounded-2xl">
@@ -1244,7 +1240,7 @@ const CotizadorTesla30 = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* INPUT CHAT */}
                     <div className="p-4 bg-white border-t rounded-b-2xl">
                       <div className="flex gap-2">
@@ -1257,22 +1253,22 @@ const CotizadorTesla30 = () => {
                           className="flex-grow p-2 border-2 border-gray-300 rounded-xl focus:border-yellow-500 focus:outline-none text-gray-800"
                           disabled={analizando}
                         />
-                        <button 
-                          onClick={handleEnviarMensajeChat} 
+                        <button
+                          onClick={handleEnviarMensajeChat}
                           disabled={analizando || !inputChat.trim()}
                           className="p-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-400 text-black rounded-xl transition-all">
                           <Send className="w-5 h-5" />
                         </button>
                       </div>
-                      
+
                       <div className="flex justify-between items-center mt-3">
-                        <button 
-                          onClick={() => setPaso(1)} 
+                        <button
+                          onClick={() => setPaso(1)}
                           className="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm">
                           ← Configuración
                         </button>
-                        <button 
-                          onClick={() => setPaso(3)} 
+                        <button
+                          onClick={() => setPaso(3)}
                           disabled={!mostrarPreview}
                           className="px-4 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white font-bold rounded-lg text-sm">
                           Finalizar →
@@ -1288,7 +1284,7 @@ const CotizadorTesla30 = () => {
                         <Eye className="w-6 h-6 text-white" />
                         <h3 className="text-xl font-bold text-white">Vista Previa</h3>
                       </div>
-                      
+
                       {mostrarPreview && (
                         <div className="flex items-center gap-2">
                           <button
@@ -1297,7 +1293,7 @@ const CotizadorTesla30 = () => {
                             <Edit className="w-4 h-4" />
                             {modoEdicion ? 'Ver' : 'Editar'}
                           </button>
-                          
+
                           {esCotizacion && (
                             <div className="flex gap-2">
                               <button
@@ -1315,7 +1311,7 @@ const CotizadorTesla30 = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex-grow p-4 overflow-y-auto">
                       {!mostrarPreview ? (
                         <div className="text-center text-gray-500 mt-20">
@@ -1335,7 +1331,7 @@ const CotizadorTesla30 = () => {
                               Agregar
                             </button>
                           </div>
-                          
+
                           {datosEditables.items.map((item, index) => (
                             <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
                               <div className="grid grid-cols-12 gap-2 items-center">
@@ -1377,7 +1373,7 @@ const CotizadorTesla30 = () => {
                               </div>
                             </div>
                           ))}
-                          
+
                           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                             <div className="text-right">
                               <div className="text-lg font-bold text-green-600">
@@ -1388,7 +1384,7 @@ const CotizadorTesla30 = () => {
                         </div>
                       ) : (
                         /* VISTA PREVIA HTML */
-                        <div 
+                        <div
                           ref={previewRef}
                           className="w-full h-full"
                           dangerouslySetInnerHTML={{ __html: htmlPreview }}
@@ -1408,7 +1404,7 @@ const CotizadorTesla30 = () => {
                     <CheckCircle className="w-8 h-8 text-green-600" />
                     Documento Listo para Generar
                   </h2>
-                  
+
                   <div className="bg-green-50 p-6 rounded-xl mb-6">
                     <h3 className="text-lg font-bold text-green-800 mb-3">✅ Lo que se incluirá:</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
@@ -1432,15 +1428,15 @@ const CotizadorTesla30 = () => {
 
                   {/* BOTONES DE ACCIÓN */}
                   <div className="flex gap-4">
-                    <button 
-                      onClick={() => setPaso(2)} 
+                    <button
+                      onClick={() => setPaso(2)}
                       className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-xl transition-all">
                       ← Volver al Chat
                     </button>
-                    
+
                     <div className="flex-1 flex gap-4">
-                      <button 
-                        onClick={() => handleDescargar('pdf')} 
+                      <button
+                        onClick={() => handleDescargar('pdf')}
                         disabled={descargando === 'pdf'}
                         className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:from-gray-600 disabled:to-gray-500 text-white py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
                         {descargando === 'pdf' ? (
@@ -1455,9 +1451,9 @@ const CotizadorTesla30 = () => {
                           </>
                         )}
                       </button>
-                      
-                      <button 
-                        onClick={() => handleDescargar('word')} 
+
+                      <button
+                        onClick={() => handleDescargar('word')}
                         disabled={descargando === 'word'}
                         className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-gray-600 disabled:to-gray-500 text-white py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
                         {descargando === 'word' ? (
@@ -1488,8 +1484,8 @@ const CotizadorTesla30 = () => {
       <div className="max-w-5xl mx-auto text-center">
         <h1 className="text-4xl font-bold text-yellow-400 mb-4">Sistema Tesla v3.0</h1>
         <p className="text-gray-300 mb-6">Sistema profesional completamente funcional</p>
-        <button 
-          onClick={volverAlInicio} 
+        <button
+          onClick={volverAlInicio}
           className="px-6 py-3 bg-yellow-600 text-black rounded-lg font-bold hover:bg-yellow-500 transition-all">
           Ir al Inicio
         </button>
