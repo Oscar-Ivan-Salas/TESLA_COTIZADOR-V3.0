@@ -1330,6 +1330,33 @@ async def chat_contextualizado(
 
         prompt_especializado += f"\n\nUSUARIO: {mensaje}\n\nRESPUESTA DE {nombre_pili}:"
 
+        # ✅ GENERACIÓN DE DATOS ESTRUCTURADOS CON PILI BRAIN
+        datos_generados = None
+        html_preview = None
+
+        # Siempre intentar generar estructura si es flujo de cotización/proyecto/informe
+        if any(keyword in tipo_flujo for keyword in ["cotizacion", "proyecto", "informe"]):
+            try:
+                logger.info(f"🧠 Generando estructura con PILIBrain para {tipo_flujo}...")
+                servicio_detectado = pili_brain.detectar_servicio(mensaje)
+                complejidad = "compleja" if "complejo" in tipo_flujo or "compleja" in tipo_flujo else "simple"
+                cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, complejidad)
+
+                # ✅ EXTRAER DATOS ESTRUCTURADOS
+                datos_generados = cotizacion_data.get('datos', {})
+                logger.info(f"✅ Datos estructurados generados: {len(datos_generados.get('items', []))} items")
+
+                # ✅ GENERAR HTML PREVIEW CON DATOS REALES
+                if generar_html:
+                    if "cotizacion" in tipo_flujo or "proyecto" in tipo_flujo:
+                        html_preview = generar_preview_html_editable(datos_generados, nombre_pili)
+                    elif "informe" in tipo_flujo:
+                        html_preview = generar_preview_informe(datos_generados, nombre_pili)
+
+            except Exception as e_pili:
+                logger.warning(f"⚠️ No se pudo generar estructura con PILIBrain: {e_pili}")
+                datos_generados = None
+
         # Enviar a Gemini con contexto especializado, con fallback a PILIBrain
         try:
             respuesta = gemini_service.chat(
@@ -1337,46 +1364,31 @@ async def chat_contextualizado(
                 contexto=f"Agente: {nombre_pili}. Servicio: {tipo_flujo}. {contexto_adicional}",
                 cotizacion_id=cotizacion_id
             )
-            
+
             # 🚨 DETECTAR MODO DEMO DE GEMINI Y FORZAR FALLBACK A PILIBRAIN
             if isinstance(respuesta, dict) and "PILI en modo demo" in str(respuesta.get("mensaje", "")):
                 raise Exception("Gemini en modo demo (sin API Key)")
-                
+
         except Exception as e:
             # 🧠 FALLBACK: Usar PILIBrain cuando Gemini no está disponible
             logger.warning(f"⚠️ Gemini no disponible, usando PILIBrain local: {e}")
-            servicio_detectado = pili_brain.detectar_servicio(mensaje)
-            cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, "simple")
-            respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
+
+            # Si ya generamos datos antes, usarlos
+            if datos_generados:
+                respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
+            else:
+                # Generar ahora si no se hizo antes
+                servicio_detectado = pili_brain.detectar_servicio(mensaje)
+                cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, "simple")
+                datos_generados = cotizacion_data.get('datos', {})
+                respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
 
         # Determinar etapa y botones sugeridos
         tiene_cotizacion = cotizacion_id is not None
         etapa_actual = determinar_etapa_conversacion(historial, tiene_cotizacion)
         botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
 
-        # 🆕 NUEVO: Generar vista previa HTML si se solicita
-        html_preview = None
-        if generar_html and tipo_flujo.startswith("cotizacion"):
-            # Simular datos de cotización para preview
-            datos_preview = {
-                "items": [
-                    {"descripcion": "Punto de luz LED 18W", "cantidad": 8, "unidad": "pto", "precio_unitario": 30.00},
-                    {"descripcion": "Tomacorriente doble", "cantidad": 6, "unidad": "pto", "precio_unitario": 35.00},
-                    {"descripcion": "Cable THW 2.5mm²", "cantidad": 50, "unidad": "m", "precio_unitario": 4.00}
-                ],
-                "cliente": "Cliente Demo",
-                "proyecto": "Instalación Eléctrica",
-                "total": 650.00
-            }
-            html_preview = generar_preview_html_editable(datos_preview, nombre_pili)
-
-        elif generar_html and tipo_flujo.startswith("informe"):
-            datos_preview = {
-                "titulo": "Informe Técnico Eléctrico",
-                "cliente": "Cliente Demo"
-            }
-            html_preview = generar_preview_informe(datos_preview, nombre_pili)
-
+        # ✅ RESPUESTA CON CAMPOS RESTAURADOS
         return {
             "success": True,
             "agente_activo": nombre_pili,
@@ -1391,11 +1403,15 @@ async def chat_contextualizado(
             },
             "html_preview": html_preview,
             "generar_html": generar_html,
+            # ✅ CAMPOS CRÍTICOS RESTAURADOS
+            "cotizacion_generada": datos_generados if "cotizacion" in tipo_flujo else None,
+            "proyecto_generado": datos_generados if "proyecto" in tipo_flujo else None,
+            "informe_generado": datos_generados if "informe" in tipo_flujo else None,
             "timestamp": datetime.now().isoformat(),
             "pili_metadata": {
                 "agente_id": tipo_flujo,
                 "version": "3.0",
-                "capabilities": ["chat", "ocr", "json", "html_preview"]
+                "capabilities": ["chat", "ocr", "json", "html_preview", "structured_data"]
             }
         }
 
