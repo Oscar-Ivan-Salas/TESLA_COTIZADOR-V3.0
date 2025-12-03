@@ -74,14 +74,16 @@ const CotizadorTesla30 = () => {
   });
 
   const servicios = [
-    { id: 'electricidad', nombre: '⚡ Electricidad', icon: '⚡', descripcion: 'Instalaciones eléctricas completas' },
-    { id: 'itse', nombre: '📋 Certificado ITSE', icon: '📋', descripcion: 'Inspección técnica de seguridad' },
-    { id: 'puesta-tierra', nombre: '🔌 Puesta a Tierra', icon: '🔌', descripcion: 'Sistemas de protección eléctrica' },
-    { id: 'contra-incendios', nombre: '🔥 Contra Incendios', icon: '🔥', descripcion: 'Sistemas de detección y extinción' },
+    { id: 'electrico-residencial', nombre: '⚡ Eléctrico Residencial', icon: '⚡', descripcion: 'Instalaciones eléctricas en viviendas' },
+    { id: 'electrico-comercial', nombre: '🏢 Eléctrico Comercial', icon: '🏢', descripcion: 'Instalaciones eléctricas en oficinas y locales' },
+    { id: 'electrico-industrial', nombre: '⚙️ Eléctrico Industrial', icon: '⚙️', descripcion: 'Instalaciones eléctricas para industria' },
+    { id: 'contraincendios', nombre: '🔥 Contra Incendios', icon: '🔥', descripcion: 'Sistemas de detección y extinción' },
     { id: 'domotica', nombre: '🏠 Domótica', icon: '🏠', descripcion: 'Automatización inteligente' },
-    { id: 'cctv', nombre: '📹 CCTV', icon: '📹', descripcion: 'Videovigilancia profesional' },
-    { id: 'redes', nombre: '🌐 Redes', icon: '🌐', descripcion: 'Cableado estructurado' },
-    { id: 'automatizacion-industrial', nombre: '⚙️ Automatización Industrial', icon: '⚙️', descripcion: 'PLCs y control de procesos' }
+    { id: 'expedientes', nombre: '📑 Expedientes Técnicos', icon: '📑', descripcion: 'Expedientes para edificación' },
+    { id: 'saneamiento', nombre: '💧 Saneamiento', icon: '💧', descripcion: 'Sistemas de agua y desagüe' },
+    { id: 'itse', nombre: '📋 Certificado ITSE', icon: '📋', descripcion: 'Inspección técnica de seguridad' },
+    { id: 'pozo-tierra', nombre: '🔌 Puesta a Tierra', icon: '🔌', descripcion: 'Sistemas de protección eléctrica' },
+    { id: 'redes-cctv', nombre: '📹 Redes y CCTV', icon: '📹', descripcion: 'Redes de datos y videovigilancia' }
   ];
 
   const industrias = [
