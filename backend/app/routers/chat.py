@@ -564,25 +564,26 @@ def generar_preview_html_editable(datos: Dict[str, Any], agente: str) -> str:
         <meta charset="UTF-8">
         <title>Vista Previa - {agente}</title>
         <style>
-            body {{ font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f8f9fa; }}
-            .container {{ background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-            .header {{ border-bottom: 3px solid #007bff; padding-bottom: 20px; margin-bottom: 30px; }}
-            .company {{ color: #007bff; font-size: 24px; font-weight: bold; }}
-            .agent {{ color: #6c757d; font-size: 14px; margin-top: 5px; }}
-            .title {{ color: #343a40; font-size: 20px; margin: 20px 0; }}
+            body {{ font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #fef2f2; }}
+            .container {{ background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.15); border: 2px solid #fecaca; }}
+            .header {{ border-bottom: 4px solid #dc2626; padding-bottom: 20px; margin-bottom: 30px; background: linear-gradient(135deg, #fee2e2 0%, #ffffff 100%); padding: 20px; border-radius: 8px; }}
+            .company {{ color: #b91c1c; font-size: 26px; font-weight: 900; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); letter-spacing: -0.5px; }}
+            .agent {{ color: #1f2937; font-size: 14px; margin-top: 8px; font-weight: 600; }}
+            .title {{ color: #1f2937; font-size: 22px; margin: 20px 0; font-weight: 800; border-left: 5px solid #dc2626; padding-left: 15px; }}
             .info-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }}
-            .info-item {{ background: #f8f9fa; padding: 15px; border-radius: 5px; }}
-            .info-label {{ font-weight: bold; color: #495057; }}
-            .info-value {{ color: #007bff; font-size: 16px; }}
-            .items-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-            .items-table th {{ background: #007bff; color: white; padding: 12px; text-align: left; }}
-            .items-table td {{ padding: 10px; border-bottom: 1px solid #dee2e6; }}
-            .items-table tr:hover {{ background: #f8f9fa; }}
-            .total-section {{ background: #e3f2fd; padding: 20px; border-radius: 5px; margin-top: 20px; }}
-            .total-row {{ display: flex; justify-content: space-between; margin: 5px 0; }}
-            .total-final {{ font-size: 20px; font-weight: bold; color: #007bff; }}
-            .edit-note {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-top: 20px; }}
-            .agent-signature {{ text-align: right; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; }}
+            .info-item {{ background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; }}
+            .info-label {{ font-weight: 800; color: #1f2937; font-size: 14px; }}
+            .info-value {{ color: #dc2626; font-size: 17px; font-weight: 700; margin-top: 5px; }}
+            .items-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }}
+            .items-table th {{ background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 14px; text-align: left; font-weight: 800; font-size: 15px; }}
+            .items-table td {{ padding: 12px; border-bottom: 2px solid #fecaca; color: #1f2937; font-weight: 600; }}
+            .items-table tr:hover {{ background: #fef2f2; }}
+            .items-table td:nth-child(4), .items-table td:nth-child(5) {{ color: #dc2626; font-weight: 700; }}
+            .total-section {{ background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 25px; border-radius: 8px; margin-top: 20px; border: 2px solid #dc2626; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); }}
+            .total-row {{ display: flex; justify-content: space-between; margin: 8px 0; font-size: 16px; font-weight: 700; color: #1f2937; }}
+            .total-final {{ font-size: 24px; font-weight: 900; color: #b91c1c; background: white; padding: 15px; border-radius: 6px; margin-top: 10px; border: 2px solid #dc2626; }}
+            .edit-note {{ background: #fffbeb; border: 2px solid #fbbf24; padding: 15px; border-radius: 5px; margin-top: 20px; font-weight: 600; color: #78350f; }}
+            .agent-signature {{ text-align: right; margin-top: 30px; padding-top: 20px; border-top: 2px solid #fecaca; font-weight: 700; color: #dc2626; }}
         </style>
     </head>
     <body>
