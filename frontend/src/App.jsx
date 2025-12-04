@@ -842,7 +842,9 @@ const CotizadorTesla30 = () => {
             observaciones: '',
             vigencia: '30 días',
             estado: 'borrador',
-            html_preview: htmlPreview
+            html_preview: htmlPreview,
+            // Vincular con cliente si fue seleccionado
+            cliente_id: clienteSeleccionado?.id || null
           };
         } else if (tipoDocumento === 'proyecto') {
           datosParaBackend = {
@@ -853,7 +855,9 @@ const CotizadorTesla30 = () => {
             duracion_meses: parseInt(duracionMeses) || 1,
             descripcion: contextoUsuario || '',
             estado: 'planificacion',
-            html_preview: htmlPreview
+            html_preview: htmlPreview,
+            // Vincular con cliente si fue seleccionado
+            cliente_id: clienteSeleccionado?.id || null
           };
         } else if (tipoDocumento === 'informe') {
           datosParaBackend = {
@@ -1259,6 +1263,35 @@ const CotizadorTesla30 = () => {
             {/* PASO 1: CONFIGURACIÓN */}
             {paso === 1 && (
               <div className="max-w-5xl mx-auto space-y-6">
+
+                {/* SELECTOR DE CLIENTE - NUEVO */}
+                {esCotizacion && (
+                  <div className="bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-6 border-2 border-blue-500 shadow-xl">
+                    <h2 className="text-2xl font-bold mb-4 text-blue-200 flex items-center gap-2">
+                      <Users className="w-6 h-6" />
+                      Cliente
+                    </h2>
+                    <ClienteSelector
+                      onClienteSeleccionado={(cliente) => {
+                        setClienteSeleccionado(cliente);
+                        // Auto-rellenar datos si hay cliente seleccionado
+                        if (cliente) {
+                          setDatosEmpresa({
+                            nombre: cliente.nombre || '',
+                            ruc: cliente.ruc || '',
+                            direccion: cliente.direccion || '',
+                            telefono: cliente.telefono || '',
+                            email: cliente.email || '',
+                            ciudad: cliente.ciudad || '',
+                            web: cliente.web || ''
+                          });
+                          setClienteProyecto(cliente.nombre || '');
+                        }
+                      }}
+                      clienteInicial={clienteSeleccionado}
+                    />
+                  </div>
+                )}
 
                 {/* LOGO UNIVERSAL (TODOS LOS SERVICIOS) */}
                 <div className="bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl p-6 border-2 border-purple-500 shadow-xl">
