@@ -39,7 +39,7 @@ const handleResponse = async (response) => {
  * Helper para descargar archivos con diálogo "Guardar como"
  * Usa File System Access API cuando está disponible
  */
-const downloadFile = async (blob, filename) => {
+export const downloadFile = async (blob, filename) => {
   try {
     // Intentar usar File System Access API (permite elegir ubicación)
     if ('showSaveFilePicker' in window) {
