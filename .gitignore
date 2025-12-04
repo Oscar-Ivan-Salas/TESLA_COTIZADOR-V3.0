@@ -142,3 +142,9 @@ htmlcov/
 *.temp
 *.bak
 *.swp
+
+# ===================================
+# Test Output
+# ===================================
+backend/storage/test_diagnostico/
+storage/test_diagnostico/
