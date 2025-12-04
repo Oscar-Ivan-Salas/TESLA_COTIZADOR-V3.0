@@ -8,7 +8,7 @@ import logging
 
 # Importaciones correctas según la estructura de tu proyecto
 from app.core.database import get_db
-from app.core.config import settings
+from app.core.config import settings, get_empresa_info
 
 # Usar el mismo logger que el resto de la aplicación
 logger = logging.getLogger(__name__)
@@ -69,3 +69,37 @@ async def check_system_health(db: Session = Depends(get_db)):
         )
 
     return {"status": "ok", "database": db_status, "ai_service": ai_status}
+
+
+@router.get("/empresa-info",
+            summary="Obtiene información de la empresa (SSOT)",
+            status_code=status.HTTP_200_OK)
+async def get_empresa_information():
+    """
+    Retorna información corporativa de Tesla Electricidad.
+
+    Esta es la **Single Source of Truth (SSOT)** para datos de la empresa.
+    Todos los documentos (Word, PDF) y el frontend obtienen datos desde aquí.
+
+    **Returns:**
+    - nombre: Nombre legal de la empresa
+    - ruc: RUC de la empresa
+    - direccion: Dirección física
+    - telefono: Teléfono de contacto
+    - email: Email de contacto
+    - ciudad: Ciudad y región
+    - web: Sitio web (opcional)
+    """
+    try:
+        info = get_empresa_info()
+        logger.info("Información de empresa solicitada")
+        return {
+            "exito": True,
+            "datos": info
+        }
+    except Exception as e:
+        logger.error(f"Error al obtener información de empresa: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener información de la empresa"
+        )
