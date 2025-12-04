@@ -248,13 +248,15 @@ try:
     storage_path = get_generated_directory()
     upload_path = get_upload_directory()
     logger.info(f"✅ Usando directorios configurados: {storage_path}")
-except:
-    # Fallback a directorios básicos
-    storage_path = Path("./backend/storage/generados")
-    upload_path = Path("./backend/storage/documentos")
+except Exception as e:
+    # Fallback usando configuración (no rutas hardcodeadas)
+    logger.warning(f"Error al cargar configuración avanzada: {e}")
+    from app.core.config import settings
+    storage_path = settings.GENERATED_DIR
+    upload_path = settings.UPLOAD_DIR
     storage_path.mkdir(parents=True, exist_ok=True)
     upload_path.mkdir(parents=True, exist_ok=True)
-    logger.info(f"⚠️ Usando directorios por defecto: {storage_path}")
+    logger.info(f"✅ Usando directorios de configuración (fallback): {storage_path}")
 
 
 async def generar_respuesta_ia(mensaje: str, contexto: str, historial: List[Dict], tipo_flujo: str) -> Dict:
