@@ -61,16 +61,18 @@ const CotizadorTesla30 = () => {
   const previewRef = useRef(null);
 
   // ============================================
-  // DATOS DE CONFIGURACIÓN
+  // DATOS DE CONFIGURACIÓN (SSOT - Single Source of Truth)
   // ============================================
 
-  const [datosEmpresa] = useState({
-    nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
-    ruc: '20601138787',
-    direccion: 'Jr. Los Narcisos Mz H lote 4 Urb. Los jardines de San Calos',
-    telefono: '906315961',
-    email: 'ingenieria.teslaelectricidad@gmail.com',
-    ciudad: 'Huanacayo, Junin - Perú'
+  // Los datos de empresa se cargan desde la API para mantener sincronización
+  const [datosEmpresa, setDatosEmpresa] = useState({
+    nombre: '',
+    ruc: '',
+    direccion: '',
+    telefono: '',
+    email: '',
+    ciudad: '',
+    web: ''
   });
 
   const servicios = [
@@ -123,6 +125,48 @@ const CotizadorTesla30 = () => {
     { id: 'PROJ-2025-002', nombre: 'Sistema CCTV Planta Industrial', cliente: 'Industrial Perú S.A.', tipo: 'cctv' },
     { id: 'PROJ-2025-003', nombre: 'Automatización Línea Producción', cliente: 'Manufactura XYZ', tipo: 'automatizacion-industrial' }
   ];
+
+  // ============================================
+  // EFECTOS (useEffect)
+  // ============================================
+
+  // Cargar información de empresa desde API al montar el componente
+  useEffect(() => {
+    const cargarEmpresaInfo = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/system/empresa-info');
+        const data = await response.json();
+
+        if (data.exito) {
+          setDatosEmpresa(data.datos);
+          console.log('✅ Información de empresa cargada desde API:', data.datos);
+        } else {
+          console.warn('⚠️ API no retornó datos exitosos');
+          // Usar datos por defecto si la API no retorna datos válidos
+          usarDatosPorDefecto();
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar información de empresa:', error);
+        // Fallback a datos por defecto si API falla
+        usarDatosPorDefecto();
+      }
+    };
+
+    const usarDatosPorDefecto = () => {
+      // Fallback con datos correctos de Huancayo
+      setDatosEmpresa({
+        nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
+        ruc: '20601138787',
+        direccion: 'Jr. Los Narcisos Mz H lote 4 Urb. Los jardines de San Carlos',
+        telefono: '906315961',
+        email: 'ingenieria.teslaelectricidad@gmail.com',
+        ciudad: 'Huancayo, Junín - Perú',
+        web: ''
+      });
+    };
+
+    cargarEmpresaInfo();
+  }, []); // [] significa que se ejecuta solo al montar el componente
 
   // ============================================
   // FUNCIONES PRINCIPALES
