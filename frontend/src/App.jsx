@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
+import ClienteSelector from './components/ClienteSelector';
 
 const CotizadorTesla30 = () => {
   // ============================================
@@ -54,6 +55,9 @@ const CotizadorTesla30 = () => {
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState('');
   const [formatoInforme, setFormatoInforme] = useState('word');
   const [incluirGraficos, setIncluirGraficos] = useState(true);
+
+  // Estado para gestión de clientes
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
   // Referencias
   const chatContainerRef = useRef(null);

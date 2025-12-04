@@ -1,7 +1,7 @@
 """
 Modelo: Proyecto
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, JSON
+from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -45,6 +45,10 @@ class Proyecto(Base):
     fecha_inicio = Column(DateTime(timezone=True), nullable=True)
     fecha_fin = Column(DateTime(timezone=True), nullable=True)
     
+    # Relación con cliente (nuevo - gestión de clientes)
+    cliente_id = Column(Integer, ForeignKey("clientes.id", ondelete="SET NULL"), nullable=True)
+    cliente_rel = relationship("Cliente", back_populates="proyectos")
+
     # Relaciones
     cotizaciones = relationship(
         "Cotizacion",

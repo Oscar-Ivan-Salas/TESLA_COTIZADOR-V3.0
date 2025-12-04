@@ -133,7 +133,19 @@ try:
         logger.info("✅ Router Documentos cargado")
     except Exception as e:
         logger.warning(f"⚠️ Router documentos no disponible: {e}")
-    
+
+    try:
+        from app.routers import clientes
+        routers_info["clientes"] = {
+            "router": clientes.router,
+            "prefix": "/api/clientes",
+            "tags": ["Clientes"],
+            "descripcion": "Gestión de base de datos de clientes"
+        }
+        logger.info("✅ Router Clientes cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router clientes no disponible: {e}")
+
     try:
         from app.routers import system
         routers_info["system"] = {
