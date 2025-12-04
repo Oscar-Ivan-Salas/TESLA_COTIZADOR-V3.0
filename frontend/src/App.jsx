@@ -407,8 +407,13 @@ const CotizadorTesla30 = () => {
 
         // Manejar datos según el tipo de flujo
         if (tipoFlujo.includes('cotizacion') && data.cotizacion_generada) {
-          setCotizacion(data.cotizacion_generada);
-          setDatosEditables(data.cotizacion_generada);
+          // Agregar ID al objeto de cotización para botones manuales
+          const cotizacionConId = {
+            ...data.cotizacion_generada,
+            id: data.cotizacion_id
+          };
+          setCotizacion(cotizacionConId);
+          setDatosEditables(cotizacionConId);
 
           // 🆕 GENERAR AUTOMÁTICAMENTE DOCUMENTO WORD SI HAY COTIZACIÓN_ID
           if (data.cotizacion_id) {
@@ -420,8 +425,13 @@ const CotizadorTesla30 = () => {
           }
 
         } else if (tipoFlujo.includes('proyecto') && data.proyecto_generado) {
-          setProyecto(data.proyecto_generado);
-          setDatosEditables(data.proyecto_generado);
+          // Agregar ID al objeto de proyecto para botones manuales
+          const proyectoConId = {
+            ...data.proyecto_generado,
+            id: data.proyecto_id
+          };
+          setProyecto(proyectoConId);
+          setDatosEditables(proyectoConId);
 
           // 🆕 GENERAR AUTOMÁTICAMENTE INFORME DE PROYECTO SI HAY PROYECTO_ID
           if (data.proyecto_id) {
@@ -1551,6 +1561,61 @@ const CotizadorTesla30 = () => {
 
                       {mostrarPreview && (
                         <div className="flex items-center gap-2">
+                          {/* BOTONES DE DESCARGA */}
+                          {esCotizacion && cotizacion && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => cotizacion.id && generarDocumentoWord(cotizacion.id)}
+                                disabled={!cotizacion.id || descargando === 'word'}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'word' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Word
+                              </button>
+                              <button
+                                onClick={() => cotizacion.id && generarDocumentoPDF(cotizacion.id)}
+                                disabled={!cotizacion.id || descargando === 'pdf'}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'pdf' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                PDF
+                              </button>
+                            </div>
+                          )}
+
+                          {esProyecto && proyecto && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => proyecto.id && generarInformeProyectoWord(proyecto.id)}
+                                disabled={!proyecto.id || descargando === 'word'}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'word' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Informe Word
+                              </button>
+                              <button
+                                onClick={() => proyecto.id && generarInformeProyectoPDF(proyecto.id)}
+                                disabled={!proyecto.id || descargando === 'pdf'}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'pdf' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Informe PDF
+                              </button>
+                            </div>
+                          )}
+
                           <button
                             onClick={() => setModoEdicion(!modoEdicion)}
                             className="px-3 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg text-sm flex items-center gap-1">
