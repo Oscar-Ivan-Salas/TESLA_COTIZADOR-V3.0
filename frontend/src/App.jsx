@@ -182,6 +182,86 @@ const CotizadorTesla30 = () => {
     }
   };
 
+  // 🆕 FUNCIÓN PARA GENERAR DOCUMENTO WORD
+  const generarDocumentoWord = async (cotizacionId) => {
+    if (!cotizacionId) return;
+
+    try {
+      setDescargando('word');
+      console.log(`📄 Generando documento Word para cotización ID: ${cotizacionId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/cotizaciones/${cotizacionId}/generar-word`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cotizacion-${cotizacionId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Documento Word generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Documento Word descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar Word:', error);
+      setDescargando(null);
+      setError('❌ Error al generar documento Word: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  // 🆕 FUNCIÓN PARA GENERAR DOCUMENTO PDF
+  const generarDocumentoPDF = async (cotizacionId) => {
+    if (!cotizacionId) return;
+
+    try {
+      setDescargando('pdf');
+      console.log(`📄 Generando documento PDF para cotización ID: ${cotizacionId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/cotizaciones/${cotizacionId}/generar-pdf`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cotizacion-${cotizacionId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Documento PDF generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Documento PDF descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      setDescargando(null);
+      setError('❌ Error al generar documento PDF: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
   const handleEnviarMensajeChat = async () => {
     if (!inputChat.trim() || analizando) return;
 
@@ -231,17 +311,40 @@ const CotizadorTesla30 = () => {
         if (tipoFlujo.includes('cotizacion') && data.cotizacion_generada) {
           setCotizacion(data.cotizacion_generada);
           setDatosEditables(data.cotizacion_generada);
+
+          // 🆕 GENERAR AUTOMÁTICAMENTE DOCUMENTO WORD SI HAY COTIZACIÓN_ID
+          if (data.cotizacion_id) {
+            console.log(`📄 Cotización guardada con ID: ${data.cotizacion_id}, generando documento...`);
+            // Esperar un momento para que el usuario vea el mensaje de PILI
+            setTimeout(() => {
+              generarDocumentoWord(data.cotizacion_id);
+            }, 1500);
+          }
+
         } else if (tipoFlujo.includes('proyecto') && data.proyecto_generado) {
           setProyecto(data.proyecto_generado);
           setDatosEditables(data.proyecto_generado);
+
+          // TODO: Implementar generación de documentos para proyectos
+          if (data.proyecto_id) {
+            console.log(`📊 Proyecto guardado con ID: ${data.proyecto_id}`);
+          }
+
         } else if (tipoFlujo.includes('informe') && data.informe_generado) {
           setInforme(data.informe_generado);
           setDatosEditables(data.informe_generado);
+
+          // TODO: Implementar generación de informes
+          if (data.informe_id) {
+            console.log(`📑 Informe guardado con ID: ${data.informe_id}`);
+          }
         }
 
         // Actualizar botones contextuales
         if (data.botones_contextuales) {
           setBotonesContextuales(data.botones_contextuales);
+        } else if (data.botones_sugeridos) {
+          setBotonesContextuales(data.botones_sugeridos);
         }
       } else {
         throw new Error(data.error || 'Error en la respuesta');
