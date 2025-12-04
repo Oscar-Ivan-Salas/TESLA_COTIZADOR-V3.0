@@ -262,6 +262,104 @@ const CotizadorTesla30 = () => {
     }
   };
 
+  // 🆕 FUNCIÓN PARA GENERAR INFORME DE PROYECTO (WORD)
+  const generarInformeProyectoWord = async (proyectoId) => {
+    if (!proyectoId) return;
+
+    try {
+      setDescargando('word');
+      console.log(`📊 Generando informe Word para proyecto ID: ${proyectoId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/proyectos/${proyectoId}/generar-informe-word`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            incluir_cotizaciones: true,
+            incluir_documentos: true,
+            incluir_estadisticas: true,
+            incluir_analisis_ia: true
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-proyecto-${proyectoId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Informe de proyecto generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Informe de proyecto descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar informe de proyecto:', error);
+      setDescargando(null);
+      setError('❌ Error al generar informe de proyecto: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  // 🆕 FUNCIÓN PARA GENERAR INFORME DE PROYECTO (PDF)
+  const generarInformeProyectoPDF = async (proyectoId) => {
+    if (!proyectoId) return;
+
+    try {
+      setDescargando('pdf');
+      console.log(`📊 Generando informe PDF para proyecto ID: ${proyectoId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/proyectos/${proyectoId}/generar-informe-pdf`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            incluir_cotizaciones: true,
+            incluir_documentos: true,
+            incluir_estadisticas: true,
+            incluir_analisis_ia: true
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-proyecto-${proyectoId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Informe de proyecto PDF generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Informe de proyecto PDF descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar informe PDF:', error);
+      setDescargando(null);
+      setError('❌ Error al generar informe PDF: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
   const handleEnviarMensajeChat = async () => {
     if (!inputChat.trim() || analizando) return;
 
@@ -325,18 +423,27 @@ const CotizadorTesla30 = () => {
           setProyecto(data.proyecto_generado);
           setDatosEditables(data.proyecto_generado);
 
-          // TODO: Implementar generación de documentos para proyectos
+          // 🆕 GENERAR AUTOMÁTICAMENTE INFORME DE PROYECTO SI HAY PROYECTO_ID
           if (data.proyecto_id) {
-            console.log(`📊 Proyecto guardado con ID: ${data.proyecto_id}`);
+            console.log(`📊 Proyecto guardado con ID: ${data.proyecto_id}, generando informe...`);
+            // Esperar un momento para que el usuario vea el mensaje de PILI
+            setTimeout(() => {
+              // Por defecto generar Word (editable)
+              generarInformeProyectoWord(data.proyecto_id);
+            }, 1500);
           }
 
         } else if (tipoFlujo.includes('informe') && data.informe_generado) {
           setInforme(data.informe_generado);
           setDatosEditables(data.informe_generado);
 
-          // TODO: Implementar generación de informes
+          // Informes se generan directamente desde los datos sin guardar en BD
+          // Por ahora solo mostrar los datos, se puede mejorar después
           if (data.informe_id) {
-            console.log(`📑 Informe guardado con ID: ${data.informe_id}`);
+            console.log(`📑 Informe generado con ID: ${data.informe_id}`);
+            // TODO: Implementar generación de informe ejecutivo
+          } else {
+            console.log(`📑 Informe generado (sin persistencia en BD)`);
           }
         }
 
