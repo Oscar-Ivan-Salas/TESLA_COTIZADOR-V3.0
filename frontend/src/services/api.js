@@ -36,9 +36,52 @@ const handleResponse = async (response) => {
 };
 
 /**
- * Helper para descargar archivos
+ * Helper para descargar archivos con diálogo "Guardar como"
+ * Usa File System Access API cuando está disponible
  */
-const downloadFile = (blob, filename) => {
+const downloadFile = async (blob, filename) => {
+  try {
+    // Intentar usar File System Access API (permite elegir ubicación)
+    if ('showSaveFilePicker' in window) {
+      // Determinar tipo MIME y extensión
+      const extension = filename.split('.').pop();
+      const mimeTypes = {
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'pdf': 'application/pdf',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'json': 'application/json'
+      };
+
+      const mimeType = mimeTypes[extension] || 'application/octet-stream';
+
+      // Mostrar diálogo "Guardar como"
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{
+          description: `Archivo ${extension.toUpperCase()}`,
+          accept: { [mimeType]: [`.${extension}`] }
+        }]
+      });
+
+      // Escribir el archivo en la ubicación elegida
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+
+      console.log(`✅ Archivo guardado: ${filename}`);
+      return;
+    }
+  } catch (error) {
+    // Si el usuario cancela el diálogo, no hacer nada
+    if (error.name === 'AbortError') {
+      console.log('Usuario canceló la descarga');
+      return;
+    }
+    // Si hay otro error, continuar con descarga automática
+    console.warn('File System Access API no disponible, usando descarga automática:', error);
+  }
+
+  // Fallback: descarga automática (navegadores antiguos o si falla la API)
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
