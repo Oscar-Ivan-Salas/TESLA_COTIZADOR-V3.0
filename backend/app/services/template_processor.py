@@ -457,9 +457,10 @@ class TemplateProcessor:
     def _generar_ruta_salida(self, ruta_plantilla: str, datos: Dict[str, str]) -> str:
         """Genera ruta de salida única para el documento procesado"""
         
-        # Crear directorio de salida
-        output_dir = Path("backend/storage/generated")
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Usar directorio de salida de configuración centralizada
+        from app.core.config import get_generated_directory
+        output_dir = get_generated_directory()
+
         
         # Generar nombre único
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -530,7 +531,8 @@ class TemplateProcessor:
             if not ruta_salida:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 plantilla_nombre = Path(ruta_plantilla).stem
-                ruta_salida = f"backend/storage/generated/{plantilla_nombre}_procesada_{timestamp}.docx"
+                from app.core.config import get_generated_directory
+                ruta_salida = str(get_generated_directory() / f"{plantilla_nombre}_procesada_{timestamp}.docx")
             
             # Crear directorio de salida si no existe
             Path(ruta_salida).parent.mkdir(parents=True, exist_ok=True)

@@ -757,9 +757,10 @@ class WordGenerator:
                 cliente_slug = self._slugify(datos.get("cliente", "cliente"))
                 nombre_archivo = f"{tipo}_{cliente_slug}_{timestamp}.docx"
 
-                # Ruta de salida por defecto
-                output_dir = Path("backend/storage/generated")
-                output_dir.mkdir(parents=True, exist_ok=True)
+                # Ruta de salida usando configuración centralizada
+                from app.core.config import get_generated_directory
+                output_dir = get_generated_directory()
+
                 ruta_archivo = output_dir / nombre_archivo
 
             # Guardar documento
