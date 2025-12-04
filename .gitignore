@@ -148,3 +148,14 @@ htmlcov/
 # ===================================
 backend/storage/test_diagnostico/
 storage/test_diagnostico/
+
+# ===================================
+# Storage Root Directory
+# ===================================
+storage/generados/*
+storage/documentos/*
+storage/chroma_db/*
+storage/proyectos/*
+!storage/generados/.gitkeep
+!storage/documentos/.gitkeep
+!storage/README.md
