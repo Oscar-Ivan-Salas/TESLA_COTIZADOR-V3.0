@@ -159,3 +159,6 @@ storage/proyectos/*
 !storage/generados/.gitkeep
 !storage/documentos/.gitkeep
 !storage/README.md
+
+# Backup folder - archivos duplicados movidos
+backup/

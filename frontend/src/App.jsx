@@ -1174,9 +1174,9 @@ const CotizadorTesla30 = () => {
 
                   <button
                     onClick={() => iniciarFlujo('cotizacion-compleja')}
-                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-purple-900 hover:to-purple-800 p-4 rounded-xl border-2 border-gray-700 hover:border-purple-600 transition-all duration-300 text-left">
+                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-900 hover:to-red-800 p-4 rounded-xl border-2 border-gray-700 hover:border-red-600 transition-all duration-300 text-left">
                     <div className="flex items-center gap-3">
-                      <Layers className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
+                      <Layers className="w-6 h-6 text-red-400 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="font-bold text-white text-lg">Cotización Compleja</p>
                         <p className="text-gray-400 text-sm">Análisis detallado con edición avanzada</p>
@@ -1188,29 +1188,29 @@ const CotizadorTesla30 = () => {
             </div>
 
             {/* MENÚ 2: PROYECTOS */}
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-blue-700 shadow-xl backdrop-blur-md bg-opacity-90 overflow-hidden">
+            <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-red-700 shadow-xl backdrop-blur-md bg-opacity-90 overflow-hidden">
               <button
                 onClick={() => setMenuProyectos(!menuProyectos)}
                 className="w-full p-6 flex items-center justify-between hover:bg-gray-800 transition-all duration-300">
                 <div className="flex items-center gap-4">
-                  <div className="bg-gradient-to-br from-blue-600 to-blue-500 p-3 rounded-xl">
+                  <div className="bg-gradient-to-br from-red-600 to-red-500 p-3 rounded-xl">
                     <Briefcase className="w-8 h-8 text-white" />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-2xl font-bold text-blue-400">📁 PROYECTOS</h3>
+                    <h3 className="text-2xl font-bold text-red-400">📁 PROYECTOS</h3>
                     <p className="text-gray-400 text-sm">Gestión integral de proyectos</p>
                   </div>
                 </div>
-                {menuProyectos ? <ChevronUp className="w-6 h-6 text-blue-400" /> : <ChevronDown className="w-6 h-6 text-blue-400" />}
+                {menuProyectos ? <ChevronUp className="w-6 h-6 text-red-400" /> : <ChevronDown className="w-6 h-6 text-red-400" />}
               </button>
 
               {menuProyectos && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
                     onClick={() => iniciarFlujo('proyecto-simple')}
-                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-blue-900 hover:to-blue-800 p-4 rounded-xl border-2 border-gray-700 hover:border-blue-600 transition-all duration-300 text-left">
+                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-900 hover:to-red-800 p-4 rounded-xl border-2 border-gray-700 hover:border-red-600 transition-all duration-300 text-left">
                     <div className="flex items-center gap-3">
-                      <Folder className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform" />
+                      <Folder className="w-6 h-6 text-red-400 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="font-bold text-white text-lg">Proyecto Simple</p>
                         <p className="text-gray-400 text-sm">Gestión básica con vista previa</p>
@@ -1220,9 +1220,9 @@ const CotizadorTesla30 = () => {
 
                   <button
                     onClick={() => iniciarFlujo('proyecto-complejo')}
-                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-purple-900 hover:to-purple-800 p-4 rounded-xl border-2 border-gray-700 hover:border-purple-600 transition-all duration-300 text-left">
+                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-900 hover:to-red-800 p-4 rounded-xl border-2 border-gray-700 hover:border-red-600 transition-all duration-300 text-left">
                     <div className="flex items-center gap-3">
-                      <Layout className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
+                      <Layout className="w-6 h-6 text-red-400 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="font-bold text-white text-lg">Proyecto Complejo</p>
                         <p className="text-gray-400 text-sm">Gantt, hitos y seguimiento avanzado</p>
@@ -1266,9 +1266,9 @@ const CotizadorTesla30 = () => {
 
                   <button
                     onClick={() => iniciarFlujo('informe-ejecutivo')}
-                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-purple-900 hover:to-purple-800 p-4 rounded-xl border-2 border-gray-700 hover:border-purple-600 transition-all duration-300 text-left">
+                    className="w-full group bg-gradient-to-r from-gray-800 to-gray-900 hover:from-red-900 hover:to-red-800 p-4 rounded-xl border-2 border-gray-700 hover:border-red-600 transition-all duration-300 text-left">
                     <div className="flex items-center gap-3">
-                      <BarChart3 className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
+                      <BarChart3 className="w-6 h-6 text-red-400 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="font-bold text-white text-lg">Informe Ejecutivo</p>
                         <p className="text-gray-400 text-sm">Word APA, tablas y gráficos automáticos</p>
@@ -1543,8 +1543,8 @@ const CotizadorTesla30 = () => {
                   <h2 className={`text-2xl font-bold mb-4 text-${colores.primary}-400`}>📝 Descripción Detallada</h2>
 
                   {esCotizacion && servicioSeleccionado && basePreciosUniversal[servicioSeleccionado] && (
-                    <div className="mb-4 p-4 bg-blue-950 bg-opacity-50 border border-blue-700 rounded-xl">
-                      <p className="text-sm font-semibold text-blue-300 mb-2">
+                    <div className="mb-4 p-4 bg-yellow-950 bg-opacity-50 border border-yellow-700 rounded-xl">
+                      <p className="text-sm font-semibold text-yellow-300 mb-2">
                         💡 Precios base {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
                       </p>
                       <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
