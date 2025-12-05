@@ -27,86 +27,103 @@ def crear_datos_demo():
 
     try:
         # ============================================
-        # CLIENTES DEMO
+        # CLIENTES DEMO - 50 CLIENTES VARIADOS
         # ============================================
-        print("\n📋 Creando clientes DEMO...")
+        print("\n📋 Creando 50 clientes DEMO...")
 
-        clientes_demo = [
-            Cliente(
-                nombre="CONSTRUCTORA ABC S.A.C.",
-                ruc="20123456789",
-                direccion="Av. La Marina 2000, San Miguel",
-                ciudad="Lima, Perú",
-                telefono="987654321",
-                email="contacto@constructoraabc.com",
-                web="www.constructoraabc.com",
-                contacto_nombre="Juan Pérez",
-                contacto_cargo="Gerente de Proyectos",
-                contacto_telefono="987654321",
-                contacto_email="jperez@constructoraabc.com",
-                industria="construccion",
-                tipo_cliente="activo",
-                notas="Cliente frecuente, buenos pagos"
-            ),
-            Cliente(
-                nombre="EDIFICACIONES XYZ EIRL",
-                ruc="20987654321",
-                direccion="Jr. Los Pinos 350, Miraflores",
-                ciudad="Lima, Perú",
-                telefono="912345678",
-                email="info@edificacionesxyz.pe",
-                contacto_nombre="María González",
-                contacto_cargo="Jefa de Compras",
-                contacto_telefono="912345678",
-                contacto_email="mgonzalez@edificacionesxyz.pe",
-                industria="arquitectura",
-                tipo_cliente="activo"
-            ),
-            Cliente(
-                nombre="INDUSTRIAS DEMO S.A.",
-                ruc="20555666777",
-                direccion="Av. Industrial 1500, Ate",
-                ciudad="Lima, Perú",
-                telefono="999888777",
-                email="ventas@industriasdemo.com",
-                contacto_nombre="Carlos Ramírez",
-                contacto_cargo="Gerente General",
-                contacto_telefono="999888777",
-                contacto_email="cramirez@industriasdemo.com",
-                industria="industrial",
-                tipo_cliente="lead",
-                notas="Cliente nuevo, interesado en automatización"
-            ),
-            Cliente(
-                nombre="COLEGIO TESLA",
-                ruc="20111222333",
-                direccion="Av. La Cultura 800, Cusco",
-                ciudad="Cusco, Perú",
-                telefono="966554433",
-                email="administracion@colegiotesla.edu.pe",
-                contacto_nombre="Ana Torres",
-                contacto_cargo="Directora",
-                contacto_telefono="966554433",
-                contacto_email="atorres@colegiotesla.edu.pe",
-                industria="educacion",
-                tipo_cliente="activo"
-            ),
-            Cliente(
-                nombre="HOSPITAL CENTRAL",
-                ruc="20444555666",
-                direccion="Jr. Salud 200, Huancayo",
-                ciudad="Huancayo, Junín - Perú",
-                telefono="955443322",
-                email="compras@hospitalcentral.gob.pe",
-                contacto_nombre="Dr. Roberto Sánchez",
-                contacto_cargo="Jefe de Mantenimiento",
-                contacto_telefono="955443322",
-                contacto_email="rsanchez@hospitalcentral.gob.pe",
-                industria="salud",
-                tipo_cliente="activo",
-                notas="Requiere certificaciones especiales"
-            )
+        # Plantillas de datos
+        empresas_construccion = ["CONSTRUCTORA", "EDIFICACIONES", "GRUPO CONSTRUCTOR", "INGENIEROS", "OBRAS"]
+        empresas_industria = ["INDUSTRIAS", "MANUFACTURA", "FABRICA", "CORPORACION", "PRODUCTORA"]
+        empresas_comercio = ["COMERCIAL", "DISTRIBUIDORA", "IMPORTADORA", "EXPORTADORA", "TRADING"]
+        empresas_servicios = ["SERVICIOS", "CONSULTORES", "ASESORES", "SOLUCIONES", "SISTEMAS"]
+        empresas_educacion = ["COLEGIO", "UNIVERSIDAD", "INSTITUTO", "ACADEMIA", "CENTRO EDUCATIVO"]
+        empresas_salud = ["HOSPITAL", "CLINICA", "CENTRO MEDICO", "POLICLINICO", "SANATORIO"]
+
+        nombres = ["ALFA", "BETA", "GAMMA", "DELTA", "OMEGA", "SIGMA", "TESLA", "EDISON", "VOLTA", "FARADAY",
+                   "MAXWELL", "OHM", "WATT", "AMPERE", "HERTZ", "JOULE", "NEWTON", "PASCAL", "KELVIN", "GAUSS"]
+
+        ciudades_peru = [
+            "Lima", "Arequipa", "Cusco", "Trujillo", "Chiclayo", "Piura", "Iquitos", "Huancayo",
+            "Tacna", "Ica", "Juliaca", "Pucallpa", "Chimbote", "Huánuco", "Tarapoto", "Cajamarca",
+            "Puno", "Sullana", "Ayacucho", "Chincha", "Huaraz", "Tumbes", "Talara", "Jaén"
         ]
+
+        industrias = ["construccion", "arquitectura", "industrial", "mineria", "educacion", "salud", "retail", "residencial"]
+
+        clientes_demo = []
+
+        # Generar 50 clientes
+        for i in range(1, 51):
+            # Seleccionar tipo de empresa
+            if i <= 15:
+                prefijo = empresas_construccion[i % len(empresas_construccion)]
+                industria = "construccion"
+            elif i <= 25:
+                prefijo = empresas_industria[(i-15) % len(empresas_industria)]
+                industria = "industrial"
+            elif i <= 35:
+                prefijo = empresas_comercio[(i-25) % len(empresas_comercio)]
+                industria = "retail"
+            elif i <= 40:
+                prefijo = empresas_educacion[(i-35) % len(empresas_educacion)]
+                industria = "educacion"
+            elif i <= 45:
+                prefijo = empresas_salud[(i-40) % len(empresas_salud)]
+                industria = "salud"
+            else:
+                prefijo = empresas_servicios[(i-45) % len(empresas_servicios)]
+                industria = "arquitectura"
+
+            nombre_empresa = nombres[(i-1) % len(nombres)]
+            razon_social = f"{prefijo} {nombre_empresa} S.A.C."
+
+            # Generar RUC único
+            ruc_base = 20100000000 + (i * 1000)
+            ruc = str(ruc_base)
+
+            # Ciudad aleatoria
+            ciudad = ciudades_peru[(i-1) % len(ciudades_peru)]
+
+            # Email y web
+            slug = nombre_empresa.lower()
+            email = f"contacto@{slug}.com.pe"
+            web = f"www.{slug}.com.pe"
+
+            # Teléfono
+            telefono = f"9{str(10000000 + i * 1000)[:8]}"
+
+            # Nombres de contacto variados
+            nombres_contacto = ["Juan", "María", "Carlos", "Ana", "Roberto", "Patricia", "Luis", "Carmen", "Jorge", "Rosa"]
+            apellidos_contacto = ["Pérez", "García", "Rodríguez", "López", "Martínez", "González", "Fernández", "Sánchez", "Ramírez", "Torres"]
+            contacto_nombre = f"{nombres_contacto[i % len(nombres_contacto)]} {apellidos_contacto[i % len(apellidos_contacto)]}"
+
+            cargos = ["Gerente General", "Jefe de Proyectos", "Jefe de Compras", "Gerente de Operaciones",
+                     "Director", "Administrador", "Jefe de Mantenimiento", "Coordinador"]
+            contacto_cargo = cargos[i % len(cargos)]
+
+            # Tipo de cliente (80% activos, 20% leads)
+            tipo = "activo" if i <= 40 else "lead"
+
+            cliente = Cliente(
+                nombre=razon_social,
+                ruc=ruc,
+                direccion=f"Av. Principal {100 + i}, Distrito {i}",
+                ciudad=f"{ciudad}, Perú",
+                telefono=telefono,
+                email=email,
+                web=web,
+                contacto_nombre=contacto_nombre,
+                contacto_cargo=contacto_cargo,
+                contacto_telefono=telefono,
+                contacto_email=f"{contacto_nombre.split()[0].lower()}@{slug}.com.pe",
+                industria=industria,
+                tipo_cliente=tipo,
+                notas=f"Cliente DEMO #{i} - {industria.title()}" if i > 40 else None
+            )
+
+            clientes_demo.append(cliente)
+
+        print(f"✅ Generados {len(clientes_demo)} clientes DEMO")
 
         # Verificar si ya existen clientes
         clientes_existentes = db.query(Cliente).count()
@@ -137,9 +154,9 @@ def crear_datos_demo():
         # ============================================
         print("\n💰 Creando cotizaciones DEMO...")
 
-        # Obtener primer cliente para asociar
-        cliente1 = db.query(Cliente).filter(Cliente.ruc == "20123456789").first()
-        cliente2 = db.query(Cliente).filter(Cliente.ruc == "20987654321").first()
+        # Obtener primeros clientes para asociar
+        cliente1 = db.query(Cliente).filter(Cliente.ruc == "20101000000").first()
+        cliente2 = db.query(Cliente).filter(Cliente.ruc == "20102000000").first()
 
         cotizaciones_demo = [
             Cotizacion(
@@ -231,9 +248,9 @@ def crear_datos_demo():
             Proyecto(
                 nombre="Certificado ITSE Hospital Central",
                 descripcion="Tramitación y certificación ITSE para hospital",
-                cliente="HOSPITAL CENTRAL",
+                cliente=db.query(Cliente).offset(40).first().nombre,
                 estado=EstadoProyecto.PLANIFICACION,
-                cliente_id=db.query(Cliente).filter(Cliente.ruc == "20444555666").first().id,
+                cliente_id=db.query(Cliente).offset(40).first().id,
                 metadata_adicional={
                     "presupuesto": 8000.00,
                     "duracion_meses": 2
