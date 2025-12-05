@@ -47,6 +47,10 @@ class Cotizacion(Base):
     # Relación con proyecto
     proyecto_id = Column(Integer, ForeignKey("proyectos.id", ondelete="SET NULL"), nullable=True)
     proyecto_rel = relationship("Proyecto", back_populates="cotizaciones")
+
+    # Relación con cliente (nuevo - gestión de clientes)
+    cliente_id = Column(Integer, ForeignKey("clientes.id", ondelete="SET NULL"), nullable=True)
+    cliente_rel = relationship("Cliente", back_populates="cotizaciones")
     
     # Relación con items
     items_rel = relationship(

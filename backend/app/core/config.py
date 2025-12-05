@@ -69,7 +69,31 @@ class Settings(BaseSettings):
     # =======================================
     APP_NAME: str = "Tesla Cotizador"
     VERSION: str = "3.0.0"
-    
+
+    # =======================================
+    # INFORMACIÓN DE LA EMPRESA (SSOT - Single Source of Truth)
+    # =======================================
+    EMPRESA_NOMBRE: str = "TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C."
+    EMPRESA_RUC: str = "20601138787"
+    EMPRESA_DIRECCION: str = "Jr. Los Narcisos Mz H lote 4 Urb. Los jardines de San Carlos"
+    EMPRESA_TELEFONO: str = "906315961"
+    EMPRESA_EMAIL: str = "ingenieria.teslaelectricidad@gmail.com"
+    EMPRESA_CIUDAD: str = "Huancayo, Junín - Perú"
+    EMPRESA_WEB: str = Field(default="", env="EMPRESA_WEB")  # Opcional desde .env
+
+    @property
+    def EMPRESA_INFO(self) -> dict:
+        """Retorna información completa de la empresa"""
+        return {
+            "nombre": self.EMPRESA_NOMBRE,
+            "ruc": self.EMPRESA_RUC,
+            "direccion": self.EMPRESA_DIRECCION,
+            "telefono": self.EMPRESA_TELEFONO,
+            "email": self.EMPRESA_EMAIL,
+            "ciudad": self.EMPRESA_CIUDAD,
+            "web": self.EMPRESA_WEB
+        }
+
     # =======================================
     # LÓGICA DE BD INTELIGENTE
     # =======================================
@@ -272,6 +296,22 @@ def get_gemini_api_key() -> str:
 def get_gemini_model() -> str:
     """Obtiene el modelo de Gemini a usar"""
     return settings.GEMINI_MODEL
+
+# =======================================
+# FUNCIONES EMPRESA - NUEVAS
+# =======================================
+
+def get_empresa_info() -> dict:
+    """Obtiene información completa de la empresa (SSOT)"""
+    return settings.EMPRESA_INFO
+
+def get_empresa_nombre() -> str:
+    """Obtiene nombre de la empresa"""
+    return settings.EMPRESA_NOMBRE
+
+def get_empresa_direccion_completa() -> str:
+    """Obtiene dirección completa con ciudad"""
+    return f"{settings.EMPRESA_DIRECCION}, {settings.EMPRESA_CIUDAD}"
 
 # =======================================
 # CONFIGURACIÓN DE LOGGING ESPECÍFICA

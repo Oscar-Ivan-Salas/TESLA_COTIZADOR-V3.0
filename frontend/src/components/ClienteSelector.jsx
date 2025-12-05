@@ -105,9 +105,9 @@ const ClienteSelector = ({ onClienteSeleccionado, clienteInicial = null }) => {
 
   // Formulario de búsqueda/selección
   return (
-    <div className="border rounded-lg p-4 bg-white">
-      <h3 className="font-semibold mb-3 flex items-center gap-2">
-        <Users className="w-5 h-5 text-blue-600" />
+    <div className="border-2 border-yellow-600 rounded-lg p-4 bg-gradient-to-br from-gray-900 to-gray-800">
+      <h3 className="font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+        <Users className="w-5 h-5 text-yellow-400" />
         Seleccionar Cliente
       </h3>
 
@@ -119,21 +119,21 @@ const ClienteSelector = ({ onClienteSeleccionado, clienteInicial = null }) => {
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar por nombre o RUC..."
-          className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 bg-gray-800 border-2 border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
         />
       </div>
 
       {/* Estado de búsqueda */}
       {buscando && (
-        <div className="text-center py-4 text-gray-500">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="text-center py-4 text-gray-300">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
           <p className="mt-2 text-sm">Buscando...</p>
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4">
+        <div className="bg-red-900 border border-red-700 text-red-200 p-3 rounded-lg mb-4">
           {error}
         </div>
       )}
@@ -145,17 +145,17 @@ const ClienteSelector = ({ onClienteSeleccionado, clienteInicial = null }) => {
             <div
               key={cliente.id}
               onClick={() => seleccionarCliente(cliente)}
-              className="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
+              className="p-3 border-2 border-gray-700 bg-gray-800 rounded-lg cursor-pointer hover:bg-gradient-to-r hover:from-yellow-900 hover:to-red-900 hover:border-yellow-600 transition-all"
             >
-              <div className="font-semibold">{cliente.nombre}</div>
-              <div className="text-sm text-gray-600">RUC: {cliente.ruc}</div>
+              <div className="font-semibold text-yellow-400">{cliente.nombre}</div>
+              <div className="text-sm text-gray-300">RUC: {cliente.ruc}</div>
               {cliente.industria && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-gray-400 mt-1">
                   🏢 {cliente.industria}
                 </div>
               )}
               {cliente.total_cotizaciones > 0 && (
-                <div className="text-xs text-blue-600 mt-1">
+                <div className="text-xs text-yellow-500 mt-1">
                   📄 {cliente.total_cotizaciones} cotización(es) previa(s)
                 </div>
               )}
@@ -166,7 +166,7 @@ const ClienteSelector = ({ onClienteSeleccionado, clienteInicial = null }) => {
 
       {/* Sin resultados */}
       {!buscando && busqueda.length >= 2 && clientes.length === 0 && !error && (
-        <div className="text-center py-4 text-gray-500">
+        <div className="text-center py-4 text-gray-400">
           <p>No se encontraron clientes</p>
           <p className="text-sm mt-1">Intenta con otro término o registra un nuevo cliente</p>
         </div>
@@ -175,7 +175,7 @@ const ClienteSelector = ({ onClienteSeleccionado, clienteInicial = null }) => {
       {/* Botón para nuevo cliente */}
       <button
         onClick={() => setMostrarNuevo(true)}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors"
+        className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold py-2 px-4 rounded-lg hover:from-yellow-500 hover:to-yellow-400 flex items-center justify-center gap-2 transition-all shadow-lg"
       >
         <Plus className="w-5 h-5" />
         Registrar Nuevo Cliente
@@ -241,10 +241,10 @@ const ModalNuevoCliente = ({ onCancelar, onGuardar }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Users className="w-6 h-6 text-blue-600" />
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-black border-2 border-yellow-600 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-400">
+          <Users className="w-6 h-6 text-yellow-400" />
           Registrar Nuevo Cliente
         </h2>
 
@@ -252,7 +252,7 @@ const ModalNuevoCliente = ({ onCancelar, onGuardar }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Nombre */}
             <div className="col-span-2">
-              <label className="block font-semibold mb-1">
+              <label className="block font-semibold mb-1 text-yellow-400">
                 Nombre/Razón Social *
               </label>
               <input
@@ -260,82 +260,82 @@ const ModalNuevoCliente = ({ onCancelar, onGuardar }) => {
                 required
                 value={datos.nombre}
                 onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="Ej: ACME Corporation SAC"
               />
             </div>
 
             {/* RUC */}
             <div>
-              <label className="block font-semibold mb-1">RUC *</label>
+              <label className="block font-semibold mb-1 text-yellow-400">RUC *</label>
               <input
                 type="text"
                 required
                 pattern="[0-9]{11}"
                 value={datos.ruc}
                 onChange={(e) => setDatos({ ...datos, ruc: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="20123456789"
                 maxLength="11"
               />
-              <p className="text-xs text-gray-500 mt-1">11 dígitos numéricos</p>
+              <p className="text-xs text-gray-400 mt-1">11 dígitos numéricos</p>
             </div>
 
             {/* Teléfono */}
             <div>
-              <label className="block font-semibold mb-1">Teléfono</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Teléfono</label>
               <input
                 type="text"
                 value={datos.telefono}
                 onChange={(e) => setDatos({ ...datos, telefono: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="999888777"
               />
             </div>
 
             {/* Dirección */}
             <div className="col-span-2">
-              <label className="block font-semibold mb-1">Dirección</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Dirección</label>
               <input
                 type="text"
                 value={datos.direccion}
                 onChange={(e) => setDatos({ ...datos, direccion: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="Av. Lima 123, San Isidro"
               />
             </div>
 
             {/* Ciudad */}
             <div>
-              <label className="block font-semibold mb-1">Ciudad</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Ciudad</label>
               <input
                 type="text"
                 value={datos.ciudad}
                 onChange={(e) => setDatos({ ...datos, ciudad: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="Lima, Perú"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block font-semibold mb-1">Email</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Email</label>
               <input
                 type="email"
                 value={datos.email}
                 onChange={(e) => setDatos({ ...datos, email: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="contacto@cliente.com"
               />
             </div>
 
             {/* Industria */}
             <div>
-              <label className="block font-semibold mb-1">Industria</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Industria</label>
               <select
                 value={datos.industria}
                 onChange={(e) => setDatos({ ...datos, industria: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
               >
                 <option value="">Seleccionar...</option>
                 <option value="construccion">Construcción</option>
@@ -351,23 +351,23 @@ const ModalNuevoCliente = ({ onCancelar, onGuardar }) => {
 
             {/* Contacto */}
             <div>
-              <label className="block font-semibold mb-1">Persona de Contacto</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Persona de Contacto</label>
               <input
                 type="text"
                 value={datos.contacto_nombre}
                 onChange={(e) => setDatos({ ...datos, contacto_nombre: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 placeholder="Juan Pérez"
               />
             </div>
 
             {/* Notas */}
             <div className="col-span-2">
-              <label className="block font-semibold mb-1">Notas (opcional)</label>
+              <label className="block font-semibold mb-1 text-yellow-400">Notas (opcional)</label>
               <textarea
                 value={datos.notas}
                 onChange={(e) => setDatos({ ...datos, notas: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                className="w-full bg-gray-800 border-2 border-gray-700 text-white rounded px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                 rows="2"
                 placeholder="Información adicional sobre el cliente..."
               />
@@ -376,17 +376,17 @@ const ModalNuevoCliente = ({ onCancelar, onGuardar }) => {
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 text-red-700 p-3 rounded">
+            <div className="bg-red-900 border border-red-700 text-red-200 p-3 rounded">
               ❌ {error}
             </div>
           )}
 
           {/* Botones */}
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-4 border-t-2 border-gray-700">
             <button
               type="button"
               onClick={onCancelar}
-              className="flex-1 border border-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 border-2 border-gray-600 text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors"
               disabled={guardando}
             >
               Cancelar
@@ -394,7 +394,7 @@ const ModalNuevoCliente = ({ onCancelar, onGuardar }) => {
             <button
               type="submit"
               disabled={guardando}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold py-2 px-4 rounded-lg hover:from-yellow-500 hover:to-yellow-400 disabled:opacity-50 transition-all shadow-lg"
             >
               {guardando ? '💾 Guardando...' : '💾 Guardar y Continuar'}
             </button>

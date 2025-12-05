@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
+import ClienteSelector from './components/ClienteSelector';
 
 const CotizadorTesla30 = () => {
   // ============================================
@@ -55,22 +56,27 @@ const CotizadorTesla30 = () => {
   const [formatoInforme, setFormatoInforme] = useState('word');
   const [incluirGraficos, setIncluirGraficos] = useState(true);
 
+  // Estado para gestión de clientes
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+
   // Referencias
   const chatContainerRef = useRef(null);
   const fileInputLogoRef = useRef(null);
   const previewRef = useRef(null);
 
   // ============================================
-  // DATOS DE CONFIGURACIÓN
+  // DATOS DE CONFIGURACIÓN (SSOT - Single Source of Truth)
   // ============================================
 
-  const [datosEmpresa] = useState({
-    nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
-    ruc: '20601138787',
-    direccion: 'Jr. Los Narcisos Mz H lote 4 Urb. Los jardines de San Calos',
-    telefono: '906315961',
-    email: 'ingenieria.teslaelectricidad@gmail.com',
-    ciudad: 'Huanacayo, Junin - Perú'
+  // Los datos de empresa se cargan desde la API para mantener sincronización
+  const [datosEmpresa, setDatosEmpresa] = useState({
+    nombre: '',
+    ruc: '',
+    direccion: '',
+    telefono: '',
+    email: '',
+    ciudad: '',
+    web: ''
   });
 
   const servicios = [
@@ -123,6 +129,48 @@ const CotizadorTesla30 = () => {
     { id: 'PROJ-2025-002', nombre: 'Sistema CCTV Planta Industrial', cliente: 'Industrial Perú S.A.', tipo: 'cctv' },
     { id: 'PROJ-2025-003', nombre: 'Automatización Línea Producción', cliente: 'Manufactura XYZ', tipo: 'automatizacion-industrial' }
   ];
+
+  // ============================================
+  // EFECTOS (useEffect)
+  // ============================================
+
+  // Cargar información de empresa desde API al montar el componente
+  useEffect(() => {
+    const cargarEmpresaInfo = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/system/empresa-info');
+        const data = await response.json();
+
+        if (data.exito) {
+          setDatosEmpresa(data.datos);
+          console.log('✅ Información de empresa cargada desde API:', data.datos);
+        } else {
+          console.warn('⚠️ API no retornó datos exitosos');
+          // Usar datos por defecto si la API no retorna datos válidos
+          usarDatosPorDefecto();
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar información de empresa:', error);
+        // Fallback a datos por defecto si API falla
+        usarDatosPorDefecto();
+      }
+    };
+
+    const usarDatosPorDefecto = () => {
+      // Fallback con datos correctos de Huancayo
+      setDatosEmpresa({
+        nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
+        ruc: '20601138787',
+        direccion: 'Jr. Los Narcisos Mz H lote 4 Urb. Los jardines de San Carlos',
+        telefono: '906315961',
+        email: 'ingenieria.teslaelectricidad@gmail.com',
+        ciudad: 'Huancayo, Junín - Perú',
+        web: ''
+      });
+    };
+
+    cargarEmpresaInfo();
+  }, []); // [] significa que se ejecuta solo al montar el componente
 
   // ============================================
   // FUNCIONES PRINCIPALES
@@ -182,6 +230,184 @@ const CotizadorTesla30 = () => {
     }
   };
 
+  // 🆕 FUNCIÓN PARA GENERAR DOCUMENTO WORD
+  const generarDocumentoWord = async (cotizacionId) => {
+    if (!cotizacionId) return;
+
+    try {
+      setDescargando('word');
+      console.log(`📄 Generando documento Word para cotización ID: ${cotizacionId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/cotizaciones/${cotizacionId}/generar-word`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cotizacion-${cotizacionId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Documento Word generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Documento Word descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar Word:', error);
+      setDescargando(null);
+      setError('❌ Error al generar documento Word: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  // 🆕 FUNCIÓN PARA GENERAR DOCUMENTO PDF
+  const generarDocumentoPDF = async (cotizacionId) => {
+    if (!cotizacionId) return;
+
+    try {
+      setDescargando('pdf');
+      console.log(`📄 Generando documento PDF para cotización ID: ${cotizacionId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/cotizaciones/${cotizacionId}/generar-pdf`,
+        { method: 'POST' }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cotizacion-${cotizacionId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Documento PDF generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Documento PDF descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      setDescargando(null);
+      setError('❌ Error al generar documento PDF: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  // 🆕 FUNCIÓN PARA GENERAR INFORME DE PROYECTO (WORD)
+  const generarInformeProyectoWord = async (proyectoId) => {
+    if (!proyectoId) return;
+
+    try {
+      setDescargando('word');
+      console.log(`📊 Generando informe Word para proyecto ID: ${proyectoId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/proyectos/${proyectoId}/generar-informe-word`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            incluir_cotizaciones: true,
+            incluir_documentos: true,
+            incluir_estadisticas: true,
+            incluir_analisis_ia: true
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-proyecto-${proyectoId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Informe de proyecto generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Informe de proyecto descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar informe de proyecto:', error);
+      setDescargando(null);
+      setError('❌ Error al generar informe de proyecto: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  // 🆕 FUNCIÓN PARA GENERAR INFORME DE PROYECTO (PDF)
+  const generarInformeProyectoPDF = async (proyectoId) => {
+    if (!proyectoId) return;
+
+    try {
+      setDescargando('pdf');
+      console.log(`📊 Generando informe PDF para proyecto ID: ${proyectoId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/proyectos/${proyectoId}/generar-informe-pdf`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            incluir_cotizaciones: true,
+            incluir_documentos: true,
+            incluir_estadisticas: true,
+            incluir_analisis_ia: true
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-proyecto-${proyectoId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Informe de proyecto PDF generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Informe de proyecto PDF descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar informe PDF:', error);
+      setDescargando(null);
+      setError('❌ Error al generar informe PDF: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
   const handleEnviarMensajeChat = async () => {
     if (!inputChat.trim() || analizando) return;
 
@@ -229,19 +455,61 @@ const CotizadorTesla30 = () => {
 
         // Manejar datos según el tipo de flujo
         if (tipoFlujo.includes('cotizacion') && data.cotizacion_generada) {
-          setCotizacion(data.cotizacion_generada);
-          setDatosEditables(data.cotizacion_generada);
+          // Agregar ID al objeto de cotización para botones manuales
+          const cotizacionConId = {
+            ...data.cotizacion_generada,
+            id: data.cotizacion_id
+          };
+          setCotizacion(cotizacionConId);
+          setDatosEditables(cotizacionConId);
+
+          // 🆕 GENERAR AUTOMÁTICAMENTE DOCUMENTO WORD SI HAY COTIZACIÓN_ID
+          if (data.cotizacion_id) {
+            console.log(`📄 Cotización guardada con ID: ${data.cotizacion_id}, generando documento...`);
+            // Esperar un momento para que el usuario vea el mensaje de PILI
+            setTimeout(() => {
+              generarDocumentoWord(data.cotizacion_id);
+            }, 1500);
+          }
+
         } else if (tipoFlujo.includes('proyecto') && data.proyecto_generado) {
-          setProyecto(data.proyecto_generado);
-          setDatosEditables(data.proyecto_generado);
+          // Agregar ID al objeto de proyecto para botones manuales
+          const proyectoConId = {
+            ...data.proyecto_generado,
+            id: data.proyecto_id
+          };
+          setProyecto(proyectoConId);
+          setDatosEditables(proyectoConId);
+
+          // 🆕 GENERAR AUTOMÁTICAMENTE INFORME DE PROYECTO SI HAY PROYECTO_ID
+          if (data.proyecto_id) {
+            console.log(`📊 Proyecto guardado con ID: ${data.proyecto_id}, generando informe...`);
+            // Esperar un momento para que el usuario vea el mensaje de PILI
+            setTimeout(() => {
+              // Por defecto generar Word (editable)
+              generarInformeProyectoWord(data.proyecto_id);
+            }, 1500);
+          }
+
         } else if (tipoFlujo.includes('informe') && data.informe_generado) {
           setInforme(data.informe_generado);
           setDatosEditables(data.informe_generado);
+
+          // Informes se generan directamente desde los datos sin guardar en BD
+          // Por ahora solo mostrar los datos, se puede mejorar después
+          if (data.informe_id) {
+            console.log(`📑 Informe generado con ID: ${data.informe_id}`);
+            // TODO: Implementar generación de informe ejecutivo
+          } else {
+            console.log(`📑 Informe generado (sin persistencia en BD)`);
+          }
         }
 
         // Actualizar botones contextuales
         if (data.botones_contextuales) {
           setBotonesContextuales(data.botones_contextuales);
+        } else if (data.botones_sugeridos) {
+          setBotonesContextuales(data.botones_sugeridos);
         }
       } else {
         throw new Error(data.error || 'Error en la respuesta');
@@ -574,7 +842,9 @@ const CotizadorTesla30 = () => {
             observaciones: '',
             vigencia: '30 días',
             estado: 'borrador',
-            html_preview: htmlPreview
+            html_preview: htmlPreview,
+            // Vincular con cliente si fue seleccionado
+            cliente_id: clienteSeleccionado?.id || null
           };
         } else if (tipoDocumento === 'proyecto') {
           datosParaBackend = {
@@ -585,7 +855,9 @@ const CotizadorTesla30 = () => {
             duracion_meses: parseInt(duracionMeses) || 1,
             descripcion: contextoUsuario || '',
             estado: 'planificacion',
-            html_preview: htmlPreview
+            html_preview: htmlPreview,
+            // Vincular con cliente si fue seleccionado
+            cliente_id: clienteSeleccionado?.id || null
           };
         } else if (tipoDocumento === 'informe') {
           datosParaBackend = {
@@ -992,9 +1264,38 @@ const CotizadorTesla30 = () => {
             {paso === 1 && (
               <div className="max-w-5xl mx-auto space-y-6">
 
+                {/* SELECTOR DE CLIENTE - NUEVO */}
+                {esCotizacion && (
+                  <div className="bg-gradient-to-br from-yellow-900 to-red-900 rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                    <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
+                      <Users className="w-6 h-6" />
+                      Cliente
+                    </h2>
+                    <ClienteSelector
+                      onClienteSeleccionado={(cliente) => {
+                        setClienteSeleccionado(cliente);
+                        // Auto-rellenar datos si hay cliente seleccionado
+                        if (cliente) {
+                          setDatosEmpresa({
+                            nombre: cliente.nombre || '',
+                            ruc: cliente.ruc || '',
+                            direccion: cliente.direccion || '',
+                            telefono: cliente.telefono || '',
+                            email: cliente.email || '',
+                            ciudad: cliente.ciudad || '',
+                            web: cliente.web || ''
+                          });
+                          setClienteProyecto(cliente.nombre || '');
+                        }
+                      }}
+                      clienteInicial={clienteSeleccionado}
+                    />
+                  </div>
+                )}
+
                 {/* LOGO UNIVERSAL (TODOS LOS SERVICIOS) */}
-                <div className="bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl p-6 border-2 border-purple-500 shadow-xl">
-                  <h2 className="text-2xl font-bold mb-4 text-purple-200 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-yellow-900 to-red-900 rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
                     🎨 Logo Empresa (Aparecerá en el documento final)
                   </h2>
 
@@ -1009,17 +1310,17 @@ const CotizadorTesla30 = () => {
                       />
                       <button
                         onClick={() => fileInputLogoRef.current?.click()}
-                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-xl border-2 border-purple-400 transition-all duration-300 hover:scale-105">
+                        className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 shadow-xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105">
                         <Upload className="w-5 h-5" />
                         {logoBase64 ? 'Cambiar Logo' : 'Subir Logo'}
                       </button>
-                      <p className="text-xs text-purple-200 mt-2 text-center">
+                      <p className="text-xs text-yellow-200 mt-2 text-center">
                         PNG, JPG, WebP - Máx 2MB • Se integrará automáticamente en Word
                       </p>
                     </div>
 
                     {logoBase64 && (
-                      <div className="bg-white rounded-xl p-3 border-2 border-purple-400 shadow-lg">
+                      <div className="bg-white rounded-xl p-3 border-2 border-yellow-600 shadow-lg">
                         <img src={logoBase64} alt="Logo" className="w-24 h-24 object-contain" />
                         <p className="text-xs text-gray-600 mt-2 text-center font-semibold">✅ Cargado</p>
                       </div>
@@ -1029,46 +1330,46 @@ const CotizadorTesla30 = () => {
 
                 {/* CONFIGURACIÓN ESPECÍFICA POR TIPO */}
                 {esProyecto && (
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-blue-700 shadow-xl">
-                    <h2 className="text-2xl font-bold mb-4 text-blue-400">📋 Información del Proyecto</h2>
+                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                    <h2 className="text-2xl font-bold mb-4 text-yellow-400">📋 Información del Proyecto</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Nombre del Proyecto *</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Nombre del Proyecto *</label>
                         <input
                           type="text"
                           value={nombreProyecto}
                           onChange={(e) => setNombreProyecto(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="Ej: Instalación Eléctrica Edificio Central"
                         />
                       </div>
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Cliente *</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Cliente *</label>
                         <input
                           type="text"
                           value={clienteProyecto}
                           onChange={(e) => setClienteProyecto(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="Ej: Constructora ABC S.A.C."
                         />
                       </div>
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
                         <input
                           type="number"
                           value={presupuestoEstimado}
                           onChange={(e) => setPresupuestoEstimado(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="50000"
                         />
                       </div>
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Duración (Meses)</label>
                         <input
                           type="number"
                           value={duracionMeses}
                           onChange={(e) => setDuracionMeses(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="6"
                         />
                       </div>
@@ -1341,6 +1642,61 @@ const CotizadorTesla30 = () => {
 
                       {mostrarPreview && (
                         <div className="flex items-center gap-2">
+                          {/* BOTONES DE DESCARGA */}
+                          {esCotizacion && cotizacion && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => cotizacion.id && generarDocumentoWord(cotizacion.id)}
+                                disabled={!cotizacion.id || descargando === 'word'}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'word' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Word
+                              </button>
+                              <button
+                                onClick={() => cotizacion.id && generarDocumentoPDF(cotizacion.id)}
+                                disabled={!cotizacion.id || descargando === 'pdf'}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'pdf' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                PDF
+                              </button>
+                            </div>
+                          )}
+
+                          {esProyecto && proyecto && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => proyecto.id && generarInformeProyectoWord(proyecto.id)}
+                                disabled={!proyecto.id || descargando === 'word'}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'word' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Informe Word
+                              </button>
+                              <button
+                                onClick={() => proyecto.id && generarInformeProyectoPDF(proyecto.id)}
+                                disabled={!proyecto.id || descargando === 'pdf'}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'pdf' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Informe PDF
+                              </button>
+                            </div>
+                          )}
+
                           <button
                             onClick={() => setModoEdicion(!modoEdicion)}
                             className="px-3 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg text-sm flex items-center gap-1">

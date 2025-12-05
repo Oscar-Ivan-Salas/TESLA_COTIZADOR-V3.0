@@ -133,7 +133,19 @@ try:
         logger.info("✅ Router Documentos cargado")
     except Exception as e:
         logger.warning(f"⚠️ Router documentos no disponible: {e}")
-    
+
+    try:
+        from app.routers import clientes
+        routers_info["clientes"] = {
+            "router": clientes.router,
+            "prefix": "/api/clientes",
+            "tags": ["Clientes"],
+            "descripcion": "Gestión de base de datos de clientes"
+        }
+        logger.info("✅ Router Clientes cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router clientes no disponible: {e}")
+
     try:
         from app.routers import system
         routers_info["system"] = {
@@ -249,14 +261,14 @@ try:
     upload_path = get_upload_directory()
     logger.info(f"✅ Usando directorios configurados: {storage_path}")
 except Exception as e:
-    # Fallback usando configuración
+    # Fallback usando configuración (no rutas hardcodeadas)
     logger.warning(f"Error al cargar configuración avanzada: {e}")
-    from app.core.config import get_generated_directory, get_upload_directory
-    storage_path = get_generated_directory()
-    upload_path = get_upload_directory()
-
-
-    logger.info(f"✅ Usando directorios de config: {storage_path}")
+    from app.core.config import settings
+    storage_path = settings.GENERATED_DIR
+    upload_path = settings.UPLOAD_DIR
+    storage_path.mkdir(parents=True, exist_ok=True)
+    upload_path.mkdir(parents=True, exist_ok=True)
+    logger.info(f"✅ Usando directorios de configuración (fallback): {storage_path}")
 
 
 async def generar_respuesta_ia(mensaje: str, contexto: str, historial: List[Dict], tipo_flujo: str) -> Dict:

@@ -47,6 +47,8 @@ from app.services.gemini_service import gemini_service
 from app.services.pili_brain import PILIBrain
 from app.models.cotizacion import Cotizacion
 from app.models.item import Item
+from app.models.proyecto import Proyecto
+from app.models.documento import Documento
 from datetime import datetime
 from pathlib import Path
 import logging
@@ -62,6 +64,27 @@ logger = logging.getLogger(__name__)
 pili_brain = PILIBrain()
 
 router = APIRouter()
+
+# Helper para generar número de cotizacion
+def generar_numero_cotizacion(db: Session) -> str:
+    """Generar número único de cotización - Formato: COT-YYYYMM-XXXX"""
+    fecha = datetime.now()
+    prefijo = f"COT-{fecha.strftime('%Y%m')}"
+
+    ultima = db.query(Cotizacion).filter(
+        Cotizacion.numero.like(f"{prefijo}%")
+    ).order_by(Cotizacion.numero.desc()).first()
+
+    if ultima:
+        try:
+            ultimo_num = int(ultima.numero.split('-')[-1])
+            nuevo_num = ultimo_num + 1
+        except:
+            nuevo_num = 1
+    else:
+        nuevo_num = 1
+
+    return f"{prefijo}-{nuevo_num:04d}"
 
 # ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0
@@ -89,14 +112,16 @@ CONTEXTOS_SERVICIOS = {
         
         "botones_contextuales": {
             "inicial": [
-                "🏠 Instalación Residencial", 
-                "🏢 Instalación Comercial",
-                "🏭 Instalación Industrial", 
+                "⚡ Eléctrico Residencial",
+                "🏢 Eléctrico Comercial",
+                "⚙️ Eléctrico Industrial",
+                "🔥 Contra Incendios",
+                "🏠 Domótica",
+                "📑 Expedientes Técnicos",
+                "💧 Saneamiento",
                 "📋 Certificado ITSE",
-                "🔌 Pozo a Tierra",
-                "🤖 Automatización",
-                "📹 CCTV",
-                "🌐 Redes"
+                "🔌 Puesta a Tierra",
+                "📹 Redes y CCTV"
             ],
             "refinamiento": [
                 "📝 Necesito más detalles técnicos",
@@ -1416,12 +1441,75 @@ async def chat_contextualizado(
                 datos_generados = documento_data.get('datos', {})
                 respuesta = {'mensaje': documento_data['conversacion']['mensaje_pili']}
 
+        # 🆕 GUARDAR EN BASE DE DATOS Y OBTENER ID
+        documento_id = None
+        if datos_generados:
+            try:
+                if "cotizacion" in tipo_flujo:
+                    # Guardar cotización en BD
+                    nueva_cotizacion = Cotizacion(
+                        numero=generar_numero_cotizacion(db),
+                        cliente=datos_generados.get('cliente', 'Cliente generado por PILI'),
+                        proyecto=datos_generados.get('proyecto', 'Proyecto PILI'),
+                        descripcion=datos_generados.get('descripcion', mensaje[:200]),
+                        observaciones=datos_generados.get('observaciones', ''),
+                        subtotal=float(datos_generados.get('subtotal', 0)),
+                        igv=float(datos_generados.get('igv', 0)),
+                        total=float(datos_generados.get('total', 0)),
+                        estado="borrador",
+                        fecha_creacion=datetime.now()
+                    )
+                    db.add(nueva_cotizacion)
+                    db.commit()
+                    db.refresh(nueva_cotizacion)
+                    documento_id = nueva_cotizacion.id
+
+                    # Agregar items
+                    if 'items' in datos_generados:
+                        for item_data in datos_generados['items']:
+                            item = Item(
+                                cotizacion_id=nueva_cotizacion.id,
+                                descripcion=item_data.get('descripcion', ''),
+                                cantidad=float(item_data.get('cantidad', 1)),
+                                unidad=item_data.get('unidad', 'und'),
+                                precio_unitario=float(item_data.get('precio_unitario', 0))
+                            )
+                            db.add(item)
+                        db.commit()
+
+                    logger.info(f"✅ Cotización guardada en BD: {nueva_cotizacion.numero} (ID: {documento_id})")
+
+                elif "proyecto" in tipo_flujo:
+                    # Guardar proyecto en BD
+                    nuevo_proyecto = Proyecto(
+                        nombre=datos_generados.get('nombre', 'Proyecto generado por PILI'),
+                        cliente=datos_generados.get('cliente', 'Cliente PILI'),
+                        descripcion=datos_generados.get('descripcion', mensaje[:500]),
+                        presupuesto_estimado=float(datos_generados.get('presupuesto_estimado', 0)),
+                        duracion_meses=int(datos_generados.get('duracion_meses', 1)),
+                        estado="planificacion",
+                        fecha_inicio=datetime.now(),
+                        fecha_creacion=datetime.now()
+                    )
+                    db.add(nuevo_proyecto)
+                    db.commit()
+                    db.refresh(nuevo_proyecto)
+                    documento_id = nuevo_proyecto.id
+
+                    logger.info(f"✅ Proyecto guardado en BD: {nuevo_proyecto.nombre} (ID: {documento_id})")
+
+                # Nota: Informes no se guardan como entidades separadas, solo se generan
+
+            except Exception as e_bd:
+                logger.warning(f"⚠️ No se pudo guardar en BD: {e_bd}")
+                documento_id = None
+
         # Determinar etapa y botones sugeridos
-        tiene_cotizacion = cotizacion_id is not None
+        tiene_cotizacion = cotizacion_id is not None or documento_id is not None
         etapa_actual = determinar_etapa_conversacion(historial, tiene_cotizacion)
         botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
 
-        # ✅ RESPUESTA CON CAMPOS RESTAURADOS
+        # ✅ RESPUESTA CON CAMPOS RESTAURADOS + ID DEL DOCUMENTO
         return {
             "success": True,
             "agente_activo": nombre_pili,
@@ -1440,6 +1528,10 @@ async def chat_contextualizado(
             "cotizacion_generada": datos_generados if "cotizacion" in tipo_flujo else None,
             "proyecto_generado": datos_generados if "proyecto" in tipo_flujo else None,
             "informe_generado": datos_generados if "informe" in tipo_flujo else None,
+            # 🆕 IDS PARA GENERACIÓN DE DOCUMENTOS
+            "cotizacion_id": documento_id if "cotizacion" in tipo_flujo else None,
+            "proyecto_id": documento_id if "proyecto" in tipo_flujo else None,
+            "informe_id": documento_id if "informe" in tipo_flujo else None,
             "timestamp": datetime.now().isoformat(),
             "pili_metadata": {
                 "agente_id": tipo_flujo,

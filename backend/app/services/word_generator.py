@@ -57,16 +57,13 @@ class WordGenerator:
         self.COLOR_PILI = RGBColor(212, 175, 55)    # #D4AF37 (Dorado PILI)
         self.COLOR_AZUL_TECH = RGBColor(0, 102, 204)  # #0066CC (Azul tecnológico)
         
-        # Configuración de documentos
-        self.empresa_info = {
-            "nombre": "TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.",
-            "ruc": "20601138787",
-            "direccion": "Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL",
-            "telefono": "906315961",
-            "email": "ingenieria.teslaelectricidad@gmail.com"
-        }
-        
+        # Configuración de documentos (SSOT - Single Source of Truth)
+        from app.core.config import get_empresa_info
+        self.empresa_info = get_empresa_info()
+
         logger.info("✅ WordGenerator + PILI inicializado")
+        logger.info(f"📍 Empresa: {self.empresa_info['nombre']}")
+        logger.info(f"📍 Ciudad: {self.empresa_info['ciudad']}")
 
     # ═══════════════════════════════════════════════════════════════
     # 🤖 NUEVOS MÉTODOS PILI v3.0
@@ -760,7 +757,6 @@ class WordGenerator:
                 # Ruta de salida usando configuración centralizada
                 from app.core.config import get_generated_directory
                 output_dir = get_generated_directory()
-
                 ruta_archivo = output_dir / nombre_archivo
 
             # Guardar documento
