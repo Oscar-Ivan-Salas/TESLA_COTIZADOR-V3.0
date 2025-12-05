@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización Industrial Compleja - Tesla Electricidad</title>
+    <style>
+        :root {
+            --tesla-blue: #1a3c6e;
+            --tesla-dark: #102a4e;
+            --tesla-red: #c53030;
+            --slate-gray: #4a5568;
+            --light-gray: #f7fafc;
+            --border-color: #cbd5e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2d3748;
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px;
+            background-color: #e2e8f0;
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            /* More square for professional look */
+        }
+
+        /* Professional Header */
+        .header {
+            border-bottom: 4px solid var(--tesla-blue);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .logo-section h1 {
+            color: var(--tesla-dark);
+            font-size: 32px;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-section .subtitle {
+            color: var(--tesla-red);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .meta-data {
+            text-align: right;
+        }
+
+        .meta-item {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .meta-label {
+            color: var(--slate-gray);
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        /* Project Summary Box */
+        .project-summary {
+            background-color: #ebf8ff;
+            border-left: 5px solid var(--tesla-blue);
+            padding: 20px;
+            margin-bottom: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .summary-item h4 {
+            margin: 0 0 5px 0;
+            color: var(--tesla-blue);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .summary-item p {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Complex Table */
+        .section-title {
+            background-color: var(--tesla-dark);
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #edf2f7;
+            color: var(--tesla-dark);
+            font-weight: 700;
+            text-align: left;
+            padding: 10px 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .col-desc {
+            width: 50%;
+        }
+
+        .col-unit {
+            width: 10%;
+            text-align: center;
+        }
+
+        .col-qty {
+            width: 10%;
+            text-align: center;
+        }
+
+        .col-price {
+            width: 15%;
+            text-align: right;
+        }
+
+        .col-total {
+            width: 15%;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* Technical Notes in Table */
+        .tech-note {
+            display: block;
+            font-size: 11px;
+            color: var(--slate-gray);
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* Financial Summary */
+        .financial-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .notes-area h4 {
+            color: var(--tesla-blue);
+            margin-top: 0;
+        }
+
+        .notes-area ul {
+            font-size: 12px;
+            color: var(--slate-gray);
+            padding-left: 20px;
+        }
+
+        .totals-area table {
+            margin: 0;
+        }
+
+        .totals-area td {
+            border: none;
+            padding: 5px 0;
+        }
+
+        .grand-total {
+            font-size: 20px;
+            color: var(--tesla-blue);
+            border-top: 2px solid var(--tesla-blue);
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        /* Timeline Visualization (CSS Only) */
+        .timeline-section {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .timeline-bar {
+            height: 20px;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--tesla-blue) 0%, #4299e1 100%);
+            width: 100%;
+            /* Full project duration */
+        }
+
+        .phase-markers {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--slate-gray);
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #718096;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-section">
+                <h1>TESLA ELECTRICIDAD</h1>
+                <div class="subtitle">Soluciones Industriales & Proyectos</div>
+            </div>
+            <div class="meta-data">
+                <div class="meta-item"><span class="meta-label">COTIZACIÓN:</span> #IND-2025-892</div>
+                <div class="meta-item"><span class="meta-label">FECHA:</span> 04/12/2025</div>
+                <div class="meta-item"><span class="meta-label">CLIENTE ID:</span> C-99281</div>
+            </div>
+        </div>
+
+        <!-- Project Summary -->
+        <div class="project-summary">
+            <div class="summary-item">
+                <h4>Cliente</h4>
+                <p>INDUSTRIAS METALÚRGICAS S.A.</p>
+                <span style="font-size: 12px; color: #4a5568;">RUC: 20555111222</span>
+            </div>
+            <div class="summary-item">
+                <h4>Proyecto</h4>
+                <p>Implementación de Tablero General y Banco de Condensadores</p>
+                <span style="font-size: 12px; color: #4a5568;">Planta Industrial - Zona Callao</span>
+            </div>
+            <div class="summary-item">
+                <h4>Alcance Técnico</h4>
+                <p>Suministro, montaje y pruebas según norma IEC 61439.</p>
+            </div>
+            <div class="summary-item">
+                <h4>Responsable</h4>
+                <p>Ing. PILI Analista (CIP 123456)</p>
+            </div>
+        </div>
+
+        <!-- Phase 1 -->
+        <div class="section-title">FASE 1: SUMINISTRO DE EQUIPOS</div>
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-desc">Descripción</th>
+                    <th class="col-unit">Unid.</th>
+                    <th class="col-qty">Cant.</th>
+                    <th class="col-price">P. Unit</th>
+                    <th class="col-total">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>Tablero General de Baja Tensión (TGBT)</strong>
+                        <span class="tech-note">Gabinete autosoportado 2000x800x600mm, IP54, plancha LAF 2.0mm. Incluye
+                            barras de cobre electrolítico 1000A.</span>
+                    </td>
+                    <td class="col-unit">UND</td>
+                    <td class="col-qty">1</td>
+                    <td class="col-price">12,500.00</td>
+                    <td class="col-total">12,500.00</td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Interruptor Termomagnético Principal</strong>
+                        <span class="tech-note">Caja moldeada 3x800A, 50kA, regulación electrónica. Marca
+                            Schneider/ABB.</span>
+                    </td>
+                    <td class="col-unit">UND</td>
+                    <td class="col-qty">1</td>
+                    <td class="col-price">4,200.00</td>
+                    <td class="col-total">4,200.00</td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Banco de Condensadores Automático</strong>
+                        <span class="tech-note">120 KVAR, 440V, pasos 10+20+30+30+30. Incluye regulador de factor de
+                            potencia.</span>
+                    </td>
+                    <td class="col-unit">UND</td>
+                    <td class="col-qty">1</td>
+                    <td class="col-price">8,900.00</td>
+                    <td class="col-total">8,900.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Phase 2 -->
+        <div class="section-title">FASE 2: SERVICIOS DE INSTALACIÓN</div>
+        <table>
+            <tbody>
+                <tr>
+                    <td class="col-desc">
+                        <strong>Montaje y Conexionado</strong>
+                        <span class="tech-note">Instalación de gabinetes, peinado de cables, torqueado de barras y
+                            rotulado según CNE.</span>
+                    </td>
+                    <td class="col-unit">GLB</td>
+                    <td class="col-qty">1</td>
+                    <td class="col-price">3,500.00</td>
+                    <td class="col-total">3,500.00</td>
+                </tr>
+                <tr>
+                    <td class="col-desc">
+                        <strong>Pruebas y Puesta en Marcha</strong>
+                        <span class="tech-note">Megado de barras, pruebas de aislamiento, inyección de corriente y
+                            configuración de relés.</span>
+                    </td>
+                    <td class="col-unit">SRV</td>
+                    <td class="col-qty">1</td>
+                    <td class="col-price">1,200.00</td>
+                    <td class="col-total">1,200.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Financials -->
+        <div class="financial-grid">
+            <div class="notes-area">
+                <h4>Condiciones Comerciales</h4>
+                <ul>
+                    <li><strong>Plazo de Entrega:</strong> 25 días calendario (15 días fabricación, 10 días montaje).
+                    </li>
+                    <li><strong>Forma de Pago:</strong> 50% Orden de Compra, 40% Entrega de Equipos, 10% Conformidad.
+                    </li>
+                    <li><strong>Validez:</strong> 10 días (sujeto a variación del cobre).</li>
+                    <li><strong>Garantía:</strong> 24 meses por defectos de fabricación.</li>
+                </ul>
+
+                <div class="timeline-section">
+                    <h4 style="font-size: 12px; margin-bottom: 5px;">Cronograma Estimado</h4>
+                    <div class="timeline-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="phase-markers">
+                        <span>Semana 1: Ingeniería</span>
+                        <span>Semana 2-3: Fabricación</span>
+                        <span>Semana 4: Montaje</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="totals-area">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="text-align: right;">Subtotal Materiales:</td>
+                        <td style="text-align: right; font-weight: bold;">S/ 25,600.00</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;">Subtotal Servicios:</td>
+                        <td style="text-align: right; font-weight: bold;">S/ 4,700.00</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; border-top: 1px solid #ddd;">Base Imponible:</td>
+                        <td style="text-align: right; border-top: 1px solid #ddd;">S/ 30,300.00</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;">IGV (18%):</td>
+                        <td style="text-align: right;">S/ 5,454.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: right;">
+                            <div class="grand-total">
+                                TOTAL: S/ 35,754.00
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <strong>Tesla Electricidad S.A.C.</strong><br>
+                Av. Industrial 450, Lima<br>
+                proyectos@teslaelectricidad.pe
+            </div>
+            <div style="text-align: right;">
+                Página 1 de 1<br>
+                Generado por <strong>PILI Analista</strong>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Ejecutivo - Tesla Electricidad</title>
+    <style>
+        :root {
+            --primary: #1a3c6e;
+            --secondary: #2d3748;
+            --accent: #3182ce;
+            --bg-gray: #f4f7fa;
+            --white: #ffffff;
+            --chart-1: #4299e1;
+            --chart-2: #90cdf4;
+            --chart-3: #e2e8f0;
+        }
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            color: var(--secondary);
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px;
+        }
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Cover Header */
+        .cover-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 60px 50px;
+            position: relative;
+        }
+        .cover-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 200px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+        }
+        .report-type {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+        .main-title {
+            font-size: 36px;
+            margin: 0;
+            font-weight: 300;
+        }
+        .main-title strong {
+            font-weight: 700;
+            display: block;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 50px;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .kpi-card {
+            border-top: 4px solid var(--accent);
+            padding-top: 15px;
+        }
+        .kpi-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 5px;
+        }
+        .kpi-label {
+            font-size: 13px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Chart Simulation */
+        .chart-section {
+            margin-bottom: 50px;
+        }
+        .chart-title {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            gap: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #cbd5e0;
+        }
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .bar {
+            width: 40px;
+            background-color: var(--chart-1);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s;
+            position: relative;
+        }
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .bar-label {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        /* Analysis Text */
+        .analysis-text {
+            columns: 2;
+            column-gap: 40px;
+            font-size: 14px;
+            text-align: justify;
+            color: #4a5568;
+        }
+        .analysis-text p {
+            margin-top: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #f7fafc;
+            padding: 20px 50px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Cover Header -->
+        <div class="cover-header">
+            <div class="report-type">Informe Ejecutivo Mensual</div>
+            <h1 class="main-title">
+                Análisis de Eficiencia
+                <strong>Energética & Costos</strong>
+            </h1>
+            <div style="margin-top: 30px; font-size: 14px; opacity: 0.9;">
+                Periodo: Noviembre 2025 | Cliente: Corporación Industrial S.A.
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-number">12.5%</span>
+                    <span class="kpi-label">Ahorro Energético</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-number">S/ 4,500</span>
+                    <span class="kpi-label">Reducción de Costos</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-number">98.9%</span>
+                    <span class="kpi-label">Uptime Operativo</span>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-section">
+                <h2 class="chart-title">Consumo Eléctrico vs. Objetivo (kWh)</h2>
+                <div class="bar-chart">
+                    <div class="bar-group">
+                        <div class="bar" style="height: 80%; background-color: #cbd5e0;">
+                            <span class="bar-value">8500</span>
+                        </div>
+                        <span class="bar-label">Sep</span>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 75%; background-color: #cbd5e0;">
+                            <span class="bar-value">8100</span>
+                        </div>
+                        <span class="bar-label">Oct</span>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 60%; background-color: var(--primary);">
+                            <span class="bar-value" style="color: var(--primary);">6500</span>
+                        </div>
+                        <span class="bar-label" style="font-weight: bold; color: var(--primary);">Nov</span>
+                    </div>
+                    <div class="bar-group">
+                        <div class="bar" style="height: 55%; background-color: var(--accent); opacity: 0.5;">
+                            <span class="bar-value">6000</span>
+                        </div>
+                        <span class="bar-label">Dic (Est)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis -->
+            <div class="chart-section">
+                <h2 class="chart-title">Análisis Estratégico</h2>
+                <div class="analysis-text">
+                    <p>
+                        Durante el mes de noviembre, se implementaron las mejoras en el banco de condensadores sugeridas en el informe anterior. Esto ha resultado en una mejora significativa del factor de potencia, pasando de 0.85 a 0.96, eliminando completamente las multas por energía reactiva.
+                    </p>
+                    <p>
+                        Adicionalmente, la migración a iluminación LED en la nave industrial B ha contribuido a una reducción del 15% en el consumo de iluminación. Se proyecta que para diciembre, con la optimización de los horarios de arranque de motores, se alcance el objetivo de ahorro del 20% total.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <strong>Tesla Electricidad S.A.C.</strong> | Inteligencia de Negocios
+            </div>
+            <div>
+                Generado por <strong>PILI Analista Senior</strong>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

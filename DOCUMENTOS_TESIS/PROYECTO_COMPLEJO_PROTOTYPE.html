@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Complejo - Tesla Electricidad</title>
+    <style>
+        :root {
+            --tesla-blue: #0c2d48;
+            --tesla-accent: #2e8bc0;
+            --alert-red: #c0392b;
+            --success-green: #27ae60;
+            --warning-orange: #f39c12;
+            --bg-gray: #ecf0f1;
+            --border-color: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            color: #2c3e50;
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px;
+            background-color: #dce1e3;
+        }
+
+        .page {
+            max-width: 1000px;
+            /* Wider for Gantt charts */
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            border-top: 8px solid var(--tesla-blue);
+        }
+
+        /* Executive Header */
+        .header {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--tesla-blue);
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: var(--tesla-accent);
+            font-weight: bold;
+        }
+
+        .header-meta {
+            text-align: right;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .header-meta strong {
+            color: var(--tesla-blue);
+        }
+
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--tesla-blue);
+            display: block;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Gantt Chart Simulation */
+        .gantt-container {
+            margin-bottom: 40px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            background: #fff;
+        }
+
+        .gantt-header {
+            display: grid;
+            grid-template-columns: 200px repeat(8, 1fr);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--tesla-blue);
+            text-align: center;
+        }
+
+        .gantt-header div:first-child {
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 200px repeat(8, 1fr);
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .task-name {
+            padding-left: 10px;
+            font-weight: 500;
+        }
+
+        .gantt-bar {
+            height: 18px;
+            border-radius: 9px;
+            position: relative;
+        }
+
+        .bar-blue {
+            background-color: var(--tesla-accent);
+        }
+
+        .bar-green {
+            background-color: var(--success-green);
+        }
+
+        .bar-orange {
+            background-color: var(--warning-orange);
+        }
+
+        /* Risk Matrix */
+        .risk-section {
+            margin-top: 40px;
+        }
+
+        .risk-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .risk-table th {
+            background-color: var(--tesla-blue);
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .risk-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .risk-high {
+            color: var(--alert-red);
+            font-weight: bold;
+        }
+
+        .risk-med {
+            color: var(--warning-orange);
+            font-weight: bold;
+        }
+
+        /* Section Titles */
+        h2 {
+            font-size: 18px;
+            color: var(--tesla-blue);
+            border-left: 4px solid var(--tesla-accent);
+            padding-left: 10px;
+            margin-top: 0;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 60px;
+            border-top: 2px solid var(--tesla-blue);
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Plan Maestro de Proyecto</h1>
+                <div class="subtitle">Electrificación Planta Industrial "Norte 2"</div>
+            </div>
+            <div class="header-meta">
+                <div><strong>ID PROYECTO:</strong> IND-2025-X99</div>
+                <div><strong>GERENTE:</strong> PILI Project Manager</div>
+                <div><strong>FECHA INICIO:</strong> 10/01/2026</div>
+                <div><strong>ESTADO:</strong> PLANIFICACIÓN</div>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="dashboard">
+            <div class="kpi-card">
+                <span class="kpi-value">45 Días</span>
+                <span class="kpi-label">Duración Total</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-value">S/ 125k</span>
+                <span class="kpi-label">Presupuesto</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-value">12</span>
+                <span class="kpi-label">Recursos Clave</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-value">3</span>
+                <span class="kpi-label">Hitos Críticos</span>
+            </div>
+        </div>
+
+        <!-- Gantt Chart -->
+        <h2>Cronograma de Ejecución (Gantt)</h2>
+        <div class="gantt-container">
+            <div class="gantt-header">
+                <div>Fase / Actividad</div>
+                <div>Sem 1</div>
+                <div>Sem 2</div>
+                <div>Sem 3</div>
+                <div>Sem 4</div>
+                <div>Sem 5</div>
+                <div>Sem 6</div>
+                <div>Sem 7</div>
+                <div>Sem 8</div>
+            </div>
+
+            <!-- Row 1 -->
+            <div class="gantt-row">
+                <div class="task-name">1. Ingeniería y Diseño</div>
+                <div style="grid-column: 2 / span 2; padding: 0 5px;">
+                    <div class="gantt-bar bar-blue"></div>
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="gantt-row">
+                <div class="task-name">2. Procura de Equipos</div>
+                <div style="grid-column: 3 / span 3; padding: 0 5px;">
+                    <div class="gantt-bar bar-orange"></div>
+                </div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="gantt-row">
+                <div class="task-name">3. Obras Civiles</div>
+                <div style="grid-column: 4 / span 2; padding: 0 5px;">
+                    <div class="gantt-bar bar-blue"></div>
+                </div>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="gantt-row">
+                <div class="task-name">4. Montaje Electromec.</div>
+                <div style="grid-column: 6 / span 2; padding: 0 5px;">
+                    <div class="gantt-bar bar-blue"></div>
+                </div>
+            </div>
+
+            <!-- Row 5 -->
+            <div class="gantt-row">
+                <div class="task-name">5. Pruebas y Comision.</div>
+                <div style="grid-column: 8 / span 1; padding: 0 5px;">
+                    <div class="gantt-bar bar-green"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Matrix -->
+        <div class="risk-section">
+            <h2>Matriz de Riesgos y Mitigación</h2>
+            <table class="risk-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Riesgo Identificado</th>
+                        <th style="width: 15%;">Nivel</th>
+                        <th style="width: 55%;">Estrategia de Mitigación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Retraso en importación de celdas MT</td>
+                        <td class="risk-high">ALTO</td>
+                        <td>Realizar pedido con 4 semanas de anticipación. Tener proveedor local alternativo validado.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Interferencias con tuberías de agua</td>
+                        <td class="risk-med">MEDIO</td>
+                        <td>Realizar escaneo de suelo (GPR) antes de excavaciones. Coordinación diaria con planta.</td>
+                    </tr>
+                    <tr>
+                        <td>Accidentes eléctricos durante pruebas</td>
+                        <td class="risk-high">CRÍTICO</td>
+                        <td>Protocolo LOTO (Lockout/Tagout) estricto. Supervisión de seguridad permanente.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resources Breakdown -->
+        <div class="risk-section">
+            <h2>Estructura de Desglose de Recursos (RBS)</h2>
+            <div style="display: flex; gap: 20px; font-size: 13px;">
+                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+                    <strong style="color: var(--tesla-blue);">Personal</strong>
+                    <ul style="padding-left: 20px; margin-top: 5px;">
+                        <li>1 Ing. Residente</li>
+                        <li>1 Prevencionista SSOMA</li>
+                        <li>4 Técnicos Montajistas</li>
+                        <li>2 Ayudantes</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+                    <strong style="color: var(--tesla-blue);">Maquinaria</strong>
+                    <ul style="padding-left: 20px; margin-top: 5px;">
+                        <li>1 Camión Grúa 5Ton</li>
+                        <li>2 Andamios Normados</li>
+                        <li>1 Generador Portátil</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 4px;">
+                    <strong style="color: var(--tesla-blue);">Equipos de Prueba</strong>
+                    <ul style="padding-left: 20px; margin-top: 5px;">
+                        <li>Megómetro 5kV</li>
+                        <li>Telurometro Digital</li>
+                        <li>Analizador de Redes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                TESLA ELECTRICIDAD S.A.C. - División de Proyectos<br>
+                Documento Confidencial - Uso Interno Exclusivo
+            </div>
+            <div>
+                Aprobado por: Gerencia Técnica<br>
+                Versión 1.0
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

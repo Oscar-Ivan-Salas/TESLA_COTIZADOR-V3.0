@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización Residencial Simple - Tesla Electricidad</title>
+    <style>
+        :root {
+            --tesla-blue: #1a3c6e;
+            --tesla-red: #e53e3e;
+            --slate-gray: #4a5568;
+            --light-gray: #f7fafc;
+            --border-color: #e2e8f0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2d3748;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            background-color: #edf2f7;
+        }
+        .page {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            position: relative;
+        }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--tesla-blue);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo-area h1 {
+            color: var(--tesla-blue);
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .logo-area span {
+            color: var(--tesla-red);
+            font-weight: bold;
+        }
+        .doc-info {
+            text-align: right;
+            font-size: 14px;
+            color: var(--slate-gray);
+        }
+        .doc-info strong {
+            color: var(--tesla-blue);
+        }
+        
+        /* Client Info */
+        .client-section {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .client-col h3 {
+            margin-top: 0;
+            color: var(--tesla-blue);
+            font-size: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+        .client-col p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th {
+            background-color: var(--tesla-blue);
+            color: white;
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        /* Totals */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 40px;
+        }
+        .totals-box {
+            width: 300px;
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .total-row.final {
+            border-top: 2px solid var(--tesla-blue);
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--tesla-blue);
+        }
+
+        /* Terms */
+        .terms {
+            font-size: 12px;
+            color: var(--slate-gray);
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        .terms h4 {
+            color: var(--tesla-blue);
+            margin-bottom: 10px;
+        }
+        .terms ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+        .terms li {
+            margin-bottom: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #a0aec0;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #c6f6d5;
+            color: #22543d;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-area">
+                <h1>Tesla <span>Electricidad</span></h1>
+                <div style="font-size: 12px; color: #718096;">Ingeniería Eléctrica Especializada</div>
+            </div>
+            <div class="doc-info">
+                <div style="font-size: 24px; font-weight: bold; color: #1a3c6e; margin-bottom: 5px;">COTIZACIÓN</div>
+                <div><strong>N°:</strong> COT-2025-001</div>
+                <div><strong>Fecha:</strong> 04 de Diciembre, 2025</div>
+                <div><strong>Validez:</strong> 15 días</div>
+            </div>
+        </div>
+
+        <!-- Client Info -->
+        <div class="client-section">
+            <div class="client-col" style="width: 45%;">
+                <h3>Cliente</h3>
+                <p><strong>Nombre:</strong> Juan Pérez</p>
+                <p><strong>Dirección:</strong> Av. Javier Prado 123, San Borja</p>
+                <p><strong>Teléfono:</strong> 999-888-777</p>
+            </div>
+            <div class="client-col" style="width: 45%;">
+                <h3>Proyecto</h3>
+                <p><strong>Tipo:</strong> Instalación Residencial <span class="badge">Simple</span></p>
+                <p><strong>Ubicación:</strong> Departamento 402</p>
+                <p><strong>Asesor:</strong> PILI Cotizadora</p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 50%;">Descripción</th>
+                    <th style="width: 10%;" class="text-center">Cant.</th>
+                    <th style="width: 15%;" class="text-right">P. Unit</th>
+                    <th style="width: 20%;" class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01</td>
+                    <td>
+                        <strong>Punto de Luz Simple</strong><br>
+                        <span style="font-size: 12px; color: #718096;">Incluye cableado THW 14AWG, caja octogonal y placa.</span>
+                    </td>
+                    <td class="text-center">10</td>
+                    <td class="text-right">S/ 35.00</td>
+                    <td class="text-right">S/ 350.00</td>
+                </tr>
+                <tr>
+                    <td>02</td>
+                    <td>
+                        <strong>Tomacorriente Doble con Tierra</strong><br>
+                        <span style="font-size: 12px; color: #718096;">Marca Bticino o similar, cable 12AWG.</span>
+                    </td>
+                    <td class="text-center">5</td>
+                    <td class="text-right">S/ 40.00</td>
+                    <td class="text-right">S/ 200.00</td>
+                </tr>
+                <tr>
+                    <td>03</td>
+                    <td>
+                        <strong>Tablero de Distribución (Mantenimiento)</strong><br>
+                        <span style="font-size: 12px; color: #718096;">Limpieza, peinado de cables y rotulado.</span>
+                    </td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">S/ 150.00</td>
+                    <td class="text-right">S/ 150.00</td>
+                </tr>
+                <tr>
+                    <td>04</td>
+                    <td>
+                        <strong>Mano de Obra Especializada</strong><br>
+                        <span style="font-size: 12px; color: #718096;">Técnico electricista certificado.</span>
+                    </td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">S/ 250.00</td>
+                    <td class="text-right">S/ 250.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <div class="totals-box">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>S/ 950.00</span>
+                </div>
+                <div class="total-row">
+                    <span>IGV (18%):</span>
+                    <span>S/ 171.00</span>
+                </div>
+                <div class="total-row final">
+                    <span>TOTAL:</span>
+                    <span>S/ 1,121.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms -->
+        <div class="terms">
+            <h4>Términos y Condiciones</h4>
+            <ul>
+                <li>El tiempo de ejecución estimado es de 2 días hábiles.</li>
+                <li>Forma de pago: 50% de adelanto y 50% al finalizar el servicio.</li>
+                <li>Garantía de 12 meses por mano de obra.</li>
+                <li>No incluye trabajos de albañilería mayor ni pintura.</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Tesla Electricidad S.A.C. | RUC: 20123456789 | www.teslaelectricidad.pe</p>
+            <p>Generado por <strong>PILI Cotizadora</strong> - Tu Asistente de Ingeniería</p>
+        </div>
+    </div>
+</body>
+</html>

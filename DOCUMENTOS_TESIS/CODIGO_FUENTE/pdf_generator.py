@@ -1,4 +1,4 @@
-
+```python
 """
 ═══════════════════════════════════════════════════════════════
 PDF GENERATOR - Generador de Documentos PDF Profesionales
@@ -361,3 +361,4 @@ class PDFGenerator:
 # ════════════════════════════════════════════════════════
 
 pdf_generator = PDFGenerator()
+```
