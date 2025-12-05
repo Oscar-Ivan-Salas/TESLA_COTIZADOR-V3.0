@@ -6,11 +6,13 @@ from app.models.proyecto import Proyecto
 from app.models.cotizacion import Cotizacion
 from app.models.documento import Documento
 from app.models.item import Item
+from app.models.informe import Informe
 
 __all__ = [
     "Cliente",
     "Proyecto",
     "Cotizacion",
     "Documento",
-    "Item"
+    "Item",
+    "Informe"
 ]
