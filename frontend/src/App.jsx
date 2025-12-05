@@ -408,6 +408,92 @@ const CotizadorTesla30 = () => {
     }
   };
 
+  // 🆕 FUNCIÓN PARA GENERAR INFORME (WORD)
+  const generarInformeWord = async (informeId) => {
+    if (!informeId) return;
+
+    try {
+      setDescargando('word');
+      console.log(`📑 Generando informe Word para ID: ${informeId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/informes/${informeId}/generar-word`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-${informeId}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Informe Word generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Informe Word descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar informe Word:', error);
+      setDescargando(null);
+      setError('❌ Error al generar informe Word: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  // 🆕 FUNCIÓN PARA GENERAR INFORME (PDF)
+  const generarInformePDF = async (informeId) => {
+    if (!informeId) return;
+
+    try {
+      setDescargando('pdf');
+      console.log(`📑 Generando informe PDF para ID: ${informeId}`);
+
+      const response = await fetch(
+        `http://localhost:8000/api/informes/${informeId}/generar-pdf`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `informe-${informeId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setDescargando(null);
+      setExito('✅ Informe PDF generado correctamente');
+      setTimeout(() => setExito(''), 3000);
+
+      console.log(`✅ Informe PDF descargado exitosamente`);
+    } catch (error) {
+      console.error('Error al generar informe PDF:', error);
+      setDescargando(null);
+      setError('❌ Error al generar informe PDF: ' + error.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
   const handleEnviarMensajeChat = async () => {
     if (!inputChat.trim() || analizando) return;
 
@@ -492,16 +578,22 @@ const CotizadorTesla30 = () => {
           }
 
         } else if (tipoFlujo.includes('informe') && data.informe_generado) {
-          setInforme(data.informe_generado);
-          setDatosEditables(data.informe_generado);
+          // Agregar ID al objeto de informe para botones manuales
+          const informeConId = {
+            ...data.informe_generado,
+            id: data.informe_id
+          };
+          setInforme(informeConId);
+          setDatosEditables(informeConId);
 
-          // Informes se generan directamente desde los datos sin guardar en BD
-          // Por ahora solo mostrar los datos, se puede mejorar después
+          // 🆕 GENERAR AUTOMÁTICAMENTE INFORME WORD SI HAY INFORME_ID
           if (data.informe_id) {
-            console.log(`📑 Informe generado con ID: ${data.informe_id}`);
-            // TODO: Implementar generación de informe ejecutivo
-          } else {
-            console.log(`📑 Informe generado (sin persistencia en BD)`);
+            console.log(`📑 Informe guardado con ID: ${data.informe_id}, generando documento...`);
+            // Esperar un momento para que el usuario vea el mensaje de PILI
+            setTimeout(() => {
+              // Por defecto generar Word (editable)
+              generarInformeWord(data.informe_id);
+            }, 1500);
           }
         }
 
@@ -1693,6 +1785,33 @@ const CotizadorTesla30 = () => {
                                   <Download className="w-3 h-3" />
                                 )}
                                 Informe PDF
+                              </button>
+                            </div>
+                          )}
+
+                          {esInforme && informe && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => informe.id && generarInformeWord(informe.id)}
+                                disabled={!informe.id || descargando === 'word'}
+                                className="px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'word' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                Word
+                              </button>
+                              <button
+                                onClick={() => informe.id && generarInformePDF(informe.id)}
+                                disabled={!informe.id || descargando === 'pdf'}
+                                className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-gray-400 text-white rounded-lg text-xs flex items-center gap-1">
+                                {descargando === 'pdf' ? (
+                                  <Loader className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Download className="w-3 h-3" />
+                                )}
+                                PDF
                               </button>
                             </div>
                           )}

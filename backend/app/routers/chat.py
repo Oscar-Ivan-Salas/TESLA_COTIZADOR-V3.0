@@ -1498,7 +1498,32 @@ async def chat_contextualizado(
 
                     logger.info(f"✅ Proyecto guardado en BD: {nuevo_proyecto.nombre} (ID: {documento_id})")
 
-                # Nota: Informes no se guardan como entidades separadas, solo se generan
+                elif "informe" in tipo_flujo:
+                    # Guardar informe en BD
+                    from app.models.informe import Informe, TipoInforme, FormatoInforme
+
+                    tipo_informe = TipoInforme.EJECUTIVO if "ejecutivo" in tipo_flujo else TipoInforme.SIMPLE
+
+                    nuevo_informe = Informe(
+                        titulo=datos_generados.get('titulo', 'Informe Técnico'),
+                        tipo=tipo_informe,
+                        formato=FormatoInforme.WORD,
+                        contenido=datos_generados.get('contenido', ''),
+                        resumen_ejecutivo=datos_generados.get('resumen_ejecutivo', ''),
+                        conclusiones=datos_generados.get('conclusiones', ''),
+                        recomendaciones=datos_generados.get('recomendaciones', ''),
+                        proyecto_id=datos_generados.get('proyecto_id'),
+                        incluir_graficos=datos_generados.get('incluir_graficos', False),
+                        incluir_tablas=datos_generados.get('incluir_tablas', True),
+                        metadata_adicional=datos_generados.get('metadata_adicional'),
+                        estado="borrador"
+                    )
+                    db.add(nuevo_informe)
+                    db.commit()
+                    db.refresh(nuevo_informe)
+                    documento_id = nuevo_informe.id
+
+                    logger.info(f"✅ Informe guardado en BD: {nuevo_informe.titulo} (ID: {documento_id})")
 
             except Exception as e_bd:
                 logger.warning(f"⚠️ No se pudo guardar en BD: {e_bd}")
