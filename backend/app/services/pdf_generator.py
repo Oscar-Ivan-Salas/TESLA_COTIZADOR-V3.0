@@ -7,7 +7,7 @@ PDF GENERATOR - Generador de Documentos PDF Profesionales
 PROPÓSITO:
 Generar documentos PDF profesionales para cotizaciones,
 informes de proyectos, y reportes técnicos usando ReportLab.
-Con diseño "Twin Design" que replica los prototipos HTML.
+Con diseño profesional Tesla (Tema Rojo/Dorado).
 
 FUNCIONES PRINCIPALES:
 - generar_cotizacion() → Cotizaciones de venta
@@ -16,8 +16,8 @@ FUNCIONES PRINCIPALES:
 
 CARACTERÍSTICAS:
 - Soporte para logo personalizado
-- Tablas dinámicas con estilo Tesla
-- Formato profesional (Colores Corporativos Reales)
+- Tablas dinámicas con estilo Tesla Rojo/Dorado
+- Formato profesional (Colores Corporativos Tesla)
 - No editable (seguridad)
 
 ═══════════════════════════════════════════════════════════════
@@ -45,15 +45,14 @@ logger = logging.getLogger(__name__)
 class PDFGenerator:
     """
     Generador profesional de documentos PDF usando ReportLab
-    Diseño alineado con prototipos HTML (Tesla Blue)
+    Diseño profesional Tesla (Tema Rojo/Dorado)
     """
     
     def __init__(self):
-        """Inicializar generador con paleta oficial"""
-        # Colores Tesla Oficiales (Coincidentes con HTML)
-        self.COLOR_TESLA_BLUE = colors.Color(26/255, 60/255, 110/255)  # #1a3c6e (Azul Corporativo)
-        self.COLOR_TESLA_RED = colors.Color(204/255, 0/255, 0/255)     # #cc0000 (Rojo Acento)
-        self.COLOR_DORADO = colors.Color(218/255, 165/255, 32/255)     # #DAA520
+        """Inicializar generador con paleta oficial Tesla (Rojo/Dorado)"""
+        # Colores Tesla Oficiales (Tema Rojo/Dorado)
+        self.COLOR_ROJO = colors.Color(139/255, 0/255, 0/255)          # #8B0000 (Rojo Tesla)
+        self.COLOR_DORADO = colors.Color(212/255, 175/255, 55/255)     # #D4AF37 (Dorado)
         self.COLOR_NEGRO = colors.black
         self.COLOR_GRIS_OSCURO = colors.Color(51/255, 51/255, 51/255)  # #333333
         self.COLOR_GRIS_CLARO = colors.Color(245/255, 245/255, 245/255) # #f5f5f5
@@ -73,7 +72,7 @@ class PDFGenerator:
             name='TituloTesla',
             parent=self.styles['Heading1'],
             fontSize=24,
-            textColor=self.COLOR_TESLA_BLUE,
+            textColor=self.COLOR_ROJO,
             spaceAfter=12,
             alignment=TA_CENTER,
             fontName='Helvetica-Bold'
@@ -95,12 +94,12 @@ class PDFGenerator:
             name='SeccionTesla',
             parent=self.styles['Heading2'],
             fontSize=14,
-            textColor=self.COLOR_TESLA_BLUE,
+            textColor=self.COLOR_ROJO,
             spaceAfter=8,
             spaceBefore=12,
             fontName='Helvetica-Bold',
             borderPadding=5,
-            borderColor=self.COLOR_TESLA_BLUE,
+            borderColor=self.COLOR_ROJO,
             borderWidth=0,
             borderBottomWidth=1
         ))
@@ -292,16 +291,16 @@ class PDFGenerator:
             
         tabla = Table(data, colWidths=col_widths)
         
-        # Estilo Tesla Blue
+        # Estilo Tesla Rojo
         tabla.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), self.COLOR_TESLA_BLUE),  # Header Azul
+            ('BACKGROUND', (0,0), (-1,0), self.COLOR_ROJO),        # Header Rojo Tesla
             ('TEXTCOLOR', (0,0), (-1,0), self.COLOR_BLANCO),       # Texto Blanco
             ('ALIGN', (0,0), (-1,0), 'CENTER'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,0), 10),
             ('BOTTOMPADDING', (0,0), (-1,0), 8),
             ('TOPPADDING', (0,0), (-1,0), 8),
-            
+
             # Filas de datos
             ('ALIGN', (1,1), (-1,-1), 'RIGHT'), # Números a la derecha
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -328,9 +327,9 @@ class PDFGenerator:
             ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
             ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
             ('FONTNAME', (0,2), (1,2), 'Helvetica-Bold'), # Total en negrita
-            ('TEXTCOLOR', (0,2), (1,2), self.COLOR_TESLA_BLUE), # Total en Azul
+            ('TEXTCOLOR', (0,2), (1,2), self.COLOR_ROJO), # Total en Rojo Tesla
             ('FONTSIZE', (0,2), (1,2), 12),
-            ('LINEABOVE', (0,2), (1,2), 1, self.COLOR_TESLA_BLUE),
+            ('LINEABOVE', (0,2), (1,2), 1, self.COLOR_ROJO),
         ]))
         
         return tabla
