@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Técnico Simple - Tesla Electricidad</title>
+    <style>
+        :root {
+            --tesla-blue: #1a3c6e;
+            --tesla-gray: #718096;
+            --border-color: #cbd5e0;
+            --bg-light: #f7fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2d3748;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            background-color: #edf2f7;
+        }
+
+        .page {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Header */
+        .header {
+            border-bottom: 2px solid var(--tesla-blue);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-area h1 {
+            color: var(--tesla-blue);
+            font-size: 22px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .title-area .subtitle {
+            color: var(--tesla-gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .ref-box {
+            text-align: right;
+            font-size: 12px;
+            color: var(--tesla-gray);
+        }
+
+        /* Summary Box */
+        .summary-box {
+            background-color: var(--bg-light);
+            border-left: 4px solid var(--tesla-blue);
+            padding: 15px;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .summary-box h3 {
+            margin-top: 0;
+            color: var(--tesla-blue);
+            font-size: 16px;
+        }
+
+        /* Data Tables */
+        .section-title {
+            background-color: var(--tesla-blue);
+            color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-radius: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: #e2e8f0;
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--tesla-blue);
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-ok {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-warning {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .status-danger {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Observations */
+        .observation-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .observation-item strong {
+            color: var(--tesla-blue);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 11px;
+            color: #a0aec0;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        /* Signature Area */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+            padding: 0 50px;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid black;
+            margin-bottom: 5px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .signature-role {
+            font-size: 11px;
+            color: var(--tesla-gray);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="title-area">
+                <h1>Informe Técnico</h1>
+                <div class="subtitle">Mantenimiento Preventivo de Tableros</div>
+            </div>
+            <div class="ref-box">
+                <div><strong>REF:</strong> INF-MANT-2025-045</div>
+                <div><strong>FECHA:</strong> 04/12/2025</div>
+                <div><strong>CLIENTE:</strong> Edificio "Los Alamos"</div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="summary-box">
+            <h3>Resumen Ejecutivo</h3>
+            <p>Se realizó la inspección y mantenimiento de 03 tableros eléctricos generales. Se encontraron condiciones
+                subestándar en el Tablero de Bombas (TB-02) que requieren atención inmediata. Los demás tableros operan
+                dentro de parámetros normales.</p>
+        </div>
+
+        <!-- Measurements -->
+        <div class="section-title">1. MEDICIONES DE PARÁMETROS ELÉCTRICOS</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tablero</th>
+                    <th>Voltaje (V)</th>
+                    <th>Amperaje (A)</th>
+                    <th>Temperatura (°C)</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>TG-01 (General)</td>
+                    <td>220.5</td>
+                    <td>45.2</td>
+                    <td>35°C</td>
+                    <td class="status-ok">NORMAL</td>
+                </tr>
+                <tr>
+                    <td>TB-02 (Bombas)</td>
+                    <td>218.0</td>
+                    <td>28.5</td>
+                    <td>68°C</td>
+                    <td class="status-danger">CRÍTICO</td>
+                </tr>
+                <tr>
+                    <td>TS-03 (Servicios)</td>
+                    <td>221.2</td>
+                    <td>12.4</td>
+                    <td>32°C</td>
+                    <td class="status-ok">NORMAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Observations -->
+        <div class="section-title">2. OBSERVACIONES Y HALLAZGOS</div>
+        <div class="observation-item">
+            <strong>1. Recalentamiento en TB-02</strong>
+            Se detectó temperatura elevada en la llave térmica principal del tablero de bombas. Posible causa: Falso
+            contacto por falta de torque en borneras.
+        </div>
+        <div class="observation-item">
+            <strong>2. Falta de Rotulado en TG-01</strong>
+            Los circuitos 4, 5 y 6 no cuentan con identificación clara en el directorio del tablero.
+        </div>
+        <div class="observation-item">
+            <strong>3. Limpieza General</strong>
+            Se realizó aspirado de polvo y limpieza de barras en todos los tableros inspeccionados.
+        </div>
+
+        <!-- Recommendations -->
+        <div class="section-title">3. RECOMENDACIONES</div>
+        <ul>
+            <li><strong>Inmediato:</strong> Realizar reapriete de conexiones en TB-02 y monitorear temperatura por 24
+                horas.</li>
+            <li><strong>Corto Plazo:</strong> Actualizar directorio de circuitos en TG-01.</li>
+            <li><strong>General:</strong> Programar próxima inspección termográfica en 6 meses.</li>
+        </ul>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-name">Ing. PILI Reportera</div>
+                <div class="signature-role">Inspector Técnico</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-name">Junta de Propietarios</div>
+                <div class="signature-role">Conformidad Cliente</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Generado por <strong>PILI Reportera</strong> - Sistema de Auditoría Tesla Electricidad</p>
+        </div>
+    </div>
+</body>
+
+</html>
