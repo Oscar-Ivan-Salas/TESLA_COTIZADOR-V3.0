@@ -155,8 +155,8 @@ def crear_datos_demo():
         print("\n💰 Creando cotizaciones DEMO...")
 
         # Obtener primeros clientes para asociar
-        cliente1 = db.query(Cliente).filter(Cliente.ruc == "20101000000").first()
-        cliente2 = db.query(Cliente).filter(Cliente.ruc == "20102000000").first()
+        cliente1 = db.query(Cliente).filter(Cliente.ruc == "20100001000").first()
+        cliente2 = db.query(Cliente).filter(Cliente.ruc == "20100002000").first()
 
         cotizaciones_demo = [
             Cotizacion(
