@@ -1266,8 +1266,8 @@ const CotizadorTesla30 = () => {
 
                 {/* SELECTOR DE CLIENTE - NUEVO */}
                 {esCotizacion && (
-                  <div className="bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-6 border-2 border-blue-500 shadow-xl">
-                    <h2 className="text-2xl font-bold mb-4 text-blue-200 flex items-center gap-2">
+                  <div className="bg-gradient-to-br from-yellow-900 to-red-900 rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                    <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
                       <Users className="w-6 h-6" />
                       Cliente
                     </h2>
@@ -1294,8 +1294,8 @@ const CotizadorTesla30 = () => {
                 )}
 
                 {/* LOGO UNIVERSAL (TODOS LOS SERVICIOS) */}
-                <div className="bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl p-6 border-2 border-purple-500 shadow-xl">
-                  <h2 className="text-2xl font-bold mb-4 text-purple-200 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-yellow-900 to-red-900 rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
                     🎨 Logo Empresa (Aparecerá en el documento final)
                   </h2>
 
@@ -1310,17 +1310,17 @@ const CotizadorTesla30 = () => {
                       />
                       <button
                         onClick={() => fileInputLogoRef.current?.click()}
-                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-xl border-2 border-purple-400 transition-all duration-300 hover:scale-105">
+                        className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 shadow-xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105">
                         <Upload className="w-5 h-5" />
                         {logoBase64 ? 'Cambiar Logo' : 'Subir Logo'}
                       </button>
-                      <p className="text-xs text-purple-200 mt-2 text-center">
+                      <p className="text-xs text-yellow-200 mt-2 text-center">
                         PNG, JPG, WebP - Máx 2MB • Se integrará automáticamente en Word
                       </p>
                     </div>
 
                     {logoBase64 && (
-                      <div className="bg-white rounded-xl p-3 border-2 border-purple-400 shadow-lg">
+                      <div className="bg-white rounded-xl p-3 border-2 border-yellow-600 shadow-lg">
                         <img src={logoBase64} alt="Logo" className="w-24 h-24 object-contain" />
                         <p className="text-xs text-gray-600 mt-2 text-center font-semibold">✅ Cargado</p>
                       </div>
@@ -1330,46 +1330,46 @@ const CotizadorTesla30 = () => {
 
                 {/* CONFIGURACIÓN ESPECÍFICA POR TIPO */}
                 {esProyecto && (
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-blue-700 shadow-xl">
-                    <h2 className="text-2xl font-bold mb-4 text-blue-400">📋 Información del Proyecto</h2>
+                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                    <h2 className="text-2xl font-bold mb-4 text-yellow-400">📋 Información del Proyecto</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Nombre del Proyecto *</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Nombre del Proyecto *</label>
                         <input
                           type="text"
                           value={nombreProyecto}
                           onChange={(e) => setNombreProyecto(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="Ej: Instalación Eléctrica Edificio Central"
                         />
                       </div>
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Cliente *</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Cliente *</label>
                         <input
                           type="text"
                           value={clienteProyecto}
                           onChange={(e) => setClienteProyecto(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="Ej: Constructora ABC S.A.C."
                         />
                       </div>
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
                         <input
                           type="number"
                           value={presupuestoEstimado}
                           onChange={(e) => setPresupuestoEstimado(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="50000"
                         />
                       </div>
                       <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
+                        <label className="block text-yellow-400 font-semibold mb-2">Duración (Meses)</label>
                         <input
                           type="number"
                           value={duracionMeses}
                           onChange={(e) => setDuracionMeses(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          className="w-full px-4 py-3 bg-gray-950 border border-yellow-600 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
                           placeholder="6"
                         />
                       </div>
