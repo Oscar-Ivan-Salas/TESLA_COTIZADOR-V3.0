@@ -45,8 +45,8 @@ class Cliente(Base):
     fecha_ultima_cotizacion = Column(DateTime, nullable=True)
 
     # Relaciones
-    cotizaciones = relationship("Cotizacion", back_populates="cliente")
-    proyectos = relationship("Proyecto", back_populates="cliente")
+    cotizaciones = relationship("Cotizacion", back_populates="cliente_rel")
+    proyectos = relationship("Proyecto", back_populates="cliente_rel")
 
     def __repr__(self):
         return f"<Cliente {self.nombre} (RUC: {self.ruc})>"
