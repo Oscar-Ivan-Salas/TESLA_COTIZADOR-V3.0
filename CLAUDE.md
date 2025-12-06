@@ -27,6 +27,18 @@
 
 **Tesla Cotizador V3.0** es un sistema profesional de cotización y gestión de proyectos para **TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.**, una empresa especializada en servicios eléctricos y de automatización en Perú.
 
+### ⚠️ IMPORTANTE: INSTALACIÓN
+
+**🐳 SE RECOMIENDA USAR DOCKER**
+La instalación manual tiene dependencias complejas que pueden fallar. Docker garantiza un entorno funcional.
+
+```bash
+# Instalación recomendada con Docker
+docker-compose up -d
+```
+
+Ver `INFORME_CRITICO_DEPENDENCIAS_ROTAS.md` para detalles técnicos.
+
 ### Propósito Principal
 
 El sistema permite:

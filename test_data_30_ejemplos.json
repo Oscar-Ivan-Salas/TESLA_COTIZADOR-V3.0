@@ -1,0 +1,456 @@
+{
+  "cotizaciones_simples": [
+    {
+      "id": 1,
+      "tipo": "cotizacion_simple",
+      "cliente": "Municipalidad Provincial de Huancayo",
+      "proyecto": "Instalación Eléctrica - Edificio Municipal",
+      "descripcion": "Necesito cotización para instalación eléctrica completa en edificio de 3 pisos, 500m2 por piso. Incluir: tableros,  cableado, luminarias LED, tomacorrientes",
+      "servicio": "Instalaciones eléctricas",
+      "area_m2": 1500
+    },
+    {
+      "id": 2,
+      "tipo": "cotizacion_simple",
+      "cliente": "Centro Comercial Plaza Huancayo",
+      "proyecto": "Sistema CCTV - 20 Cámaras",
+      "descripcion": "Requiero sistema de videovigilancia con 20 cámaras IP, grabación 30 días, visión nocturna, acceso remoto",
+      "servicio": "CCTV",
+      "cantidad_camaras": 20
+    },
+    {
+      "id": 3,
+      "tipo": "cotizacion_simple",
+      "cliente": "Hotel Continental Huancayo",
+      "proyecto": "Sistema Contra Incendios - 5 Pisos",
+      "descripcion": "Sistema completo contra incendios: detectores de humo, rociadores automáticos, alarmas, señalización, extintores",
+      "servicio": "Sistemas contra incendios",
+      "pisos": 5
+    },
+    {
+      "id": 4,
+      "tipo": "cotizacion_simple",
+      "cliente": "Clínica San José SAC",
+      "proyecto": "Puesta a Tierra - Equipos Médicos",
+      "descripcion": "Sistema de puesta a tierra para equipos médicos críticos (rayos X, resonancia magnética, quirófanos). Incluir mediciones",
+      "servicio": "Puestas a tierra",
+      "equipos": 15
+    },
+    {
+      "id": 5,
+      "tipo": "cotizacion_simple",
+      "cliente": "Colegio Particular Santa Isabel",
+      "proyecto": "Certificado ITSE - Inspección Técnica",
+      "descripcion": "Tramitar certificado ITSE para local educativo de 3 pisos. Incluir: inspección, planos, memoria descriptiva, documentación INDECI",
+      "servicio": "Certificados ITSE",
+      "area_m2": 800
+    },
+    {
+      "id": 6,
+      "tipo": "cotizacion_simple",
+      "cliente": "Edificio Residencial Los Andes",
+      "proyecto": "Red de Datos - 40 Departamentos",
+      "descripcion": "Cableado estructurado categoría 6A para 40 departamentos. Incluir: rack, patch panel, certificación, documentación",
+      "servicio": "Redes de datos",
+      "puntos": 120
+    }
+  ],
+
+  "cotizaciones_complejas": [
+    {
+      "id": 7,
+      "tipo": "cotizacion_compleja",
+      "cliente": "Universidad Nacional del Centro del Perú",
+      "proyecto": "Modernización Eléctrica - Campus Universitario",
+      "descripcion": "Proyecto integral: renovación sistema eléctrico 5 edificios (15,000m2), subestación 500 KVA, grupo electrógeno 250 KVA, sistema CCTV 80 cámaras, red datos 500 puntos, automatización iluminación, sistema contra incendios, puesta a tierra general. Plazo: 8 meses",
+      "servicio": "Múltiples servicios",
+      "presupuesto_estimado": 850000,
+      "requiere_analisis_tecnico": true,
+      "archivos_adjuntos": ["planos_arquitectura.pdf", "memoria_descriptiva.pdf"]
+    },
+    {
+      "id": 8,
+      "tipo": "cotizacion_compleja",
+      "cliente": "Empresa Minera Volcan SAA",
+      "proyecto": "Automatización Industrial - Planta Concentradora",
+      "descripcion": "Sistema de automatización completo: 50 PLC Siemens S7-1500, SCADA redundante, 200 sensores industriales, red profinet, UPS 100 KVA, puesta tierra industrial, certificación ISA-95. Ambiente minero 4200 msnm",
+      "servicio": "Automatización industrial",
+      "presupuesto_estimado": 1200000,
+      "requiere_analisis_tecnico": true,
+      "condiciones_especiales": "Ambiente minero, altura extrema"
+    },
+    {
+      "id": 9,
+      "tipo": "cotizacion_compleja",
+      "cliente": "Hospital Regional Docente Clínico Quirúrgico Daniel Alcides Carrión",
+      "proyecto": "Sistema Eléctrico de Emergencia - Hospital",
+      "descripcion": "Sistema eléctrico crítico hospitalario: Grupo electrógeno 500 KVA + UPS 200 KVA, transferencia automática 0.3s, tableros hospitalarios grado médico, puesta tierra equipos críticos, sistema monitoreo energía, respaldo N+1. Normativa NEC y MINSA",
+      "servicio": "Instalaciones eléctricas especializadas",
+      "presupuesto_estimado": 980000,
+      "requiere_analisis_tecnico": true,
+      "normativas": ["NEC", "MINSA", "NTP"]
+    },
+    {
+      "id": 10,
+      "tipo": "cotizacion_compleja",
+      "cliente": "Centro Empresarial Real Plaza",
+      "proyecto": "Domótica y BMS - Edificio Inteligente",
+      "descripcion": "Building Management System completo: Control iluminación 500 puntos, HVAC 20 unidades, control accesos biométrico 15 puertas, CCTV Analytics 100 cámaras, detección incendios addressable 300 puntos, integración KNX + BACnet",
+      "servicio": "Domótica",
+      "presupuesto_estimado": 750000,
+      "requiere_analisis_tecnico": true,
+      "tecnologias": ["KNX", "BACnet", "CCTV Analytics"]
+    },
+    {
+      "id": 11,
+      "tipo": "cotizacion_compleja",
+      "cliente": "Planta Industrial Alicorp SAA - Huancayo",
+      "proyecto": "Sistema Eléctrico Industrial + Automatización",
+      "descripcion": "Subestación 2 MVA, 15 tableros industriales, cableado fuerza 5000m, iluminación industrial LED 800 puntos, sistema compensación reactiva 500 KVAR, red industrial Ethernet/IP, SCADA, variadores frecuencia ABB, medición energía clase 0.2S",
+      "servicio": "Instalaciones eléctricas industriales + Automatización",
+      "presupuesto_estimado": 1500000,
+      "requiere_analisis_tecnico": true,
+      "potencia_instalada": "2 MVA"
+    },
+    {
+      "id": 12,
+      "tipo": "cotizacion_compleja",
+      "cliente": "Aeropuerto Jauja - Corpac",
+      "proyecto": "Sistema Eléctrico Aeroportuario + CCTV Perimetral",
+      "descripcion": "Modernización completa: Grupo electrógeno 750 KVA, UPS 300 KVA redundante, iluminación pista LED, torre control, CCTV perimetral 50 cámaras térmicas, control accesos aeroportuario, sistema contraincendios normativa OACI, red datos redundante fibra óptica",
+      "servicio": "Infraestructura aeroportuaria",
+      "presupuesto_estimado": 2100000,
+      "requiere_analisis_tecnico": true,
+      "normativas": ["OACI", "FAA", "MTC"]
+    }
+  ],
+
+  "proyectos_simples": [
+    {
+      "id": 13,
+      "tipo": "proyecto_simple",
+      "nombre": "Instalación Eléctrica - Oficinas Comerciales",
+      "cliente": "Inversiones Huancayo SAC",
+      "descripcion": "Instalación eléctrica oficinas 300m2, 3 tableros, 80 puntos iluminación LED, 60 tomacorrientes dobles",
+      "duracion_meses": 2,
+      "presupuesto": 45000
+    },
+    {
+      "id": 14,
+      "tipo": "proyecto_simple",
+      "nombre": "CCTV Residencial - Condominio",
+      "cliente": "Condominio Las Flores",
+      "descripcion": "Sistema CCTV 12 cámaras, DVR 16 canales, disco 4TB, monitor 32 pulgadas, cableado UTP cat6",
+      "duracion_meses": 1,
+      "presupuesto": 18000
+    },
+    {
+      "id": 15,
+      "tipo": "proyecto_simple",
+      "nombre": "Puesta a Tierra - Fábrica Textil",
+      "cliente": "Textiles Andinos EIRL",
+      "descripcion": "Sistema puesta tierra general, 8 pozos tierra, mediciones telúricas, certificado",
+      "duracion_meses": 1,
+      "presupuesto": 12000
+    },
+    {
+      "id": 16,
+      "tipo": "proyecto_simple",
+      "nombre": "Red de Datos - Oficina Contable",
+      "cliente": "Estudio Contable Pérez & Asociados",
+      "descripcion": "Cableado estructurado 24 puntos cat6, rack 12U, patch panel, switch 24 puertos, certificación Fluke",
+      "duracion_meses": 1,
+      "presupuesto": 9500
+    },
+    {
+      "id": 17,
+      "tipo": "proyecto_simple",
+      "nombre": "Sistema Contra Incendios - Restaurante",
+      "cliente": "Restaurante El Buen Sabor SAC",
+      "descripcion": "Detectores humo, extintores PQS y CO2, señalización, luces emergencia, gabinetes",
+      "duracion_meses": 1,
+      "presupuesto": 8500
+    },
+    {
+      "id": 18,
+      "tipo": "proyecto_simple",
+      "nombre": "Certificado ITSE - Local Comercial",
+      "cliente": "Boutique Fashion Store",
+      "descripcion": "Tramitación ITSE local 150m2, planos eléctricos, memoria, inspección municipal",
+      "duracion_meses": 1,
+      "presupuesto": 3500
+    }
+  ],
+
+  "proyectos_complejos": [
+    {
+      "id": 19,
+      "tipo": "proyecto_complejo",
+      "nombre": "Data Center Empresarial - Alta Disponibilidad",
+      "cliente": "Banco de Crédito del Perú - Sede Huancayo",
+      "descripcion": "Data center Tier III: Doble acometida eléctrica, 2 grupos electrógenos 500 KVA redundantes N+1, UPS modular 400 KVA 2N, PDUs inteligentes, climatización precisión 10 TR redundante, sistema detección humo VESDA, supresión gas FM-200, monitoreo DCIM, cableado estructurado cat6A + fibra OM4, certificaciones Tier III, Uptime Institute",
+      "duracion_meses": 12,
+      "presupuesto": 3500000,
+      "hitos": [
+        {"fase": "Ingeniería de detalle", "mes": 2},
+        {"fase": "Obra civil y eléctrica", "mes": 6},
+        {"fase": "Equipamiento e integración", "mes": 10},
+        {"fase": "Pruebas y certificación", "mes": 12}
+      ],
+      "recursos": ["5 ingenieros", "15 técnicos especializados", "2 project managers"]
+    },
+    {
+      "id": 20,
+      "tipo": "proyecto_complejo",
+      "nombre": "Smart City - Iluminación Inteligente",
+      "cliente": "Municipalidad Distrital de El Tambo",
+      "descripcion": "Modernización alumbrado público 5000 luminarias LED smart, sistema gestión remota LoRaWAN, sensores calidad aire, cámaras videovigilancia 200 puntos, WiFi público, paneles solares 50 KW, centro control municipal, app ciudadana. Cobertura 25 km2",
+      "duracion_meses": 18,
+      "presupuesto": 8500000,
+      "hitos": [
+        {"fase": "Diseño e ingeniería", "mes": 3},
+        {"fase": "Fase 1: Centro urbano", "mes": 9},
+        {"fase": "Fase 2: Zona periférica", "mes": 15},
+        {"fase": "Integración y puesta en marcha", "mes": 18}
+      ],
+      "financiamiento": "Banco Mundial + Municipalidad"
+    },
+    {
+      "id": 21,
+      "tipo": "proyecto_complejo",
+      "nombre": "Planta Solar Fotovoltaica + BESS",
+      "cliente": "Universidad Continental",
+      "descripcion": "Sistema solar 500 KWp + almacenamiento baterías 1 MWh: 1250 paneles 400W, 10 inversores 50 KW, sistema baterías litio, medidor bidireccional, conexión media tensión, SCADA, monitoreo remoto, integración red universidad, reducción 60% consumo eléctrico",
+      "duracion_meses": 10,
+      "presupuesto": 2200000,
+      "hitos": [
+        {"fase": "Estudios y tramitación DGE", "mes": 2},
+        {"fase": "Obra civil y estructuras", "mes": 5},
+        {"fase": "Instalación eléctrica y paneles", "mes": 8},
+        {"fase": "Comisionamiento y conexión", "mes": 10}
+      ],
+      "roi_años": 7,
+      "ahorro_anual": 315000
+    },
+    {
+      "id": 22,
+      "tipo": "proyecto_complejo",
+      "nombre": "Automatización Subestación Eléctrica",
+      "cliente": "Electrocentro SA - SET Huancayo",
+      "descripcion": "Modernización subestación 60/10 KV: Relés protección digital SEL, unidad control bahía IEC 61850, sistema SCADA redundante, registradores fallas, sincrofasores PMU, comunicación fibra óptica, ciberseguridad IEC 62351, teleprotección. Normativa NTCSE",
+      "duracion_meses": 14,
+      "presupuesto": 1800000,
+      "hitos": [
+        {"fase": "Ingeniería y FAT", "mes": 3},
+        {"fase": "Fabricación equipos", "mes": 7},
+        {"fase": "Instalación y SAT", "mes": 11},
+        {"fase": "Pruebas y energización", "mes": 14}
+      ],
+      "normativas": ["IEC 61850", "IEC 62351", "NTCSE"]
+    },
+    {
+      "id": 23,
+      "tipo": "proyecto_complejo",
+      "nombre": "Hospital Modular - Sistema Eléctrico Crítico",
+      "cliente": "EsSalud - Hospital II Huancayo",
+      "descripcion": "Ampliación hospital: Sistema eléctrico grado médico 800 KVA, grupos electrógenos 2x400 KVA, UPS médico 150 KVA, tableros hospitalarios UL1022, puesta tierra quirófanos, iluminación quirófano Berchtold, gases medicinales monitoreados, nurse call 120 camas, sistema llamado quirófano, red datos médica redundante",
+      "duracion_meses": 16,
+      "presupuesto": 4200000,
+      "hitos": [
+        {"fase": "Ingeniería hospitalaria", "mes": 3},
+        {"fase": "Infraestructura eléctrica", "mes": 9},
+        {"fase": "Equipamiento médico-eléctrico", "mes": 13},
+        {"fase": "Certificación y habilitación", "mes": 16}
+      ],
+      "normativas": ["NEC Article 517", "NFPA 99", "MINSA"]
+    },
+    {
+      "id": 24,
+      "tipo": "proyecto_complejo",
+      "nombre": "Centro Logístico Automatizado",
+      "cliente": "Amazon Fulfillment Center Perú",
+      "descripcion": "Centro distribución 20,000m2 altamente automatizado: Subestación 3 MVA, sistema eléctrico industrial, iluminación inteligente 2000 puntos, CCTV Analytics 150 cámaras, control accesos biométrico, WMS integrado, transportadores automatizados, AGVs, picking luz, WiFi industrial, BMS completo. Disponibilidad 99.9%",
+      "duracion_meses": 20,
+      "presupuesto": 6800000,
+      "hitos": [
+        {"fase": "Diseño e ingeniería", "mes": 4},
+        {"fase": "Infraestructura eléctrica", "mes": 10},
+        {"fase": "Automatización e integración", "mes": 16},
+        {"fase": "Comisionamiento y GO-LIVE", "mes": 20}
+      ],
+      "sla": "99.9% disponibilidad",
+      "mantenimiento": "24/7/365"
+    }
+  ],
+
+  "informes_simples": [
+    {
+      "id": 25,
+      "tipo": "informe_simple",
+      "titulo": "Informe de Medición de Puesta a Tierra",
+      "cliente": "Supermercados Plaza Vea",
+      "proyecto": "Sistema de Puesta a Tierra - Local Huancayo",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. Carlos Mendoza",
+      "resultados": "Resistencia medida: 4.8 Ohm (Cumple NTP). Telurimetro Fluke 1625. Pozo tierra profundo 3m"
+    },
+    {
+      "id": 26,
+      "tipo": "informe_simple",
+      "titulo": "Informe de Certificación de Red de Datos",
+      "cliente": "Estudio Jurídico Sánchez & Asociados",
+      "proyecto": "Cableado Estructurado Cat6A",
+      "fecha": "2025-12-06",
+      "ejecutor": "Téc. Juan Quispe",
+      "resultados": "36 puntos certificados OK. Fluke DSX-5000. Todos los enlaces pasan Cat6A. Documentación entregada"
+    },
+    {
+      "id": 27,
+      "tipo": "informe_simple",
+      "titulo": "Informe de Inspección Sistema Contra Incendios",
+      "cliente": "Hotel Presidente Huancayo",
+      "proyecto": "Mantenimiento Anual Sistema CI",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. María Torres",
+      "resultados": "45 detectores operativos, 28 extintores vigentes, panel central OK, pruebas alarma exitosas"
+    },
+    {
+      "id": 28,
+      "tipo": "informe_simple",
+      "titulo": "Informe de Mantenimiento Sistema CCTV",
+      "cliente": "Municipalidad Provincial de Huancayo",
+      "proyecto": "CCTV Seguridad Ciudadana - 50 Cámaras",
+      "fecha": "2025-12-06",
+      "ejecutor": "Téc. Pedro Rojas",
+      "resultados": "48 cámaras operativas, 2 cámaras con falla limpieza óptica. Servidor grabación 85% capacidad. Backup funcionando"
+    },
+    {
+      "id": 29,
+      "tipo": "informe_simple",
+      "titulo": "Informe de Pruebas Eléctricas Tablero General",
+      "cliente": "Clínica Ortega",
+      "proyecto": "Tablero General 400A",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. Roberto Flores",
+      "resultados": "Termografía: Sin puntos calientes. Medición THD: 2.8% (OK). Resistencia aislamiento: >1000 MOhm. Interruptor prueba exitosa"
+    },
+    {
+      "id": 30,
+      "tipo": "informe_simple",
+      "titulo": "Informe de Inspección Pre-ITSE",
+      "cliente": "Restaurant Turístico Huancayo",
+      "proyecto": "Local Comercial 200m2",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. Luis Campos",
+      "resultados": "Instalación conforme. Observaciones: Falta señalética zona cocina, 2 extintores por vencer. Recomendación: Aprobar con levantamiento observaciones"
+    }
+  ],
+
+  "informes_complejos": [
+    {
+      "id": 31,
+      "tipo": "informe_complejo",
+      "titulo": "Informe Técnico de Auditoría Energética Industrial",
+      "cliente": "Cervecería San Juan SAC",
+      "proyecto": "Auditoría Energética Planta Producción",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. Alberto Ramírez - MBA Energy Management",
+      "resumen_ejecutivo": "Auditoría energética nivel 2 ASHRAE norma planta cervecera 50,000 HL/año. Consumo actual: 2.8 GWh/año (S/ 1,680,000). Identificadas 15 oportunidades ahorro energético con VAN positivo",
+      "metodologia": "Mediciones en campo 30 días (analizadores Fluke 1750, termografía FLIR), análisis facturación 12 meses, simulación térmica DesignBuilder, benchmarking sectorial",
+      "hallazgos_principales": [
+        "Factor potencia promedio 0.82 (penalización S/ 95,000/año)",
+        "Compresor aire 75 HP trabajando 40% en vacío (S/ 42,000/año desperdicio)",
+        "Iluminación vapor sodio 400W obsoleta (150 luminarias)",
+        "Motores eléctricos eficiencia estándar (20 motores >15 HP)",
+        "Cámaras frío sin variadores frecuencia"
+      ],
+      "recomendaciones": [
+        {"medida": "Banco compensación reactiva 300 KVAR", "inversion": 35000, "ahorro_anual": 95000, "payback": 0.4},
+        {"medida": "VFD compresor + control inteligente", "inversion": 28000, "ahorro_anual": 42000, "payback": 0.7},
+        {"medida": "Sustitución LED iluminación industrial", "inversion": 85000, "ahorro_anual": 68000, "payback": 1.3},
+        {"medida": "Motores alta eficiencia IE3", "inversion": 120000, "ahorro_anual": 52000, "payback": 2.3},
+        {"medida": "VFDs cámaras refrigeración", "inversion": 45000, "ahorro_anual": 38000, "payback": 1.2}
+      ],
+      "inversion_total": 313000,
+      "ahorro_total_anual": 295000,
+      "payback_global": 1.1,
+      "VAN_10_años": 1850000,
+      "TIR": 89,
+      "reduccion_CO2": "385 ton/año"
+    },
+    {
+      "id": 32,
+      "tipo": "informe_complejo",
+      "titulo": "Estudio de Calidad de Energía y Armónicas - Planta Siderúrgica",
+      "cliente": "Aceros Arequipa SA - Planta Pisco",
+      "proyecto": "Power Quality Assessment Horno Arco Eléctrico",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. Fernando Ugarte - PhD Power Systems",
+      "resumen_ejecutivo": "Estudio PQ según IEEE 519-2022 en planta siderúrgica 25 MW. Horno arco 18 MW genera severas distorsiones armónicas y flicker. Impacto: equipos electrónicos fallando, transformadores sobrecalentando, facturación excesiva",
+      "metodologia": "Medición clase A analizadores Dranetz HDPQ+ en 10 puntos críticos, 30 días continuos. Análisis fasorial, simulación ETAP PowerStation",
+      "hallazgos_criticos": [
+        "THD voltaje 12.8% (límite IEEE 5%) - CRÍTICO",
+        "THD corriente 48.5% (límite IEEE 8%) - CRÍTICO",
+        "Armónica 5ta: 8.2%, 7ma: 5.1%, 11va: 3.8%",
+        "Flicker Pst 2.8 (límite 1.0) - equipos sensibles afectados",
+        "Factor potencia 0.71 con armónicas (penalización S/ 280,000/año)",
+        "Resonancia paralela detectada en 550 Hz (armónica 11)",
+        "Transformador 10 MVA temperatura 15°C sobre nominal"
+      ],
+      "impacto_economico": "Pérdidas técnicas S/ 420,000/año, fallas equipos S/ 180,000/año, penalizaciones S/ 280,000/año. Total: S/ 880,000/año",
+      "soluciones_propuestas": [
+        {"solucion": "Filtro activo 5 MVA (ABB PCS6000)", "costo": 850000, "THD_resultante": "4.2%", "reduccion_perdidas": 320000},
+        {"solucion": "SVC ±10 MVAR compensación dinámica", "costo": 1200000, "flicker_resultante": "0.8", "FP_resultante": 0.98},
+        {"solucion": "Reactor limitación di/dt horno", "costo": 280000, "reduccion_armónicas": "25%"},
+        {"solucion": "Upgrade transformador K-13", "costo": 450000, "temperatura_resultante": "Normal"}
+      ],
+      "inversion_recomendada": 2780000,
+      "ahorro_anual_total": 750000,
+      "payback": 3.7,
+      "VAN_15_años": 4200000,
+      "cumplimiento_normativo": "IEEE 519-2022, IEC 61000-2-2, NTCSE DGE"
+    },
+    {
+      "id": 33,
+      "tipo": "informe_complejo",
+      "titulo": "Informe de Comisionamiento Data Center Tier III",
+      "cliente": "Telefónica del Perú SAA",
+      "proyecto": "Data Center Lurín - 2 MW IT Load",
+      "fecha": "2025-12-06",
+      "ejecutor": "Ing. Patricia Morales - CCP Certified Commissioning Professional",
+      "resumen_ejecutivo": "Comisionamiento integral data center Tier III según TIA-942 y Uptime Institute. Infraestructura crítica 2N, disponibilidad objetivo 99.982%. Pruebas integradas 720 horas satisfactorias",
+      "alcance_comisionamiento": "Sistema eléctrico completo (UPS 2N 4 MW, generadores 3x2.5 MVA N+1, ATS, STS), climatización precisión (20x200 KW 2N), detección incendios VESDA, BMS, DCIM, seguridad física",
+      "pruebas_realizadas": [
+        {"sistema": "UPS Modulares 2N", "prueba": "Transferencia < 4ms", "resultado": "2.1ms AVG - PASS", "normativa": "IEC 62040-3"},
+        {"sistema": "Generadores diesel", "prueba": "Toma carga 100% < 10s", "resultado": "7.2s AVG - PASS", "normativa": "ISO 8528"},
+        {"sistema": "Generadores", "prueba": "Autonomía 72h @ 100%", "resultado": "74.5h medido - PASS"},
+        {"sistema": "CRAC Units", "prueba": "Redundancia N+1 falla 1 unidad", "resultado": "Temp <25°C - PASS", "normativa": "ASHRAE TC 9.9"},
+        {"sistema": "VESDA", "prueba": "Detección 0.005%/m obscuration", "resultado": "0.003% - PASS", "normativa": "NFPA 76"},
+        {"sistema": "FM-200", "prueba": "Descarga <10s, concentración 7.9%", "resultado": "8.2s, 8.1% - PASS", "normativa": "NFPA 2001"},
+        {"sistema": "Integrado", "prueba": "Blackout utility + falla UPS1", "resultado": "Sin impacto IT - PASS"},
+        {"sistema": "Integrado", "prueba": "720h continuous load 80%", "resultado": "Cero incidentes - PASS"}
+      ],
+      "deficiencias_encontradas": [
+        {"deficiencia": "STS bypass path no probado", "severidad": "Mayor", "estado": "Corregido"},
+        {"deficiencia": "Calibración sensores DCIM ±3%", "severidad": "Menor", "estado": "Corregido"},
+        {"deficiencia": "Procedimiento EPO incompleto", "severidad": "Mayor", "estado": "Actualizado"},
+        {"deficiencia": "Documentación as-built 15% pendiente", "severidad": "Menor", "estado": "En proceso"}
+      ],
+      "indicadores_finales": {
+        "PUE_diseño": 1.45,
+        "PUE_medido_30_dias": 1.52,
+        "disponibilidad_proyectada": "99.984%",
+        "MTBF_infraestructura": ">100,000h",
+        "tier_certificado": "Tier III Design + Facility"
+      },
+      "recomendaciones_operacion": [
+        "Mantenimiento preventivo trimestral generadores",
+        "Calibración anual instrumentación crítica",
+        "Simulacro blackout semestral",
+        "Monitoreo PUE continuo objetivo <1.50",
+        "Renovación baterías UPS año 7"
+      ],
+      "certificacion": "Uptime Institute Tier III Certification of Design Documents + Constructed Facility. Fecha certificación: 2025-12-06"
+    }
+  ]
+}
