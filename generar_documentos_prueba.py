@@ -81,7 +81,7 @@ def main():
             datos = plantilla_proyecto_simple(
                 servicio="domotica",
                 cliente=nombre,
-                duracion_dias=30
+                area_m2=150.0
             )
             archivo = OUTPUT_DIR / f"{i}_Proyecto_Simple_{ruc}.docx"
             word_gen.generar_desde_json_pili(datos, str(archivo))
@@ -95,7 +95,7 @@ def main():
             datos = plantilla_proyecto_complejo(
                 servicio="contraincendios",
                 cliente=nombre,
-                duracion_dias=90
+                area_m2=300.0
             )
             archivo = OUTPUT_DIR / f"{i}_Proyecto_Complejo_{ruc}.docx"
             word_gen.generar_desde_json_pili(datos, str(archivo))
