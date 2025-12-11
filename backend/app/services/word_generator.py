@@ -83,8 +83,46 @@ class WordGenerator:
             "telefono": "906315961",
             "email": "ingenieria.teslaelectricidad@gmail.com"
         }
-        
+
         logger.info("✅ WordGenerator + PILI inicializado")
+
+    def _aplicar_esquema_colores(self, esquema: str):
+        """
+        ✅ Aplica dinámicamente un esquema de colores al generador
+
+        Args:
+            esquema: 'azul-tesla', 'rojo-energia', 'verde-ecologico', 'personalizado'
+        """
+        if esquema == "azul-tesla":
+            # Ya son los colores por defecto, pero los re-aplicamos explícitamente
+            self.COLOR_PRIMARIO = RGBColor(0, 82, 163)      # #0052A3
+            self.COLOR_SECUNDARIO = RGBColor(30, 64, 175)   # #1E40AF
+            self.COLOR_ACENTO = RGBColor(59, 130, 246)      # #3B82F6
+            logger.info("🎨 Esquema: Azul Tesla (corporativo)")
+
+        elif esquema == "rojo-energia":
+            self.COLOR_PRIMARIO = RGBColor(220, 38, 38)     # #DC2626
+            self.COLOR_SECUNDARIO = RGBColor(185, 28, 28)   # #B91C1C
+            self.COLOR_ACENTO = RGBColor(248, 113, 113)     # #F87171
+            logger.info("🎨 Esquema: Rojo Energía (vibrante)")
+
+        elif esquema == "verde-ecologico":
+            self.COLOR_PRIMARIO = RGBColor(34, 197, 94)     # #22C55E
+            self.COLOR_SECUNDARIO = RGBColor(22, 163, 74)   # #16A34A
+            self.COLOR_ACENTO = RGBColor(134, 239, 172)     # #86EFAC
+            logger.info("🎨 Esquema: Verde Ecológico (sostenible)")
+
+        elif esquema == "personalizado":
+            # Por ahora usa azul, en futuro se puede personalizar
+            self.COLOR_PRIMARIO = RGBColor(147, 51, 234)    # #9333EA (Púrpura)
+            self.COLOR_SECUNDARIO = RGBColor(126, 34, 206)  # #7E22CE
+            self.COLOR_ACENTO = RGBColor(216, 180, 254)     # #D8B4FE
+            logger.info("🎨 Esquema: Personalizado")
+
+        # Actualizar colores de compatibilidad para que usen el nuevo esquema
+        self.COLOR_DORADO = self.COLOR_PRIMARIO
+        self.COLOR_PILI = self.COLOR_SECUNDARIO
+        self.COLOR_AZUL_TECH = self.COLOR_ACENTO
 
     # ═══════════════════════════════════════════════════════════════
     # 🤖 NUEVOS MÉTODOS PILI v3.0
@@ -164,6 +202,13 @@ class WordGenerator:
 
         # Extraer datos principales
         datos_extraidos = datos_json.get("datos_extraidos", {})
+
+        # ✅ APLICAR OPCIONES DE PERSONALIZACIÓN
+        opciones = datos_extraidos.get("_opciones_personalizacion", {})
+        if opciones:
+            esquema_colores = opciones.get("esquema_colores", "azul-tesla")
+            self._aplicar_esquema_colores(esquema_colores)
+            logger.info(f"✅ Personalizacion aplicada: {esquema_colores}")
 
         # 🆕 PASO 1: Detectar servicio y parámetros para plantilla profesional
         servicio = datos_extraidos.get("servicio", "electrico-residencial")

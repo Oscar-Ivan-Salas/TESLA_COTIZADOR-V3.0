@@ -757,6 +757,17 @@ async def generar_documento_directo(
         servicio_detectado = datos.get("servicio", "electrico-residencial")
         area_m2_detectada = datos.get("area_m2", 100)
 
+        # ✅ Extraer opciones de personalización del frontend
+        opciones_personalizacion = datos.get("opciones_personalizacion", {})
+        esquema_colores = opciones_personalizacion.get("esquema_colores", "azul-tesla")
+        fuente = opciones_personalizacion.get("fuente", "Calibri")
+        tamaño_fuente = opciones_personalizacion.get("tamaño_fuente", 11)
+        mostrar_logo = opciones_personalizacion.get("mostrar_logo", True)
+        ocultar_igv = opciones_personalizacion.get("ocultar_igv", False)
+        ocultar_precios_unitarios = opciones_personalizacion.get("ocultar_precios_unitarios", False)
+
+        logger.info(f"🎨 Personalizacion: {esquema_colores}, {fuente} {tamaño_fuente}pt, Logo: {mostrar_logo}")
+
         # Determinar tipo
         tipo_documento = "cotizacion"
         if "fases" in datos or "cronograma" in datos:
@@ -768,6 +779,16 @@ async def generar_documento_directo(
         datos_enriquecidos = datos.copy()
         datos_enriquecidos.setdefault("servicio", servicio_detectado)
         datos_enriquecidos.setdefault("area_m2", area_m2_detectada)
+
+        # ✅ Agregar opciones de personalización a los datos
+        datos_enriquecidos["_opciones_personalizacion"] = {
+            "esquema_colores": esquema_colores,
+            "fuente": fuente,
+            "tamaño_fuente": tamaño_fuente,
+            "mostrar_logo": mostrar_logo and datos.get("logo_base64"),  # Solo si hay logo
+            "ocultar_igv": ocultar_igv,
+            "ocultar_precios_unitarios": ocultar_precios_unitarios
+        }
 
         # Generar archivo
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
