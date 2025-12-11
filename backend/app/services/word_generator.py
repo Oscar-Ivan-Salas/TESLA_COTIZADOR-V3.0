@@ -35,6 +35,9 @@ from io import BytesIO
 import json
 import tempfile
 
+# Configurar logger PRIMERO
+logger = logging.getLogger(__name__)
+
 # 🆕 IMPORTAR PLANTILLAS PROFESIONALES
 try:
     from app.templates.documentos.plantillas_modelo import obtener_plantilla, SERVICIOS_INFO
@@ -43,8 +46,6 @@ try:
 except ImportError as e:
     PLANTILLAS_DISPONIBLES = False
     logger.warning(f"⚠️ Plantillas no disponibles: {e}")
-
-logger = logging.getLogger(__name__)
 
 class WordGenerator:
     """
@@ -56,15 +57,23 @@ class WordGenerator:
     
     def __init__(self):
         """🔄 CONSERVADO + 🤖 PILI mejorado"""
-        # Colores Tesla originales conservados
-        self.COLOR_ROJO = RGBColor(139, 0, 0)      # #8B0000
-        self.COLOR_DORADO = RGBColor(218, 165, 32)  # #DAA520
-        self.COLOR_NEGRO = RGBColor(0, 0, 0)        # #000000
-        self.COLOR_GRIS = RGBColor(128, 128, 128)   # #808080
-        
-        # 🤖 Nuevos colores PILI
-        self.COLOR_PILI = RGBColor(212, 175, 55)    # #D4AF37 (Dorado PILI)
-        self.COLOR_AZUL_TECH = RGBColor(0, 102, 204)  # #0066CC (Azul tecnológico)
+        # ✅ COLORES TESLA AZUL (CORPORATIVOS)
+        # Basados en la identidad visual de Tesla Electricidad
+        self.COLOR_AZUL_PRIMARIO = RGBColor(0, 82, 163)      # #0052A3 (Azul Tesla principal)
+        self.COLOR_AZUL_SECUNDARIO = RGBColor(30, 64, 175)   # #1E40AF (Azul oscuro)
+        self.COLOR_AZUL_CLARO = RGBColor(59, 130, 246)       # #3B82F6 (Azul claro/tecnológico)
+
+        # Colores complementarios
+        self.COLOR_ROJO_ENERGIA = RGBColor(220, 38, 38)      # #DC2626 (Rojo para acentos)
+        self.COLOR_NEGRO = RGBColor(0, 0, 0)                 # #000000
+        self.COLOR_GRIS = RGBColor(107, 114, 128)            # #6B7280 (Gris moderno)
+        self.COLOR_BLANCO = RGBColor(255, 255, 255)          # #FFFFFF
+
+        # Compatibilidad (mapeo a colores azules)
+        self.COLOR_DORADO = self.COLOR_AZUL_PRIMARIO  # Reemplazado por azul
+        self.COLOR_PILI = self.COLOR_AZUL_SECUNDARIO  # Reemplazado por azul
+        self.COLOR_ROJO = self.COLOR_ROJO_ENERGIA
+        self.COLOR_AZUL_TECH = self.COLOR_AZUL_CLARO
         
         # Configuración de documentos
         self.empresa_info = {
