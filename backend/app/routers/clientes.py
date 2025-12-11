@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 # Crear router
 router = APIRouter(
-    prefix="/api/clientes",
     tags=["clientes"],
     responses={404: {"description": "Cliente no encontrado"}}
 )
