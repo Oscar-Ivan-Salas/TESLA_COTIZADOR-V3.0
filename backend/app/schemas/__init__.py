@@ -19,6 +19,13 @@ from app.schemas.documento import (
     DocumentoBase,
     DocumentoResponse
 )
+from app.schemas.cliente import (
+    ClienteBase,
+    ClienteCreate,
+    ClienteUpdate,
+    ClienteResponse,
+    ClienteListResponse
+)
 
 __all__ = [
     # Proyecto
@@ -26,7 +33,7 @@ __all__ = [
     "ProyectoCreate",
     "ProyectoUpdate",
     "ProyectoResponse",
-    
+
     # Cotización
     "ItemBase",
     "ItemCreate",
@@ -34,8 +41,15 @@ __all__ = [
     "CotizacionCreate",
     "CotizacionUpdate",
     "CotizacionResponse",
-    
+
     # Documento
     "DocumentoBase",
     "DocumentoResponse",
+
+    # Cliente
+    "ClienteBase",
+    "ClienteCreate",
+    "ClienteUpdate",
+    "ClienteResponse",
+    "ClienteListResponse",
 ]

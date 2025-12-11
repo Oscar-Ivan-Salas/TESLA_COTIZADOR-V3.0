@@ -35,6 +35,15 @@ from io import BytesIO
 import json
 import tempfile
 
+# 🆕 IMPORTAR PLANTILLAS PROFESIONALES
+try:
+    from app.templates.documentos.plantillas_modelo import obtener_plantilla, SERVICIOS_INFO
+    PLANTILLAS_DISPONIBLES = True
+    logger.info("✅ Plantillas profesionales cargadas")
+except ImportError as e:
+    PLANTILLAS_DISPONIBLES = False
+    logger.warning(f"⚠️ Plantillas no disponibles: {e}")
+
 logger = logging.getLogger(__name__)
 
 class WordGenerator:
@@ -137,11 +146,45 @@ class WordGenerator:
             }
     
     def _procesar_json_pili(self, datos_json: Dict[str, Any], tipo_documento: str) -> Dict[str, Any]:
-        """Procesa y valida JSON de PILI para generación Word"""
-        
+        """
+        🆕 VERSIÓN MEJORADA: Procesa JSON de PILI + PLANTILLAS PROFESIONALES
+
+        Integra las plantillas profesionales con los datos del usuario para generar
+        documentos impecables con precios reales, normativas y observaciones técnicas.
+        """
+
         # Extraer datos principales
         datos_extraidos = datos_json.get("datos_extraidos", {})
-        
+
+        # 🆕 PASO 1: Detectar servicio y parámetros para plantilla profesional
+        servicio = datos_extraidos.get("servicio", "electrico-residencial")
+        area_m2 = float(datos_extraidos.get("area_m2", 100))
+        cliente = datos_extraidos.get("cliente", "Cliente")
+
+        # Detectar complejidad
+        complejidad = "simple"
+        if "complejo" in tipo_documento.lower() or "compleja" in tipo_documento.lower():
+            complejidad = "complejo"
+        elif datos_extraidos.get("complejidad"):
+            complejidad = datos_extraidos.get("complejidad")
+
+        # 🆕 PASO 2: Obtener datos profesionales de plantilla (si disponible)
+        datos_plantilla = {}
+        if PLANTILLAS_DISPONIBLES:
+            try:
+                logger.info(f"📋 Usando plantilla profesional: {tipo_documento} - {complejidad} - {servicio}")
+                plantilla_completa = obtener_plantilla(
+                    tipo_documento=tipo_documento,
+                    complejidad=complejidad,
+                    servicio=servicio,
+                    cliente=cliente,
+                    area_m2=area_m2
+                )
+                datos_plantilla = plantilla_completa.get("datos_extraidos", {})
+                logger.info(f"✅ Plantilla cargada con {len(datos_plantilla.get('items', []))} items profesionales")
+            except Exception as e:
+                logger.warning(f"⚠️ No se pudo cargar plantilla: {e}, usando datos básicos")
+
         # Datos base del documento
         datos_procesados = {
             "empresa_nombre": self.empresa_info["nombre"],
@@ -152,24 +195,38 @@ class WordGenerator:
             "fecha_generacion": datetime.now().strftime("%d/%m/%Y"),
             "agente_pili": datos_json.get("agente_responsable", "PILI")
         }
-        
-        # Combinar con datos extraídos
-        datos_procesados.update(datos_extraidos)
-        
+
+        # 🆕 PASO 3: Combinar plantilla profesional + datos del usuario
+        # Primero plantilla (base profesional), luego usuario (sobrescribe)
+        datos_procesados.update(datos_plantilla)  # Datos profesionales
+        datos_procesados.update(datos_extraidos)  # Usuario sobrescribe
+
+        # 🆕 PASO 4: Enriquecer con normativas si tenemos info del servicio
+        if PLANTILLAS_DISPONIBLES and servicio in SERVICIOS_INFO:
+            info_servicio = SERVICIOS_INFO[servicio]
+            datos_procesados.setdefault("normativa_aplicable", info_servicio["normativa"])
+            datos_procesados.setdefault("servicio_nombre", info_servicio["nombre"])
+
         # Valores por defecto según tipo de documento
         if "cotizacion" in tipo_documento:
             datos_procesados.setdefault("numero", self._generar_numero_cotizacion())
-            datos_procesados.setdefault("vigencia", "30 días")
-            datos_procesados.setdefault("observaciones", "Precios incluyen IGV. Instalación según CNE-Utilización.")
-            
+            datos_procesados.setdefault("vigencia", "30 días calendario")
+            if not datos_procesados.get("observaciones"):
+                obs_base = "Precios incluyen IGV."
+                if datos_procesados.get("normativa_aplicable"):
+                    obs_base += f" Instalación según {datos_procesados['normativa_aplicable']}."
+                datos_procesados["observaciones"] = obs_base
+
         elif "proyecto" in tipo_documento:
             datos_procesados.setdefault("estado", "En Planificación")
             datos_procesados.setdefault("duracion_estimada", "4 semanas")
-            
+
         elif "informe" in tipo_documento:
             datos_procesados.setdefault("autor", self.empresa_info["nombre"])
             datos_procesados.setdefault("fecha_informe", datos_procesados["fecha_generacion"])
-        
+
+        logger.info(f"📄 Documento procesado: {datos_procesados.get('numero', 'SIN-NUM')} - {datos_procesados.get('cliente', 'SIN-CLIENTE')}")
+
         return datos_procesados
     
     def _generar_cotizacion_pili(

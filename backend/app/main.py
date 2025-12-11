@@ -157,11 +157,23 @@ try:
         logger.info("✅ Router Generación Directa cargado")
     except Exception as e:
         logger.warning(f"⚠️ Router generar_directo no disponible: {e}")
-    
+
+    try:
+        from app.routers import clientes
+        routers_info["clientes"] = {
+            "router": clientes.router,
+            "prefix": "/api/clientes",
+            "tags": ["Clientes"],
+            "descripcion": "CRUD completo de clientes"
+        }
+        logger.info("✅ Router Clientes cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router clientes no disponible: {e}")
+
     # Verificar si tenemos suficientes routers para modo completo
     if len(routers_info) >= 1:  # Al menos uno disponible (especialmente chat)
         ROUTERS_AVANZADOS_DISPONIBLES = True
-        logger.info(f"🎉 ROUTERS AVANZADOS ACTIVADOS: {len(routers_info)}/6 disponibles")
+        logger.info(f"🎉 ROUTERS AVANZADOS ACTIVADOS: {len(routers_info)}/8 disponibles")
         logger.info(f"📋 Routers cargados: {list(routers_info.keys())}")
     else:
         logger.warning("⚠️ Ningún router avanzado disponible, manteniendo modo básico")
@@ -741,12 +753,21 @@ async def generar_documento_directo(
         from app.services.word_generator import word_generator
         from app.services.pdf_generator import pdf_generator
 
+        # 🆕 Detectar servicio y área para usar plantillas profesionales
+        servicio_detectado = datos.get("servicio", "electrico-residencial")
+        area_m2_detectada = datos.get("area_m2", 100)
+
         # Determinar tipo
         tipo_documento = "cotizacion"
         if "fases" in datos or "cronograma" in datos:
             tipo_documento = "proyecto"
         elif "secciones" in datos:
             tipo_documento = "informe"
+
+        # 🆕 Enriquecer datos con servicio y área (para plantillas profesionales)
+        datos_enriquecidos = datos.copy()
+        datos_enriquecidos.setdefault("servicio", servicio_detectado)
+        datos_enriquecidos.setdefault("area_m2", area_m2_detectada)
 
         # Generar archivo
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -755,11 +776,11 @@ async def generar_documento_directo(
             filename = f"{tipo_documento}_{timestamp}.docx"
             filepath = storage_path / filename
 
-            # Empaquetar datos para estructura PILI
+            # Empaquetar datos para estructura PILI (con datos enriquecidos)
             datos_pili = {
-                "datos_extraidos": datos,
+                "datos_extraidos": datos_enriquecidos,  # 🆕 Usar datos enriquecidos
                 "agente_responsable": "PILI (Generación Directa)",
-                "tipo_servicio": "cotizacion-simple",
+                "tipo_servicio": f"{tipo_documento}-{servicio_detectado}",
                 "timestamp": datetime.now().isoformat()
             }
 
