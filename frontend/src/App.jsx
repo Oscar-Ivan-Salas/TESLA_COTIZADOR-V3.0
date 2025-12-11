@@ -39,6 +39,13 @@ const CotizadorTesla30 = () => {
   const [ocultarIGV, setOcultarIGV] = useState(false);
   const [ocultarPreciosUnitarios, setOcultarPreciosUnitarios] = useState(false);
 
+  // ✅ Estados para personalización de documentos (NEW)
+  const [esquemaColores, setEsquemaColores] = useState('azul-tesla'); // azul-tesla, rojo-energia, verde-ecologico, personalizado
+  const [fuenteDocumento, setFuenteDocumento] = useState('Calibri'); // Calibri, Arial, Times New Roman
+  const [tamañoFuente, setTamañoFuente] = useState(11); // 10, 11, 12
+  const [mostrarLogo, setMostrarLogo] = useState(true);
+  const [mostrarPanelPersonalizacion, setMostrarPanelPersonalizacion] = useState(false);
+
   // Estados específicos para cada tipo
   const [cotizacion, setCotizacion] = useState(null);
   const [proyecto, setProyecto] = useState(null);
@@ -665,10 +672,20 @@ const CotizadorTesla30 = () => {
           vigencia: '30 días'
         };
 
-        // Agregar logo si existe
-        if (logoBase64) {
+        // ✅ Agregar logo si existe Y si está habilitado
+        if (logoBase64 && mostrarLogo) {
           datosParaGeneracion.logo_base64 = logoBase64;
         }
+
+        // ✅ Agregar parámetros de personalización
+        datosParaGeneracion.opciones_personalizacion = {
+          esquema_colores: esquemaColores, // 'azul-tesla', 'rojo-energia', 'verde-ecologico', 'personalizado'
+          fuente: fuenteDocumento, // 'Calibri', 'Arial', 'Times New Roman'
+          tamaño_fuente: tamañoFuente, // 10, 11, 12
+          mostrar_logo: mostrarLogo,
+          ocultar_igv: ocultarIGV,
+          ocultar_precios_unitarios: ocultarPreciosUnitarios
+        };
 
         docResponse = await fetch(`http://localhost:8000/api/generar-documento-directo?formato=${formato}`, {
           method: 'POST',
@@ -1476,6 +1493,178 @@ const CotizadorTesla30 = () => {
                   {/* VISTA PREVIA FINAL */}
                   <div className="border-2 border-gray-200 rounded-xl p-4 mb-6 max-h-60 overflow-y-auto">
                     <div dangerouslySetInnerHTML={{ __html: htmlPreview }} />
+                  </div>
+
+                  {/* ✅ PANEL DE PERSONALIZACIÓN */}
+                  <div className="mb-6 border-2 border-blue-500 rounded-xl overflow-hidden">
+                    {/* Header del Panel */}
+                    <button
+                      onClick={() => setMostrarPanelPersonalizacion(!mostrarPanelPersonalizacion)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-4 flex items-center justify-between hover:from-blue-700 hover:to-blue-600 transition-all">
+                      <div className="flex items-center gap-3">
+                        <Settings className="w-6 h-6 text-white" />
+                        <h3 className="text-lg font-bold text-white">Personalización del Documento</h3>
+                      </div>
+                      {mostrarPanelPersonalizacion ? (
+                        <ChevronUp className="w-5 h-5 text-white" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-white" />
+                      )}
+                    </button>
+
+                    {/* Contenido del Panel (Colapsable) */}
+                    {mostrarPanelPersonalizacion && (
+                      <div className="bg-gray-900 p-6 space-y-6">
+                        {/* Sección: Esquema de Colores */}
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-3 flex items-center gap-2">
+                            <PieChart className="w-5 h-5" />
+                            Esquema de Colores
+                          </label>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <button
+                              onClick={() => setEsquemaColores('azul-tesla')}
+                              className={`p-3 rounded-lg border-2 transition-all ${
+                                esquemaColores === 'azul-tesla'
+                                  ? 'border-blue-500 bg-blue-900 text-white'
+                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-600'
+                              }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                                <span className="font-semibold">Azul Tesla</span>
+                              </div>
+                              <span className="text-xs">Corporativo</span>
+                            </button>
+                            <button
+                              onClick={() => setEsquemaColores('rojo-energia')}
+                              className={`p-3 rounded-lg border-2 transition-all ${
+                                esquemaColores === 'rojo-energia'
+                                  ? 'border-red-500 bg-red-900 text-white'
+                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-red-600'
+                              }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                                <span className="font-semibold">Rojo Energía</span>
+                              </div>
+                              <span className="text-xs">Vibrante</span>
+                            </button>
+                            <button
+                              onClick={() => setEsquemaColores('verde-ecologico')}
+                              className={`p-3 rounded-lg border-2 transition-all ${
+                                esquemaColores === 'verde-ecologico'
+                                  ? 'border-green-500 bg-green-900 text-white'
+                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-green-600'
+                              }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                <span className="font-semibold">Verde Eco</span>
+                              </div>
+                              <span className="text-xs">Sostenible</span>
+                            </button>
+                            <button
+                              onClick={() => setEsquemaColores('personalizado')}
+                              className={`p-3 rounded-lg border-2 transition-all ${
+                                esquemaColores === 'personalizado'
+                                  ? 'border-purple-500 bg-purple-900 text-white'
+                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-purple-600'
+                              }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                                <span className="font-semibold">Personalizado</span>
+                              </div>
+                              <span className="text-xs">A medida</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Sección: Fuente */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-blue-400 font-semibold mb-3">Fuente del Documento</label>
+                            <select
+                              value={fuenteDocumento}
+                              onChange={(e) => setFuenteDocumento(e.target.value)}
+                              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition-colors">
+                              <option value="Calibri">Calibri (Recomendada)</option>
+                              <option value="Arial">Arial</option>
+                              <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-blue-400 font-semibold mb-3">Tamaño de Fuente</label>
+                            <select
+                              value={tamañoFuente}
+                              onChange={(e) => setTamañoFuente(Number(e.target.value))}
+                              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition-colors">
+                              <option value={10}>10 pt (Pequeña)</option>
+                              <option value={11}>11 pt (Normal)</option>
+                              <option value={12}>12 pt (Grande)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Sección: Logo */}
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-3 flex items-center gap-2">
+                            <Upload className="w-5 h-5" />
+                            Logo de la Empresa
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => setMostrarLogo(!mostrarLogo)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                                mostrarLogo
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-gray-700 text-gray-300'
+                              }`}>
+                              {mostrarLogo ? '✓ Mostrar Logo' : '✕ Ocultar Logo'}
+                            </button>
+                            <input
+                              ref={fileInputLogoRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={cargarLogo}
+                              className="hidden"
+                            />
+                            <button
+                              onClick={() => fileInputLogoRef.current?.click()}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition-all flex items-center gap-2">
+                              <Upload className="w-4 h-4" />
+                              {logoBase64 ? 'Cambiar Logo' : 'Subir Logo'}
+                            </button>
+                            {logoBase64 && (
+                              <span className="text-green-400 text-sm">✓ Logo cargado</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Sección: Opciones de Visualización */}
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-3">Opciones de Visualización</label>
+                          <div className="flex flex-wrap gap-4">
+                            <button
+                              onClick={() => setOcultarIGV(!ocultarIGV)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                                ocultarIGV
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-700 text-gray-300'
+                              }`}>
+                              {ocultarIGV ? '✓ IGV Oculto' : 'Mostrar IGV'}
+                            </button>
+                            <button
+                              onClick={() => setOcultarPreciosUnitarios(!ocultarPreciosUnitarios)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                                ocultarPreciosUnitarios
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-700 text-gray-300'
+                              }`}>
+                              {ocultarPreciosUnitarios ? '✓ P. Unit. Ocultos' : 'Mostrar P. Unitarios'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* BOTONES DE ACCIÓN */}
