@@ -170,6 +170,18 @@ try:
     except Exception as e:
         logger.warning(f"⚠️ Router clientes no disponible: {e}")
 
+    try:
+        from app.routers import admin
+        routers_info["admin"] = {
+            "router": admin.router,
+            "prefix": "/api/admin",
+            "tags": ["Admin"],
+            "descripcion": "Panel de administración"
+        }
+        logger.info("✅ Router Admin cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router admin no disponible: {e}")
+
     # Verificar si tenemos suficientes routers para modo completo
     if len(routers_info) >= 1:  # Al menos uno disponible (especialmente chat)
         ROUTERS_AVANZADOS_DISPONIBLES = True
