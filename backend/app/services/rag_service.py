@@ -5,8 +5,17 @@ Compatible con ChromaDB 0.4.x+
 
 import logging
 from typing import List, Dict, Any, Optional
-import chromadb
-from chromadb.config import Settings as ChromaSettings
+
+# Importación opcional de chromadb (puede no estar instalado)
+try:
+    import chromadb
+    from chromadb.config import Settings as ChromaSettings
+    CHROMADB_AVAILABLE = True
+except ImportError:
+    CHROMADB_AVAILABLE = False
+    chromadb = None
+    ChromaSettings = None
+
 from app.core.config import settings # <<< CORRECCIÓN: Importar settings
 
 logger = logging.getLogger(__name__)
@@ -22,23 +31,28 @@ class RAGService:
         self.collection_name = "tesla_cotizador_docs"
         self.client = None
         self.collection = None
-        
+
+        # Verificar si chromadb está disponible
+        if not CHROMADB_AVAILABLE:
+            logger.warning("⚠️ ChromaDB no está instalado - RAG Service en modo degradado")
+            return
+
         try:
             # <<< CORRECCIÓN: Usar la ruta de settings en lugar de hardcodearla
             # Esto soluciona el Problema #3
             persist_directory = str(settings.CHROMA_PERSIST_DIRECTORY)
-            
+
             self.client = chromadb.PersistentClient(
                 path=persist_directory
             )
-            
+
             logger.info(f"✅ ChromaDB client inicializado en: {persist_directory}")
-            
+
             # Obtener o crear colección
             self.collection = self._get_or_create_collection()
-            
+
             logger.info(f"✅ RAGService inicializado con colección '{self.collection_name}'")
-            
+
         except Exception as e:
             logger.error(f"❌ Error al inicializar RAGService: {str(e)}")
             logger.warning("⚠️ RAG Service funcionará en modo degradado")
