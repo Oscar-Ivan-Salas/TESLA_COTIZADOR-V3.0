@@ -1,0 +1,57 @@
+═══════════════════════════════════════════════════════════════════════
+COMANDOS PARA ACTUALIZAR TU PC - COPIA Y PEGA UNO POR UNO
+═══════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASO 1: IR A LA CARPETA DEL PROYECTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+cd TESLA_COTIZADOR-V3.0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASO 2: HACER PULL (DESCARGAR ARCHIVOS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+git pull origin claude/claude-md-miqrk3a6qr7npunb-01QYdNbWfxau46szuGTVYEeo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASO 3: VERIFICAR QUE SE DESCARGARON LOS DOCUMENTOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WINDOWS (CMD o PowerShell):
+dir "DOCUMENTOS TESIS\EJEMPLOS_DOCUMENTOS_WORD"
+
+LINUX/MAC:
+ls -lh "DOCUMENTOS TESIS/EJEMPLOS_DOCUMENTOS_WORD"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASO 4: ABRIR LA CARPETA CON LOS DOCUMENTOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WINDOWS (CMD):
+explorer "DOCUMENTOS TESIS\EJEMPLOS_DOCUMENTOS_WORD"
+
+WINDOWS (PowerShell):
+Invoke-Item "DOCUMENTOS TESIS\EJEMPLOS_DOCUMENTOS_WORD"
+
+LINUX:
+xdg-open "DOCUMENTOS TESIS/EJEMPLOS_DOCUMENTOS_WORD"
+
+MAC:
+open "DOCUMENTOS TESIS/EJEMPLOS_DOCUMENTOS_WORD"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 SI NO FUNCIONA EL PULL, USA ESTOS COMANDOS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+git fetch origin
+git merge origin/claude/claude-md-miqrk3a6qr7npunb-01QYdNbWfxau46szuGTVYEeo
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ RESULTADO ESPERADO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Deberías ver 24 archivos .docx en la carpeta:
+DOCUMENTOS TESIS/EJEMPLOS_DOCUMENTOS_WORD/
+
+═══════════════════════════════════════════════════════════════════════
