@@ -21,22 +21,26 @@ class Cliente(Base):
     nombre = Column(String(200), nullable=False, index=True)  # Nombre o Razón Social
     ruc = Column(String(11), unique=True, nullable=False, index=True)  # RUC peruano (11 dígitos)
     telefono = Column(String(20), nullable=True)
-    email = Column(String(200), nullable=True, index=True)
+    email = Column(String(100), nullable=True, index=True)
 
     # Dirección
     direccion = Column(String(500), nullable=True)
     ciudad = Column(String(100), nullable=True, default="Huancayo")
     departamento = Column(String(100), nullable=True, default="Junín")
 
+    # Web y branding
+    web = Column(String(200), nullable=True)
+    logo_base64 = Column(Text, nullable=True)
+
     # Clasificación
-    industria = Column(String(100), nullable=True, index=True)  # Construcción, Minería, etc.
+    industria = Column(String(50), nullable=True, index=True)  # Construcción, Minería, etc.
     tipo_cliente = Column(String(50), default="empresa", index=True)  # empresa, persona, gobierno
 
     # Contacto
     persona_contacto = Column(String(200), nullable=True)
     cargo_contacto = Column(String(100), nullable=True)
     telefono_contacto = Column(String(20), nullable=True)
-    email_contacto = Column(String(200), nullable=True)
+    email_contacto = Column(String(100), nullable=True)
 
     # Notas
     notas = Column(Text, nullable=True)
@@ -49,11 +53,8 @@ class Cliente(Base):
 
     # Timestamps
     fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
-    fecha_modificacion = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
-    )
+    fecha_modificacion = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+    fecha_ultima_cotizacion = Column(DateTime(timezone=True), nullable=True)
 
     # Relaciones (cuando se implementen)
     # cotizaciones = relationship("Cotizacion", back_populates="cliente_rel")
@@ -73,6 +74,7 @@ class Cliente(Base):
             "direccion": self.direccion,
             "ciudad": self.ciudad,
             "departamento": self.departamento,
+            "web": self.web,
             "industria": self.industria,
             "tipo_cliente": self.tipo_cliente,
             "persona_contacto": self.persona_contacto,
@@ -84,4 +86,5 @@ class Cliente(Base):
             "metadata_adicional": self.metadata_adicional,
             "fecha_creacion": self.fecha_creacion.isoformat() if self.fecha_creacion else None,
             "fecha_modificacion": self.fecha_modificacion.isoformat() if self.fecha_modificacion else None,
+            "fecha_ultima_cotizacion": self.fecha_ultima_cotizacion.isoformat() if self.fecha_ultima_cotizacion else None,
         }

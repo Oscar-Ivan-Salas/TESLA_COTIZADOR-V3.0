@@ -1,7 +1,9 @@
 // @ts-nocheck
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react';
+import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
+import ChatIA from './components/ChatIA';
+import VistaPrevia from './components/VistaPrevia';
 
 const CotizadorTesla30 = () => {
   // ============================================
@@ -61,6 +63,18 @@ const CotizadorTesla30 = () => {
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState('');
   const [formatoInforme, setFormatoInforme] = useState('word');
   const [incluirGraficos, setIncluirGraficos] = useState(true);
+
+  // ✅ Estados universales de cliente (para todos los 6 tipos de documentos)
+  const [datosCliente, setDatosCliente] = useState({
+    nombre: '',
+    ruc: '',
+    direccion: '',
+    telefono: '',
+    email: ''
+  });
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState(null);
+  const [listaClientes, setListaClientes] = useState([]);
+  const [guardandoCliente, setGuardandoCliente] = useState(false);
 
   // Referencias
   const chatContainerRef = useRef(null);
@@ -172,6 +186,116 @@ const CotizadorTesla30 = () => {
   };
 
   // ============================================
+  // ✅ FUNCIONES DE GESTIÓN DE CLIENTES
+  // ============================================
+
+  // Cargar lista de clientes desde la BD
+  const cargarListaClientes = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/clientes/');
+      if (response.ok) {
+        const clientes = await response.json();
+        setListaClientes(clientes);
+      }
+    } catch (error) {
+      console.error('Error cargando clientes:', error);
+    }
+  };
+
+  // Cargar datos de un cliente específico (auto-relleno)
+  const cargarDatosCliente = async (e) => {
+    const clienteId = e.target.value;
+
+    if (!clienteId) {
+      // Nuevo cliente - limpiar formulario
+      setClienteSeleccionadoId(null);
+      setDatosCliente({
+        nombre: '',
+        ruc: '',
+        direccion: '',
+        telefono: '',
+        email: ''
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/clientes/${clienteId}`);
+      if (response.ok) {
+        const cliente = await response.json();
+        setClienteSeleccionadoId(cliente.id);
+        setDatosCliente({
+          nombre: cliente.nombre || '',
+          ruc: cliente.ruc || '',
+          direccion: cliente.direccion || '',
+          telefono: cliente.telefono || '',
+          email: cliente.email || ''
+        });
+        setExito('✅ Cliente cargado');
+      }
+    } catch (error) {
+      console.error('Error cargando cliente:', error);
+      setError('Error al cargar cliente');
+    }
+  };
+
+  // Guardar cliente en la BD
+  const guardarCliente = async () => {
+    // Validación básica
+    if (!datosCliente.nombre || !datosCliente.ruc) {
+      setError('Nombre y RUC son obligatorios');
+      return;
+    }
+
+    if (datosCliente.ruc.length !== 11) {
+      setError('El RUC debe tener 11 dígitos');
+      return;
+    }
+
+    setGuardandoCliente(true);
+
+    try {
+      const url = clienteSeleccionadoId
+        ? `http://localhost:8000/api/clientes/${clienteSeleccionadoId}`
+        : 'http://localhost:8000/api/clientes/';
+
+      const method = clienteSeleccionadoId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosCliente)
+      });
+
+      if (response.ok) {
+        const clienteGuardado = await response.json();
+        setClienteSeleccionadoId(clienteGuardado.id);
+        await cargarListaClientes(); // Recargar lista
+        setExito(clienteSeleccionadoId ? '✅ Cliente actualizado' : '✅ Cliente guardado');
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Error del backend:', errorData);
+        console.error('📋 Datos enviados:', datosCliente);
+        throw new Error(JSON.stringify(errorData.detail || errorData) || 'Error al guardar');
+      }
+    } catch (error) {
+      console.error('Error guardando cliente:', error);
+      setError(error.message || 'Error al guardar cliente');
+    } finally {
+      setGuardandoCliente(false);
+    }
+  };
+
+  // Manejar cambios en el formulario de cliente
+  const handleClienteChange = (e) => {
+    const { name, value } = e.target;
+    setDatosCliente(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // ============================================
   // FUNCIONES DEL CHAT + VISTA PREVIA
   // ============================================
 
@@ -266,6 +390,82 @@ const CotizadorTesla30 = () => {
     setTimeout(() => {
       handleEnviarMensajeChat();
     }, 100);
+  };
+
+  // ============================================
+  // FUNCIÓN DE GENERACIÓN DE DOCUMENTOS
+  // ============================================
+
+  const handleGenerarDocumento = async (formato) => {
+    try {
+      console.log(`📄 Generando ${formato.toUpperCase()}...`);
+
+      // Determinar tipo de documento
+      const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
+        tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
+
+      // Obtener datos actuales
+      const entidad = tipoDocumento === 'cotizacion' ? cotizacion :
+        tipoDocumento === 'proyecto' ? proyecto : informe;
+
+      // Extraer HTML editado de la vista previa
+      const previewElement = previewRef.current;
+      const htmlEditado = previewElement ? previewElement.innerHTML : htmlPreview;
+
+      // Preparar datos para enviar
+      const datosParaEnviar = {
+        tipo_documento: tipoDocumento,
+        numero: entidad.numero || `${tipoDocumento.toUpperCase()}-${Date.now()}`,
+        cliente: entidad.cliente || "[Cliente]",
+        proyecto: entidad.proyecto || "[Proyecto]",
+        descripcion: entidad.descripcion || "",
+        items: entidad.items || [],
+        subtotal: entidad.subtotal || 0,
+        igv: entidad.igv || 0,
+        total: entidad.total || 0,
+        fecha: new Date().toLocaleDateString('es-PE'),
+        vigencia: "30 días"
+      };
+
+      console.log('📦 Datos a enviar:', datosParaEnviar);
+
+      // Llamar al endpoint de generación directa
+      const response = await fetch(
+        `http://localhost:8000/api/generar-documento-directo?formato=${formato}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            datos: datosParaEnviar,
+            html_editado: htmlEditado,
+            tipo_plantilla: tipoFlujo  // ej: "cotizacion-simple"
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
+
+      // Descargar archivo
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${tipoDocumento}_${Date.now()}.${formato === 'word' ? 'docx' : 'pdf'}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log(`✅ ${formato.toUpperCase()} descargado exitosamente`);
+      alert(`✅ Documento ${formato.toUpperCase()} generado y descargado exitosamente`);
+
+    } catch (error) {
+      console.error('❌ Error al generar documento:', error);
+      alert(`❌ Error al generar el documento: ${error.message}`);
+    }
   };
 
   // ============================================
@@ -660,7 +860,12 @@ const CotizadorTesla30 = () => {
         const datosParaGeneracion = {
           tipo_documento: tipoDocumento,
           numero: datosFinales?.numero || `${tipoDocumento.toUpperCase()}-${Date.now()}`,
-          cliente: clienteProyecto || datosFinales?.cliente || '[Cliente]',
+          // ✅ Usar datos del cliente universal (para todos los 6 tipos)
+          cliente: datosCliente.nombre || datosFinales?.cliente || '[Cliente]',
+          ruc: datosCliente.ruc || '',
+          direccion: datosCliente.direccion || '',
+          telefono: datosCliente.telefono || '',
+          email: datosCliente.email || '',
           proyecto: nombreProyecto || datosFinales?.proyecto || '[Proyecto]',
           descripcion: contextoUsuario || datosFinales?.descripcion || '',
           items: datosFinales?.items || [],
@@ -755,6 +960,11 @@ const CotizadorTesla30 = () => {
       obtenerBotonesContextuales();
     }
   }, [conversacion, tipoFlujo, paso]);
+
+  // ✅ Cargar lista de clientes al montar el componente
+  useEffect(() => {
+    cargarListaClientes();
+  }, []);
 
   // ============================================
   // RENDERIZADO - PANTALLA INICIO
@@ -1008,8 +1218,8 @@ const CotizadorTesla30 = () => {
               <div className="max-w-5xl mx-auto space-y-6">
 
                 {/* LOGO UNIVERSAL (TODOS LOS SERVICIOS) */}
-                <div className="bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl p-6 border-2 border-purple-500 shadow-xl">
-                  <h2 className="text-2xl font-bold mb-4 text-purple-200 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
                     🎨 Logo Empresa (Aparecerá en el documento final)
                   </h2>
 
@@ -1024,22 +1234,151 @@ const CotizadorTesla30 = () => {
                       />
                       <button
                         onClick={() => fileInputLogoRef.current?.click()}
-                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-xl border-2 border-purple-400 transition-all duration-300 hover:scale-105">
+                        className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 text-black px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105">
                         <Upload className="w-5 h-5" />
                         {logoBase64 ? 'Cambiar Logo' : 'Subir Logo'}
                       </button>
-                      <p className="text-xs text-purple-200 mt-2 text-center">
+                      <p className="text-xs text-gray-400 mt-2 text-center">
                         PNG, JPG, WebP - Máx 2MB • Se integrará automáticamente en Word
                       </p>
                     </div>
 
                     {logoBase64 && (
-                      <div className="bg-white rounded-xl p-3 border-2 border-purple-400 shadow-lg">
+                      <div className="bg-white rounded-xl p-3 border-2 border-yellow-400 shadow-lg">
                         <img src={logoBase64} alt="Logo" className="w-24 h-24 object-contain" />
                         <p className="text-xs text-gray-600 mt-2 text-center font-semibold">✅ Cargado</p>
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* ✅ FORMULARIO UNIVERSAL DE CLIENTE (TODOS LOS 6 TIPOS DE DOCUMENTOS) */}
+                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-6 text-yellow-400 flex items-center gap-3">
+                    <Users className="w-7 h-7" />
+                    Datos del Cliente
+                  </h2>
+
+                  {/* Selector de cliente existente o nuevo */}
+                  <div className="mb-6">
+                    <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                      <Building2 className="w-5 h-5" />
+                      Seleccionar Cliente
+                    </label>
+                    <select
+                      value={clienteSeleccionadoId || ''}
+                      onChange={cargarDatosCliente}
+                      className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                    >
+                      <option value="">+ Nuevo Cliente</option>
+                      {listaClientes.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre} - RUC: {c.ruc}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Selecciona un cliente existente o crea uno nuevo
+                    </p>
+                  </div>
+
+                  {/* Campos del formulario */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2">
+                        Nombre/Razón Social *
+                      </label>
+                      <input
+                        type="text"
+                        name="nombre"
+                        value={datosCliente.nombre}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="Ej: Constructora ABC S.A.C."
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2">
+                        RUC *
+                      </label>
+                      <input
+                        type="text"
+                        name="ruc"
+                        value={datosCliente.ruc}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="11 dígitos"
+                        maxLength={11}
+                        required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        Dirección
+                      </label>
+                      <input
+                        type="text"
+                        name="direccion"
+                        value={datosCliente.direccion}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="Ej: Av. Principal 123, Lima"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        name="telefono"
+                        value={datosCliente.telefono}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="Ej: 987654321"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={datosCliente.email}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="cliente@empresa.com"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Botón guardar cliente */}
+                  <button
+                    onClick={guardarCliente}
+                    disabled={guardandoCliente || !datosCliente.nombre || !datosCliente.ruc}
+                    className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 disabled:from-gray-800 disabled:to-gray-700 disabled:cursor-not-allowed text-black px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105"
+                  >
+                    {guardandoCliente ? (
+                      <>
+                        <Loader className="w-5 h-5 animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        {clienteSeleccionadoId ? 'Actualizar Cliente' : 'Guardar Cliente'}
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 {/* CONFIGURACIÓN ESPECÍFICA POR TIPO */}
@@ -1388,11 +1727,11 @@ const CotizadorTesla30 = () => {
                           <p className="text-lg">Vista Previa</p>
                           <p className="text-sm">Aparecerá cuando la IA genere contenido</p>
                         </div>
-                      ) : modoEdicion && esCotizacion && datosEditables?.items ? (
-                        /* MODO EDICIÓN PARA COTIZACIONES */
+                      ) : modoEdicion && datosEditables?.items ? (
+                        /* MODO EDICIÓN PARA TODOS LOS DOCUMENTOS CON ITEMS */
                         <div className="space-y-4">
                           <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-gray-800">Editor de Cotización</h3>
+                            <h3 className="text-lg font-bold text-gray-800">Editor de Documento</h3>
                             <button
                               onClick={agregarItem}
                               className="px-3 py-1 bg-green-600 text-white rounded-lg flex items-center gap-1 text-sm">
@@ -1452,7 +1791,7 @@ const CotizadorTesla30 = () => {
                           </div>
                         </div>
                       ) : (
-                        /* VISTA PREVIA HTML */
+                        /* VISTA PREVIA HTML PARA TODOS LOS DOCUMENTOS */
                         <div
                           ref={previewRef}
                           className="w-full h-full"
@@ -1490,10 +1829,12 @@ const CotizadorTesla30 = () => {
                     </div>
                   </div>
 
-                  {/* VISTA PREVIA FINAL */}
-                  <div className="border-2 border-gray-200 rounded-xl p-4 mb-6 max-h-60 overflow-y-auto">
-                    <div dangerouslySetInnerHTML={{ __html: htmlPreview }} />
-                  </div>
+                  {/* VISTA PREVIA CON BOTONES DE GENERACIÓN */}
+                  <VistaPrevia
+                    cotizacion={cotizacion || proyecto || informe || {}}
+                    onGenerarDocumento={handleGenerarDocumento}
+                    tipoDocumento={tipoFlujo}
+                  />
 
                   {/* ✅ PANEL DE PERSONALIZACIÓN */}
                   <div className="mb-6 border-2 border-blue-500 rounded-xl overflow-hidden">
@@ -1524,11 +1865,10 @@ const CotizadorTesla30 = () => {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <button
                               onClick={() => setEsquemaColores('azul-tesla')}
-                              className={`p-3 rounded-lg border-2 transition-all ${
-                                esquemaColores === 'azul-tesla'
-                                  ? 'border-blue-500 bg-blue-900 text-white'
-                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-600'
-                              }`}>
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'azul-tesla'
+                                ? 'border-blue-500 bg-blue-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-600'
+                                }`}>
                               <div className="flex items-center gap-2 mb-1">
                                 <div className="w-4 h-4 rounded-full bg-blue-500"></div>
                                 <span className="font-semibold">Azul Tesla</span>
@@ -1537,11 +1877,10 @@ const CotizadorTesla30 = () => {
                             </button>
                             <button
                               onClick={() => setEsquemaColores('rojo-energia')}
-                              className={`p-3 rounded-lg border-2 transition-all ${
-                                esquemaColores === 'rojo-energia'
-                                  ? 'border-red-500 bg-red-900 text-white'
-                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-red-600'
-                              }`}>
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'rojo-energia'
+                                ? 'border-red-500 bg-red-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-red-600'
+                                }`}>
                               <div className="flex items-center gap-2 mb-1">
                                 <div className="w-4 h-4 rounded-full bg-red-500"></div>
                                 <span className="font-semibold">Rojo Energía</span>
@@ -1550,11 +1889,10 @@ const CotizadorTesla30 = () => {
                             </button>
                             <button
                               onClick={() => setEsquemaColores('verde-ecologico')}
-                              className={`p-3 rounded-lg border-2 transition-all ${
-                                esquemaColores === 'verde-ecologico'
-                                  ? 'border-green-500 bg-green-900 text-white'
-                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-green-600'
-                              }`}>
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'verde-ecologico'
+                                ? 'border-green-500 bg-green-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-green-600'
+                                }`}>
                               <div className="flex items-center gap-2 mb-1">
                                 <div className="w-4 h-4 rounded-full bg-green-500"></div>
                                 <span className="font-semibold">Verde Eco</span>
@@ -1563,11 +1901,10 @@ const CotizadorTesla30 = () => {
                             </button>
                             <button
                               onClick={() => setEsquemaColores('personalizado')}
-                              className={`p-3 rounded-lg border-2 transition-all ${
-                                esquemaColores === 'personalizado'
-                                  ? 'border-purple-500 bg-purple-900 text-white'
-                                  : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-purple-600'
-                              }`}>
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'personalizado'
+                                ? 'border-purple-500 bg-purple-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-purple-600'
+                                }`}>
                               <div className="flex items-center gap-2 mb-1">
                                 <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
                                 <span className="font-semibold">Personalizado</span>
@@ -1613,11 +1950,10 @@ const CotizadorTesla30 = () => {
                           <div className="flex items-center gap-4">
                             <button
                               onClick={() => setMostrarLogo(!mostrarLogo)}
-                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                                mostrarLogo
-                                  ? 'bg-green-600 text-white'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}>
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${mostrarLogo
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
                               {mostrarLogo ? '✓ Mostrar Logo' : '✕ Ocultar Logo'}
                             </button>
                             <input
@@ -1645,20 +1981,18 @@ const CotizadorTesla30 = () => {
                           <div className="flex flex-wrap gap-4">
                             <button
                               onClick={() => setOcultarIGV(!ocultarIGV)}
-                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                                ocultarIGV
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}>
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${ocultarIGV
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
                               {ocultarIGV ? '✓ IGV Oculto' : 'Mostrar IGV'}
                             </button>
                             <button
                               onClick={() => setOcultarPreciosUnitarios(!ocultarPreciosUnitarios)}
-                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                                ocultarPreciosUnitarios
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}>
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${ocultarPreciosUnitarios
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
                               {ocultarPreciosUnitarios ? '✓ P. Unit. Ocultos' : 'Mostrar P. Unitarios'}
                             </button>
                           </div>
@@ -1705,7 +2039,7 @@ const CotizadorTesla30 = () => {
                         ) : (
                           <>
                             <Download className="w-5 h-5" />
-                            Descargar Word + Logo
+                            Descargar Word
                           </>
                         )}
                       </button>
@@ -1716,7 +2050,7 @@ const CotizadorTesla30 = () => {
             )}
           </div>
         </div>
-      </div>
+      </div >
     );
   }
 

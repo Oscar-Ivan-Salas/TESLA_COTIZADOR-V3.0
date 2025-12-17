@@ -54,8 +54,8 @@ async def crear_cliente(
                 detail=f"Ya existe un cliente con el RUC {cliente.ruc}"
             )
 
-        # Crear nuevo cliente
-        db_cliente = Cliente(**cliente.model_dump())
+        # Crear nuevo cliente (solo con campos proporcionados)
+        db_cliente = Cliente(**cliente.model_dump(exclude_unset=True))
         db.add(db_cliente)
         db.commit()
         db.refresh(db_cliente)

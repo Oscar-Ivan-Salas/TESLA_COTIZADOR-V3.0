@@ -857,6 +857,7 @@ class WordGenerator:
 
         try:
             # Usar ruta personalizada o generar una
+            # Usar ruta personalizada o generar una
             if ruta_salida:
                 ruta_archivo = Path(ruta_salida)
                 # Asegurar que el directorio existe
@@ -868,8 +869,8 @@ class WordGenerator:
                 cliente_slug = self._slugify(datos.get("cliente", "cliente"))
                 nombre_archivo = f"{tipo}_{cliente_slug}_{timestamp}.docx"
 
-                # Ruta de salida por defecto
-                output_dir = Path("backend/storage/generated")
+                # Ruta de salida por defecto (CORREGIDO: Usar ruta absoluta basada en archivo)
+                output_dir = Path(__file__).parent.parent.parent / "storage" / "generados"
                 output_dir.mkdir(parents=True, exist_ok=True)
                 ruta_archivo = output_dir / nombre_archivo
 

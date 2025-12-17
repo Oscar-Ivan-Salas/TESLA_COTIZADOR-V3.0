@@ -2855,6 +2855,23 @@ async def chat_contextualizado(
             }
             html_preview = generar_preview_html_editable(datos_preview, nombre_pili)
 
+        elif generar_html and tipo_flujo.startswith("proyecto"):
+            # Generar preview para proyectos
+            datos_preview = {
+                "items": [
+                    {"descripcion": "Fase 1: Planificación y diseño", "cantidad": 1, "unidad": "fase", "precio_unitario": 2500.00},
+                    {"descripcion": "Fase 2: Instalación eléctrica", "cantidad": 1, "unidad": "fase", "precio_unitario": 5000.00},
+                    {"descripcion": "Fase 3: Pruebas y certificación", "cantidad": 1, "unidad": "fase", "precio_unitario": 1500.00}
+                ],
+                "cliente": "Cliente Demo",
+                "proyecto": "Proyecto Eléctrico",
+                "nombre_proyecto": "Instalación Industrial",
+                "duracion": "3 meses",
+                "total": 9000.00
+            }
+            # Usar la misma función que cotizaciones ya que ambos tienen estructura de items
+            html_preview = generar_preview_html_editable(datos_preview, nombre_pili)
+
         elif generar_html and tipo_flujo.startswith("informe"):
             datos_preview = {
                 "titulo": "Informe Técnico Eléctrico",

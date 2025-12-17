@@ -1,4 +1,5 @@
 """
+# Force reload 3
 ═══════════════════════════════════════════════════════════════
 TESLA COTIZADOR V3.0 - APLICACIÓN PRINCIPAL FASTAPI HÍBRIDA
 ═══════════════════════════════════════════════════════════════
@@ -806,7 +807,7 @@ async def generar_documento_directo(
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         if formato == "word":
-            filename = f"{tipo_documento}_{timestamp}.docx"
+            filename = f"{tipo_documento.upper()}_{datos_enriquecidos.get('numero', 'DOC')}.docx"
             filepath = storage_path / filename
 
             # Empaquetar datos para estructura PILI (con datos enriquecidos)
@@ -817,11 +818,20 @@ async def generar_documento_directo(
                 "timestamp": datetime.now().isoformat()
             }
 
+            logger.info(f"🔄 Usando WordGenerator (PILI) para: {tipo_documento}")
+            
             resultado = word_generator.generar_desde_json_pili(
                 datos_json=datos_pili,
                 tipo_documento=tipo_documento,
-                ruta_salida=str(filepath)
+                ruta_salida=str(filepath),
+                opciones=opciones_personalizacion
             )
+            
+            if not resultado.get("exito", True) and "ruta_archivo" not in resultado:
+                 # Fallback si falla
+                 logger.error(f"❌ Error en WordGenerator: {resultado.get('error')}")
+                 raise HTTPException(status_code=500, detail=f"Error generando documento: {resultado.get('error')}")
+
             # Extraer ruta del resultado
             archivo = resultado.get("ruta_archivo", str(filepath)) if isinstance(resultado, dict) else str(filepath)
             media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

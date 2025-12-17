@@ -2,7 +2,7 @@
 Schemas de Cliente
 Validación de datos con Pydantic
 """
-from pydantic import BaseModel, Field, ConfigDict, field_validator, EmailStr
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 import re
@@ -16,7 +16,7 @@ class ClienteBase(BaseModel):
     nombre: str = Field(..., min_length=3, max_length=200, description="Nombre o Razón Social")
     ruc: str = Field(..., min_length=11, max_length=11, description="RUC (11 dígitos)")
     telefono: Optional[str] = Field(None, max_length=20, description="Teléfono principal")
-    email: Optional[EmailStr] = Field(None, description="Email principal")
+    email: Optional[str] = Field(None, max_length=100, description="Email principal")
     direccion: Optional[str] = Field(None, max_length=500, description="Dirección")
     ciudad: Optional[str] = Field("Huancayo", max_length=100, description="Ciudad")
     departamento: Optional[str] = Field("Junín", max_length=100, description="Departamento")
@@ -25,28 +25,31 @@ class ClienteBase(BaseModel):
     persona_contacto: Optional[str] = Field(None, max_length=200, description="Persona de contacto")
     cargo_contacto: Optional[str] = Field(None, max_length=100, description="Cargo del contacto")
     telefono_contacto: Optional[str] = Field(None, max_length=20, description="Teléfono del contacto")
-    email_contacto: Optional[EmailStr] = Field(None, description="Email del contacto")
+    email_contacto: Optional[str] = Field(None, max_length=100, description="Email del contacto")
     notas: Optional[str] = Field(None, description="Notas adicionales")
     activo: Optional[str] = Field("activo", description="Estado del cliente")
     metadata_adicional: Optional[Dict[str, Any]] = Field(None, description="Metadata adicional")
 
+    @field_validator('email', 'email_contacto', 'telefono', 'direccion', 'notas', 'telefono_contacto', 'persona_contacto', 'cargo_contacto', 'industria', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
+
     @field_validator('ruc')
     @classmethod
     def validar_ruc(cls, v):
-        """Validar formato de RUC peruano"""
+        """Validar formato de RUC peruano - versión simplificada"""
         if not v:
             raise ValueError("RUC es obligatorio")
 
         # Eliminar espacios
         v = v.strip().replace(" ", "")
 
-        # Debe ser exactamente 11 dígitos numéricos
+        # Debe tener 11 dígitos numéricos (validación simplificada)
         if not re.match(r'^\d{11}$', v):
-            raise ValueError("RUC debe tener exactamente 11 dígitos numéricos")
-
-        # Validación básica: debe empezar con 10, 15, 16, 17 o 20
-        if not v.startswith(('10', '15', '16', '17', '20')):
-            raise ValueError("RUC debe empezar con 10, 15, 16, 17 o 20")
+            raise ValueError("RUC debe tener 11 dígitos numéricos")
 
         return v
 
@@ -77,7 +80,7 @@ class ClienteUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=3, max_length=200)
     ruc: Optional[str] = Field(None, min_length=11, max_length=11)
     telefono: Optional[str] = Field(None, max_length=20)
-    email: Optional[EmailStr] = None
+    email: Optional[str] = Field(None, max_length=100)
     direccion: Optional[str] = Field(None, max_length=500)
     ciudad: Optional[str] = Field(None, max_length=100)
     departamento: Optional[str] = Field(None, max_length=100)
@@ -86,7 +89,7 @@ class ClienteUpdate(BaseModel):
     persona_contacto: Optional[str] = Field(None, max_length=200)
     cargo_contacto: Optional[str] = Field(None, max_length=100)
     telefono_contacto: Optional[str] = Field(None, max_length=20)
-    email_contacto: Optional[EmailStr] = None
+    email_contacto: Optional[str] = Field(None, max_length=100)
     notas: Optional[str] = None
     activo: Optional[str] = None
     metadata_adicional: Optional[Dict[str, Any]] = None
@@ -114,8 +117,8 @@ class ClienteUpdate(BaseModel):
 class ClienteResponse(ClienteBase):
     """Schema de respuesta de Cliente"""
     id: int
-    fecha_creacion: datetime
-    fecha_modificacion: datetime
+    fecha_creacion: Optional[datetime] = None
+    fecha_modificacion: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

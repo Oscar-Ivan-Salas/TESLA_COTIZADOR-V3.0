@@ -81,7 +81,9 @@ class Settings(BaseSettings):
     PROD_DATABASE_URL: Optional[str] = Field(None, env="PROD_DATABASE_URL")
     
     # 2. URL de Desarrollo (SQLite) - ✅ APUNTA A LA RAÍZ /database/
-    DEV_DATABASE_URL: str = f"sqlite:///{PROJECT_ROOT / 'database' / 'tesla_cotizador.db'}"
+    # 2. URL de Desarrollo (SQLite) - ✅ APUNTA A LA RAÍZ /database/
+    # Usar ruta absoluta con forward slashes para Windows
+    DEV_DATABASE_URL: str = f"sqlite:///{(PROJECT_ROOT / 'database' / 'tesla_cotizador.db').as_posix()}"
 
     # 3. Esta será la variable final que usará la app
     DATABASE_URL: Optional[str] = None
