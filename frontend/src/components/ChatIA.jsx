@@ -18,6 +18,7 @@ const ChatIA = ({
   onCotizacionGenerada,             // Callback cuando se genera cotización
   onProyectoGenerado,              // Callback cuando se genera proyecto  
   onInformeGenerado,               // Callback cuando se genera informe
+  onHtmlPreviewGenerado,           // Callback cuando se genera HTML preview editable
   onConversacionUpdate             // Callback para actualizar conversación en componente padre
 }) => {
   const [conversacion, setConversacion] = useState([]);
@@ -225,6 +226,11 @@ ${servicioActual.capacidades.map(cap => `✅ ${cap}`).join('\n')}
         // Actualizar proveedor actual si está en la respuesta
         if (data.proveedor_utilizado) {
           setProveedorActual(data.proveedor_utilizado);
+        }
+
+        // 🎯 NUEVO: Pasar HTML preview editable si existe
+        if (data.html_preview && onHtmlPreviewGenerado) {
+          onHtmlPreviewGenerado(data.html_preview);
         }
 
       } else {

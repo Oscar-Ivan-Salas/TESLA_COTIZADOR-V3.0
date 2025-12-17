@@ -1834,6 +1834,7 @@ const CotizadorTesla30 = () => {
                     cotizacion={cotizacion || proyecto || informe || {}}
                     onGenerarDocumento={handleGenerarDocumento}
                     tipoDocumento={tipoFlujo}
+                    htmlPreview={htmlPreview}
                   />
 
                   {/* ✅ PANEL DE PERSONALIZACIÓN */}
