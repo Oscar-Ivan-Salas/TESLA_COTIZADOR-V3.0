@@ -2843,31 +2843,47 @@ async def chat_contextualizado(
         html_preview = None
         if generar_html and tipo_flujo.startswith("cotizacion"):
             # Simular datos de cotización para preview
+            items_demo = [
+                {"descripcion": "Punto de luz LED 18W", "cantidad": 8, "unidad": "pto", "precio_unitario": 30.00},
+                {"descripcion": "Tomacorriente doble", "cantidad": 6, "unidad": "pto", "precio_unitario": 35.00},
+                {"descripcion": "Cable THW 2.5mm²", "cantidad": 50, "unidad": "m", "precio_unitario": 4.00}
+            ]
+            # Calcular totales dinámicamente
+            subtotal = sum(item["cantidad"] * item["precio_unitario"] for item in items_demo)
+            igv = subtotal * 0.18
+            total = subtotal + igv
+            
             datos_preview = {
-                "items": [
-                    {"descripcion": "Punto de luz LED 18W", "cantidad": 8, "unidad": "pto", "precio_unitario": 30.00},
-                    {"descripcion": "Tomacorriente doble", "cantidad": 6, "unidad": "pto", "precio_unitario": 35.00},
-                    {"descripcion": "Cable THW 2.5mm²", "cantidad": 50, "unidad": "m", "precio_unitario": 4.00}
-                ],
-                "cliente": "Cliente Demo",
+                "items": items_demo,
+                "cliente": {"nombre": "Cliente Demo"},
                 "proyecto": "Instalación Eléctrica",
-                "total": 650.00
+                "subtotal": round(subtotal, 2),
+                "igv": round(igv, 2),
+                "total": round(total, 2)
             }
             html_preview = generar_preview_html_editable(datos_preview, nombre_pili)
 
         elif generar_html and tipo_flujo.startswith("proyecto"):
             # Generar preview para proyectos
+            items_proyecto = [
+                {"descripcion": "Fase 1: Planificación y diseño", "cantidad": 1, "unidad": "fase", "precio_unitario": 2500.00},
+                {"descripcion": "Fase 2: Instalación eléctrica", "cantidad": 1, "unidad": "fase", "precio_unitario": 5000.00},
+                {"descripcion": "Fase 3: Pruebas y certificación", "cantidad": 1, "unidad": "fase", "precio_unitario": 1500.00}
+            ]
+            # Calcular totales dinámicamente
+            subtotal = sum(item["cantidad"] * item["precio_unitario"] for item in items_proyecto)
+            igv = subtotal * 0.18
+            total = subtotal + igv
+            
             datos_preview = {
-                "items": [
-                    {"descripcion": "Fase 1: Planificación y diseño", "cantidad": 1, "unidad": "fase", "precio_unitario": 2500.00},
-                    {"descripcion": "Fase 2: Instalación eléctrica", "cantidad": 1, "unidad": "fase", "precio_unitario": 5000.00},
-                    {"descripcion": "Fase 3: Pruebas y certificación", "cantidad": 1, "unidad": "fase", "precio_unitario": 1500.00}
-                ],
-                "cliente": "Cliente Demo",
+                "items": items_proyecto,
+                "cliente": {"nombre": "Cliente Demo"},
                 "proyecto": "Proyecto Eléctrico",
                 "nombre_proyecto": "Instalación Industrial",
                 "duracion": "3 meses",
-                "total": 9000.00
+                "subtotal": round(subtotal, 2),
+                "igv": round(igv, 2),
+                "total": round(total, 2)
             }
             # Usar la misma función que cotizaciones ya que ambos tienen estructura de items
             html_preview = generar_preview_html_editable(datos_preview, nombre_pili)

@@ -404,25 +404,36 @@ const CotizadorTesla30 = () => {
       const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
         tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
 
-      // Obtener datos actuales
-      const entidad = tipoDocumento === 'cotizacion' ? cotizacion :
+      // Obtener datos actuales (USAR DATOS EDITADOS SI EXISTEN)
+      const datosOriginales = tipoDocumento === 'cotizacion' ? cotizacion :
         tipoDocumento === 'proyecto' ? proyecto : informe;
+
+      // CRÍTICO: Usar datosEditables si existen (tienen los cambios del usuario)
+      const entidad = datosEditables || datosOriginales;
 
       // Extraer HTML editado de la vista previa
       const previewElement = previewRef.current;
       const htmlEditado = previewElement ? previewElement.innerHTML : htmlPreview;
 
+      // Recalcular totales basados en items editados
+      const itemsActuales = entidad.items || [];
+      const subtotalCalculado = itemsActuales.reduce((sum, item) =>
+        sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
+      );
+      const igvCalculado = subtotalCalculado * 0.18;
+      const totalCalculado = subtotalCalculado + igvCalculado;
+
       // Preparar datos para enviar
       const datosParaEnviar = {
         tipo_documento: tipoDocumento,
         numero: entidad.numero || `${tipoDocumento.toUpperCase()}-${Date.now()}`,
-        cliente: entidad.cliente || "[Cliente]",
+        cliente: entidad.cliente || { nombre: "[Cliente]" },
         proyecto: entidad.proyecto || "[Proyecto]",
         descripcion: entidad.descripcion || "",
-        items: entidad.items || [],
-        subtotal: entidad.subtotal || 0,
-        igv: entidad.igv || 0,
-        total: entidad.total || 0,
+        items: itemsActuales,
+        subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+        igv: parseFloat(igvCalculado.toFixed(2)),
+        total: parseFloat(totalCalculado.toFixed(2)),
         fecha: new Date().toLocaleDateString('es-PE'),
         vigencia: "30 días"
       };
