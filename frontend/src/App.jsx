@@ -36,7 +36,7 @@ const CotizadorTesla30 = () => {
   // Estados para vista previa HTML editable
   const [htmlPreview, setHtmlPreview] = useState('');
   const [mostrarPreview, setMostrarPreview] = useState(false);
-  const [modoEdicion, setModoEdicion] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(true);  // ✅ TRUE por defecto para mostrar tabla editable
   const [datosEditables, setDatosEditables] = useState(null);
   const [ocultarIGV, setOcultarIGV] = useState(false);
   const [ocultarPreciosUnitarios, setOcultarPreciosUnitarios] = useState(false);
@@ -1720,84 +1720,174 @@ const CotizadorTesla30 = () => {
                       )}
                     </div>
 
-                    <div className="flex-grow p-4 overflow-y-auto">
+                    <div className="flex-grow p-4 overflow-y-auto bg-white">
                       {!mostrarPreview ? (
                         <div className="text-center text-gray-500 mt-20">
                           <Eye className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                           <p className="text-lg">Vista Previa</p>
                           <p className="text-sm">Aparecerá cuando la IA genere contenido</p>
                         </div>
-                      ) : modoEdicion && datosEditables?.items ? (
-                        /* MODO EDICIÓN PARA TODOS LOS DOCUMENTOS CON ITEMS */
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-gray-800">Editor de Documento</h3>
+                      ) : (() => {
+                        // DEBUG: Ver qué datos tenemos
+                        console.log('🔍 DEBUG - cotizacion:', cotizacion);
+                        console.log('🔍 DEBUG - cotizacion?.items:', cotizacion?.items);
+                        console.log('🔍 DEBUG - datosEditables:', datosEditables);
+                        console.log('🔍 DEBUG - datosEditables?.items:', datosEditables?.items);
+
+                        return (cotizacion?.items || datosEditables?.items) ? (
+                          /* TABLA EDITABLE INLINE - ALTO CONTRASTE - SIEMPRE VISIBLE */
+                          <div className="space-y-4">
+                            {/* Encabezado */}
+                            <div className="border-b-4 border-red-900 pb-4 mb-4">
+                              <h2 className="text-2xl font-bold text-red-900">COTIZACIÓN ELÉCTRICA</h2>
+                              <p className="text-gray-700 mt-1">Cliente: {datosEditables.cliente?.nombre || cotizacion?.cliente?.nombre || 'Cliente Demo'}</p>
+                            </div>
+
+                            {/* Mensaje de ayuda */}
+                            <div className="bg-blue-50 border-2 border-blue-500 rounded-lg p-3 mb-4">
+                              <p className="text-sm font-semibold text-blue-900">
+                                ✏️ Haz clic en las celdas para editar. Los totales se calculan automáticamente.
+                              </p>
+                            </div>
+
+                            {/* TABLA EDITABLE */}
+                            <div className="overflow-x-auto border-2 border-gray-400 rounded-lg">
+                              <table className="w-full border-collapse">
+                                <thead>
+                                  <tr className="bg-red-900 text-white">
+                                    <th className="py-3 px-3 text-left border-r-2 border-red-800 font-bold">DESCRIPCIÓN</th>
+                                    <th className="py-3 px-3 text-center border-r-2 border-red-800 font-bold w-24">CANT.</th>
+                                    <th className="py-3 px-3 text-center border-r-2 border-red-800 font-bold w-20">UND.</th>
+                                    {!ocultarPreciosUnitarios && (
+                                      <th className="py-3 px-3 text-right border-r-2 border-red-800 font-bold w-32">P.U. (S/)</th>
+                                    )}
+                                    <th className="py-3 px-3 text-right border-r-2 border-red-800 font-bold w-32">TOTAL (S/)</th>
+                                    <th className="py-3 px-3 text-center font-bold w-16">🗑️</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {datosEditables.items.map((item, index) => {
+                                    const subtotalItem = (parseFloat(item.cantidad || 0) * parseFloat(item.precioUnitario || 0));
+
+                                    return (
+                                      <tr key={index} className="border-b-2 border-gray-300 hover:bg-gray-50">
+                                        {/* Descripción - EDITABLE */}
+                                        <td className="py-2 px-2 border-r border-gray-300">
+                                          <input
+                                            type="text"
+                                            value={item.descripcion}
+                                            onChange={(e) => actualizarItem(index, 'descripcion', e.target.value)}
+                                            className="w-full px-2 py-2 border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-medium bg-white"
+                                            style={{ color: '#000000' }}
+                                          />
+                                        </td>
+
+                                        {/* Cantidad - EDITABLE */}
+                                        <td className="py-2 px-2 border-r border-gray-300">
+                                          <input
+                                            type="number"
+                                            step="0.01"
+                                            value={item.cantidad}
+                                            onChange={(e) => actualizarItem(index, 'cantidad', e.target.value)}
+                                            className="w-full px-2 py-2 text-center border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-bold bg-white"
+                                            style={{ color: '#000000' }}
+                                          />
+                                        </td>
+
+                                        {/* Unidad */}
+                                        <td className="py-2 px-2 text-center border-r border-gray-300">
+                                          <span className="text-gray-900 font-medium">{item.unidad || 'pto'}</span>
+                                        </td>
+
+                                        {/* Precio Unitario - EDITABLE */}
+                                        {!ocultarPreciosUnitarios && (
+                                          <td className="py-2 px-2 border-r border-gray-300">
+                                            <input
+                                              type="number"
+                                              step="0.01"
+                                              value={item.precioUnitario}
+                                              onChange={(e) => actualizarItem(index, 'precioUnitario', e.target.value)}
+                                              className="w-full px-2 py-2 text-right border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-bold bg-white"
+                                              style={{ color: '#000000' }}
+                                            />
+                                          </td>
+                                        )}
+
+                                        {/* Total - CALCULADO */}
+                                        <td className="py-2 px-2 text-right border-r border-gray-300">
+                                          <span className="text-red-900 font-bold text-lg">
+                                            S/ {subtotalItem.toFixed(2)}
+                                          </span>
+                                        </td>
+
+                                        {/* Botón Eliminar */}
+                                        <td className="py-2 px-2 text-center">
+                                          <button
+                                            onClick={() => eliminarItem(index)}
+                                            disabled={datosEditables.items.length === 1}
+                                            className={`p-2 rounded ${datosEditables.items.length === 1
+                                              ? 'text-gray-400 cursor-not-allowed'
+                                              : 'text-red-600 hover:bg-red-100'
+                                              }`}
+                                          >
+                                            <Trash2 size={18} />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            {/* Botón Agregar Ítem */}
                             <button
                               onClick={agregarItem}
-                              className="px-3 py-1 bg-green-600 text-white rounded-lg flex items-center gap-1 text-sm">
-                              <Plus className="w-4 h-4" />
-                              Agregar
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-all"
+                            >
+                              <Plus size={20} />
+                              Agregar Ítem
                             </button>
-                          </div>
 
-                          {datosEditables.items.map((item, index) => (
-                            <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                              <div className="grid grid-cols-12 gap-2 items-center">
-                                <div className="col-span-5">
-                                  <input
-                                    type="text"
-                                    value={item.descripcion}
-                                    onChange={(e) => actualizarItem(index, 'descripcion', e.target.value)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <input
-                                    type="number"
-                                    value={item.cantidad}
-                                    onChange={(e) => actualizarItem(index, 'cantidad', e.target.value)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm text-center"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    value={item.precioUnitario}
-                                    onChange={(e) => actualizarItem(index, 'precioUnitario', e.target.value)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm text-center"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <span className="text-sm font-bold">S/ {((item.cantidad || 0) * (item.precioUnitario || 0)).toFixed(2)}</span>
-                                </div>
-                                <div className="col-span-1">
-                                  <button
-                                    onClick={() => eliminarItem(index)}
-                                    className="text-red-500 hover:text-red-700">
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                            {/* TOTALES */}
+                            <div className="bg-gray-100 rounded-lg p-4 border-2 border-gray-400">
+                              <div className="flex justify-end">
+                                <div className="w-full md:w-1/2 space-y-3">
+                                  {!ocultarIGV && (
+                                    <>
+                                      <div className="flex justify-between text-lg border-b-2 border-gray-400 pb-2">
+                                        <span className="font-semibold text-gray-900">Subtotal:</span>
+                                        <span className="font-bold text-gray-900">
+                                          S/ {calcularTotales(datosEditables.items || []).subtotal}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between text-lg border-b-2 border-gray-400 pb-2">
+                                        <span className="font-semibold text-gray-900">IGV (18%):</span>
+                                        <span className="font-bold text-gray-900">
+                                          S/ {calcularTotales(datosEditables.items || []).igv}
+                                        </span>
+                                      </div>
+                                    </>
+                                  )}
+                                  <div className="flex justify-between bg-gradient-to-r from-red-900 to-red-800 text-yellow-400 p-4 rounded-lg">
+                                    <span className="font-black text-2xl">TOTAL:</span>
+                                    <span className="font-black text-3xl">
+                                      S/ {calcularTotales(datosEditables.items || [])[ocultarIGV ? 'subtotal' : 'total']}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          ))}
-
-                          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                            <div className="text-right">
-                              <div className="text-lg font-bold text-green-600">
-                                TOTAL: S/ {calcularTotales(datosEditables.items || [])[ocultarIGV ? 'subtotal' : 'total']}
-                              </div>
-                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        /* VISTA PREVIA HTML PARA TODOS LOS DOCUMENTOS */
-                        <div
-                          ref={previewRef}
-                          className="w-full h-full"
-                          dangerouslySetInnerHTML={{ __html: htmlPreview }}
-                        />
-                      )}
+                        ) : (
+                          /* VISTA PREVIA HTML PARA TODOS LOS DOCUMENTOS */
+                          <div
+                            ref={previewRef}
+                            className="w-full h-full"
+                            dangerouslySetInnerHTML={{ __html: htmlPreview }}
+                          />
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

@@ -2879,6 +2879,15 @@ async def chat_contextualizado(
             }
             html_preview = generar_preview_informe(datos_preview, nombre_pili)
 
+        # 🆕 CRÍTICO: Enviar datos estructurados al frontend para edición
+        datos_estructurados = None
+        if generar_html and tipo_flujo.startswith("cotizacion"):
+            datos_estructurados = datos_preview
+        elif generar_html and tipo_flujo.startswith("proyecto"):
+            datos_estructurados = datos_preview
+        elif generar_html and tipo_flujo.startswith("informe"):
+            datos_estructurados = datos_preview
+
         return {
             "success": True,
             "agente_activo": nombre_pili,
@@ -2892,6 +2901,9 @@ async def chat_contextualizado(
                 "especialidad": contexto.get("rol_ia", "")
             },
             "html_preview": html_preview,
+            "cotizacion_generada": datos_estructurados if tipo_flujo.startswith("cotizacion") else None,
+            "proyecto_generado": datos_estructurados if tipo_flujo.startswith("proyecto") else None,
+            "informe_generado": datos_estructurados if tipo_flujo.startswith("informe") else None,
             "generar_html": generar_html,
             "timestamp": datetime.now().isoformat(),
             "pili_metadata": {
