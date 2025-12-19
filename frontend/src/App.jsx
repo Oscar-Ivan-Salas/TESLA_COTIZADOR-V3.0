@@ -825,6 +825,27 @@ const CotizadorTesla30 = () => {
       if (!entidadId) {
         console.log(`🚀 Generando documento directo (sin BD)...`);
 
+        // DEBUG: Ver qué datos tenemos
+        console.log('🔍 DEBUG COMPLETO:');
+        console.log('  datosCliente:', datosCliente);
+        console.log('  datosEditables:', datosEditables);
+        console.log('  datosFinales:', datosFinales);
+        console.log('  datosFinales?.items:', datosFinales?.items);
+
+        // Recalcular totales con items editados
+        const itemsActuales = datosFinales?.items || [];
+        const subtotalCalculado = itemsActuales.reduce((sum, item) =>
+          sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
+        );
+        const igvCalculado = subtotalCalculado * 0.18;
+        const totalCalculado = subtotalCalculado + igvCalculado;
+
+        console.log('📊 TOTALES CALCULADOS:');
+        console.log('  Items:', itemsActuales.length);
+        console.log('  Subtotal:', subtotalCalculado);
+        console.log('  IGV:', igvCalculado);
+        console.log('  Total:', totalCalculado);
+
         // Preparar datos finales para generación directa
         const datosParaGeneracion = {
           tipo_documento: tipoDocumento,
@@ -837,10 +858,10 @@ const CotizadorTesla30 = () => {
           email: datosCliente.email || '',
           proyecto: nombreProyecto || datosFinales?.proyecto || '[Proyecto]',
           descripcion: contextoUsuario || datosFinales?.descripcion || '',
-          items: datosFinales?.items || [],
-          subtotal: datosFinales?.subtotal || 0,
-          igv: datosFinales?.igv || 0,
-          total: datosFinales?.total || 0,
+          items: itemsActuales,
+          subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+          igv: parseFloat(igvCalculado.toFixed(2)),
+          total: parseFloat(totalCalculado.toFixed(2)),
           observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
           fecha: new Date().toLocaleDateString('es-PE'),
           vigencia: '30 días'
