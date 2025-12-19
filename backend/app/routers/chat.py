@@ -2765,6 +2765,7 @@ async def chat_contextualizado(
     mensaje: str = Body(...),
     historial: Optional[List[Dict]] = Body([]),
     contexto_adicional: Optional[str] = Body(""),
+    datos_cliente: Optional[Dict] = Body(None),  # ¡NUEVO! Recibir datos del cliente
     cotizacion_id: Optional[int] = Body(None),
     archivos_procesados: Optional[List[Dict]] = Body([]),
     generar_html: Optional[bool] = Body(False),
@@ -2855,7 +2856,7 @@ async def chat_contextualizado(
             
             datos_preview = {
                 "items": items_demo,
-                "cliente": {"nombre": "Cliente Demo"},
+                "cliente": datos_cliente if datos_cliente and datos_cliente.get("nombre") else {"nombre": "Cliente Demo"},
                 "proyecto": "Instalación Eléctrica",
                 "subtotal": round(subtotal, 2),
                 "igv": round(igv, 2),
@@ -2877,7 +2878,7 @@ async def chat_contextualizado(
             
             datos_preview = {
                 "items": items_proyecto,
-                "cliente": {"nombre": "Cliente Demo"},
+                "cliente": datos_cliente if datos_cliente and datos_cliente.get("nombre") else {"nombre": "Cliente Demo"},
                 "proyecto": "Proyecto Eléctrico",
                 "nombre_proyecto": "Instalación Industrial",
                 "duracion": "3 meses",

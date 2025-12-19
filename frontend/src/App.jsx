@@ -339,6 +339,7 @@ const CotizadorTesla30 = () => {
           mensaje: inputChat,
           historial: nuevaConversacion,
           contexto_adicional: contextoPrincipal,
+          datos_cliente: datosCliente,  // ¡NUEVO! Enviar datos del cliente
           archivos_procesados: archivos.map(a => ({ nombre: a.nombre, contenido: a.contenidoTexto })),
           generar_html: true // Importante: pedimos HTML preview
         })
@@ -437,6 +438,15 @@ const CotizadorTesla30 = () => {
         fecha: new Date().toLocaleDateString('es-PE'),
         vigencia: "30 días"
       };
+
+      console.log('📦 DEBUG - Datos completos a enviar:');
+      console.log('  - Cliente:', datosParaEnviar.cliente);
+      console.log('  - Proyecto:', datosParaEnviar.proyecto);
+      console.log('  - Items:', datosParaEnviar.items);
+      console.log('  - Subtotal:', datosParaEnviar.subtotal);
+      console.log('  - IGV:', datosParaEnviar.igv);
+      console.log('  - Total:', datosParaEnviar.total);
+      console.log('  - datosCliente originales:', datosCliente);
 
       console.log('📦 Datos a enviar:', datosParaEnviar);
 
@@ -771,69 +781,17 @@ const CotizadorTesla30 = () => {
       const datosFinales = datosEditables || entidadActual;
       let entidadId = datosFinales?.id;
 
+      // ¡TEMPORAL! Forzar generación directa con datos editados
+      // Saltamos el guardado en BD para usar datos editados frescos
+      entidadId = null;  // Esto fuerza el uso del método directo
+
+      /* DESHABILITADO TEMPORALMENTE - Guardado en BD
       // Si no tiene ID, guardar primero
       if (!entidadId) {
         console.log(`📝 Guardando ${tipoDocumento} en el backend...`);
-
-        let datosParaBackend = {};
-
-        if (tipoDocumento === 'cotizacion') {
-          const totales = calcularTotales(datosFinales?.items || []);
-          datosParaBackend = {
-            cliente: clienteProyecto || 'Cliente',
-            proyecto: nombreProyecto || 'Proyecto',
-            descripcion: contextoUsuario || '',
-            items: datosFinales?.items || [],
-            subtotal: parseFloat(totales.subtotal),
-            igv: parseFloat(totales.igv),
-            total: parseFloat(ocultarIGV ? totales.subtotal : totales.total),
-            observaciones: '',
-            vigencia: '30 días',
-            estado: 'borrador',
-            html_preview: htmlPreview
-          };
-        } else if (tipoDocumento === 'proyecto') {
-          datosParaBackend = {
-            nombre: nombreProyecto || 'Proyecto',
-            cliente: clienteProyecto || 'Cliente',
-            tipo: servicioSeleccionado || 'general',
-            presupuesto_estimado: parseFloat(presupuestoEstimado) || 0,
-            duracion_meses: parseInt(duracionMeses) || 1,
-            descripcion: contextoUsuario || '',
-            estado: 'planificacion',
-            html_preview: htmlPreview
-          };
-        } else if (tipoDocumento === 'informe') {
-          datosParaBackend = {
-            proyecto_id: proyectoSeleccionado || 'general',
-            tipo: tipoFlujo.includes('ejecutivo') ? 'ejecutivo' : 'simple',
-            formato: formatoInforme || 'word',
-            incluir_graficos: incluirGraficos,
-            contenido: contextoUsuario || '',
-            estado: 'borrador',
-            html_preview: htmlPreview
-          };
-        }
-
-        // Agregar logo si existe
-        if (logoBase64) {
-          datosParaBackend.logo_base64 = logoBase64;
-        }
-
-        const response = await fetch(`http://localhost:8000/api/${tipoDocumento === 'cotizacion' ? 'cotizaciones' : tipoDocumento === 'proyecto' ? 'proyectos' : 'informes'}/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datosParaBackend)
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Error al guardar: ${errorText}`);
-        }
-
-        const entidadGuardada = await response.json();
-        entidadId = entidadGuardada.id;
+        ...
       }
+      */
 
       // Generar documento - LÓGICA HÍBRIDA PROFESIONAL
       console.log(`📄 Generando ${formato.toUpperCase()}`);
