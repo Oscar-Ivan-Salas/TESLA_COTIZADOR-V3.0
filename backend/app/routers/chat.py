@@ -2768,6 +2768,103 @@ async def obtener_botones_contextuales(
             detail=f"Error: {str(e)}"
         )
 
+@router.post("/pili/generar-documento-final")
+async def generar_documento_final_pili(
+    datos_json: Dict[str, Any] = Body(...),
+    tipo_documento: str = Body("cotizacion"),
+    formato: str = Body("word"),  # "word" o "pdf"
+    db: Session = Depends(get_db)
+):
+    """
+    🆕 PILI v4.0 - Genera documento Word/PDF final con integración BD de Clientes
+
+    Este endpoint:
+    1. Recibe JSON estructurado de PILI (después de conversación completa)
+    2. Busca/crea cliente en BD automáticamente
+    3. Genera documento Word o PDF profesional
+    4. Retorna archivo para descarga
+
+    Args:
+        datos_json: JSON estructurado por PILI con:
+            - datos_extraidos: {cliente: {nombre, ruc, ...}, items: [...], totales: {...}}
+            - agente_responsable: Nombre del agente PILI
+            - tipo_servicio: Tipo de servicio
+        tipo_documento: "cotizacion", "proyecto", "informe"
+        formato: "word" o "pdf"
+        db: Sesión de base de datos (inyectada)
+
+    Returns:
+        FileResponse con el documento generado
+    """
+
+    try:
+        logger.info(f"🆕 PILI v4.0: Generando documento {formato} final para {tipo_documento}")
+
+        # Importar word_generator
+        from app.services.word_generator import WordGenerator
+
+        word_gen = WordGenerator()
+
+        # Generar documento con integración BD
+        resultado = word_gen.generar_desde_json_pili(
+            datos_json=datos_json,
+            tipo_documento=tipo_documento,
+            db=db,  # ← BD para buscar/crear cliente
+            opciones=None,
+            logo_base64=None,
+            ruta_salida=None
+        )
+
+        if not resultado.get("exito", False):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=resultado.get("error", "Error generando documento")
+            )
+
+        # Obtener ruta del archivo generado
+        ruta_archivo = resultado.get("ruta")
+
+        if not ruta_archivo or not Path(ruta_archivo).exists():
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Archivo generado no encontrado"
+            )
+
+        # Determinar media type según formato
+        if formato == "pdf":
+            media_type = "application/pdf"
+            extension = ".pdf"
+        else:
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            extension = ".docx"
+
+        nombre_archivo = resultado.get("nombre_archivo", f"documento{extension}")
+
+        logger.info(f"✅ Documento generado exitosamente: {nombre_archivo}")
+
+        # Retornar archivo para descarga
+        return FileResponse(
+            path=str(ruta_archivo),
+            filename=nombre_archivo,
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{nombre_archivo}"',
+                "X-PILI-Version": "4.0",
+                "X-Cliente-Guardado": "true" if db else "false"
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error generando documento final PILI: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generando documento: {str(e)}"
+        )
+
 @router.post("/chat-contextualizado")
 async def chat_contextualizado(
     tipo_flujo: str = Body(...),
