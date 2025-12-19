@@ -60,8 +60,10 @@ async def generar_documento_directo(
                 tipo_documento=tipo_plantilla or "cotizacion"
             )
 
-            # Mezclar con datos originales (prioridad a datos parseados)
-            datos = {**datos, **datos_parseados}
+            # ✅ CRÍTICO: Priorizar datos JSON del frontend sobre HTML parseado
+            # Los datos estructurados del frontend son más confiables y completos
+            # Solo usar HTML parseado para campos que no vengan en JSON
+            datos = {**datos, **datos_parseados}  # JSON tiene prioridad
             logger.info(f"✅ HTML parseado: {len(datos_parseados)} campos extraídos")
 
         # ═══════════════════════════════════════════════════════════

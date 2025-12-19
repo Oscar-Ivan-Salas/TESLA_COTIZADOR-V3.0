@@ -469,8 +469,20 @@ const CotizadorTesla30 = () => {
         throw new Error(`Error ${response.status}: ${errorText}`);
       }
 
+      // DEBUG: Verificar Content-Type
+      const contentType = response.headers.get('Content-Type');
+      console.log('🔍 Content-Type recibido:', contentType);
+
+      // Si es JSON, es un error del backend
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        throw new Error(`Backend devolvió error: ${JSON.stringify(errorData)}`);
+      }
+
       // Descargar archivo
       const blob = await response.blob();
+      console.log('💾 Blob recibido:', blob.size, 'bytes, tipo:', blob.type);
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -858,7 +870,14 @@ const CotizadorTesla30 = () => {
           email: datosCliente.email || '',
           proyecto: nombreProyecto || datosFinales?.proyecto || '[Proyecto]',
           descripcion: contextoUsuario || datosFinales?.descripcion || '',
-          items: itemsActuales,
+          // ✅ Normalizar nombres de campos a snake_case para backend
+          items: itemsActuales.map(item => ({
+            descripcion: item.descripcion,
+            cantidad: parseFloat(item.cantidad || 0),
+            unidad: item.unidad || 'und',
+            precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0),
+            subtotal: parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)
+          })),
           subtotal: parseFloat(subtotalCalculado.toFixed(2)),
           igv: parseFloat(igvCalculado.toFixed(2)),
           total: parseFloat(totalCalculado.toFixed(2)),
@@ -885,7 +904,11 @@ const CotizadorTesla30 = () => {
         docResponse = await fetch(`http://localhost:8000/api/generar-documento-directo?formato=${formato}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datosParaGeneracion)
+          body: JSON.stringify({
+            datos: datosParaGeneracion,
+            html_editado: htmlPreview || null,  // Enviar HTML preview si existe
+            tipo_plantilla: tipoFlujo  // ej: "cotizacion-simple"
+          })
         });
 
         if (!docResponse.ok) {

@@ -136,6 +136,26 @@ class HTMLToWordGenerator:
         logger.info(f"✅ Documento Word generado: {ruta_salida}")
         return ruta_salida
 
+    def _extraer_nombre_cliente(self, cliente_data: Any) -> str:
+        """
+        Extraer nombre del cliente desde string u objeto
+        
+        Args:
+            cliente_data: Puede ser string o dict con {nombre, ruc, ...}
+            
+        Returns:
+            Nombre del cliente como string
+        """
+        if isinstance(cliente_data, dict):
+            # Si es un objeto, extraer el campo 'nombre'
+            return cliente_data.get('nombre', 'Cliente Demo')
+        elif isinstance(cliente_data, str):
+            # Si ya es string, usarlo directamente
+            return cliente_data if cliente_data else 'Cliente Demo'
+        else:
+            # Fallback
+            return 'Cliente Demo'
+
     # ========================================================================
     # GENERADORES ESPECÍFICOS POR TIPO DE DOCUMENTO
     # ========================================================================
@@ -175,7 +195,7 @@ class HTMLToWordGenerator:
         # Valores por defecto
         datos_completos = {
             "NUMERO_COTIZACION": datos.get("numero", "COT-000000"),
-            "CLIENTE_NOMBRE": datos.get("cliente", "Cliente Demo"),
+            "CLIENTE_NOMBRE": self._extraer_nombre_cliente(datos.get("cliente")),
             "PROYECTO_NOMBRE": datos.get("proyecto", "Proyecto Demo"),
             "AREA_M2": datos.get("area_m2", "100"),
             "FECHA_COTIZACION": datos.get("fecha", datetime.now().strftime("%d/%m/%Y")),
@@ -217,7 +237,7 @@ class HTMLToWordGenerator:
 
         datos_completos = {
             "NUMERO_COTIZACION": datos.get("numero", "COT-000000-PRO"),
-            "CLIENTE_NOMBRE": datos.get("cliente", "Cliente Demo"),
+            "CLIENTE_NOMBRE": self._extraer_nombre_cliente(datos.get("cliente")),
             "PROYECTO_NOMBRE": datos.get("proyecto", "Proyecto Profesional"),
             "AREA_M2": datos.get("area_m2", "200"),
             "FECHA_COTIZACION": datos.get("fecha", datetime.now().strftime("%d/%m/%Y")),
@@ -257,7 +277,7 @@ class HTMLToWordGenerator:
         datos_completos = {
             "NOMBRE_PROYECTO": datos.get("nombre", "Proyecto Demo"),
             "CODIGO_PROYECTO": datos.get("codigo", "PROY-000000"),
-            "CLIENTE": datos.get("cliente", "Cliente Demo"),
+            "CLIENTE": self._extraer_nombre_cliente(datos.get("cliente")),
             "DURACION_TOTAL": datos.get("duracion_total", "30"),
             "FECHA_INICIO": datos.get("fecha_inicio", datetime.now().strftime("%d/%m/%Y")),
             "FECHA_FIN": datos.get("fecha_fin", ""),
@@ -291,7 +311,7 @@ class HTMLToWordGenerator:
         datos_completos = {
             "NOMBRE_PROYECTO": datos.get("nombre", "Proyecto PMI Demo"),
             "CODIGO_PROYECTO": datos.get("codigo", "PROY-000000-PMI"),
-            "CLIENTE": datos.get("cliente", "Cliente Demo"),
+            "CLIENTE": self._extraer_nombre_cliente(datos.get("cliente")),
             "DURACION_TOTAL": datos.get("duracion_total", "45"),
             "FECHA_INICIO": datos.get("fecha_inicio", datetime.now().strftime("%d/%m/%Y")),
             "FECHA_FIN": datos.get("fecha_fin", ""),
@@ -330,7 +350,7 @@ class HTMLToWordGenerator:
         datos_completos = {
             "TITULO_INFORME": datos.get("titulo", "Informe Técnico Demo"),
             "CODIGO_INFORME": datos.get("codigo", "INF-000000"),
-            "CLIENTE": datos.get("cliente", "Cliente Demo"),
+            "CLIENTE": self._extraer_nombre_cliente(datos.get("cliente")),
             "FECHA": datos.get("fecha", datetime.now().strftime("%d/%m/%Y")),
             "RESUMEN_EJECUTIVO": datos.get("resumen", "Resumen ejecutivo del informe técnico"),
             "SERVICIO_NOMBRE": datos.get("servicio_nombre", "Servicio Técnico"),
@@ -360,7 +380,7 @@ class HTMLToWordGenerator:
         datos_completos = {
             "TITULO_PROYECTO": datos.get("titulo", "Proyecto Ejecutivo Demo"),
             "CODIGO_INFORME": datos.get("codigo", "INF-000000-EXE"),
-            "CLIENTE": datos.get("cliente", "Cliente Demo"),
+            "CLIENTE": self._extraer_nombre_cliente(datos.get("cliente")),
             "FECHA": datos.get("fecha", datetime.now().strftime("%d/%m/%Y")),
             "RESUMEN_EJECUTIVO": datos.get("resumen", "Resumen ejecutivo del análisis de viabilidad"),
             "PRESUPUESTO": f"{datos.get('presupuesto', 50000):,.2f}",
