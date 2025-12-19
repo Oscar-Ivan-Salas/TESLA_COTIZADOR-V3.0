@@ -29,6 +29,7 @@ from docx.oxml.ns import qn
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pathlib import Path
+from sqlalchemy.orm import Session
 import logging
 import base64
 from io import BytesIO
@@ -127,17 +128,130 @@ class WordGenerator:
     # ═══════════════════════════════════════════════════════════════
     # 🤖 NUEVOS MÉTODOS PILI v3.0
     # ═══════════════════════════════════════════════════════════════
-    
+
+    def _obtener_o_crear_cliente(
+        self,
+        datos_cliente: Dict[str, Any],
+        db: Session
+    ) -> Optional[Any]:
+        """
+        🆕 PILI v4.0 - Obtiene cliente de BD o crea nuevo
+
+        Busca cliente por RUC (único). Si existe, actualiza sus datos.
+        Si no existe, crea nuevo cliente en la base de datos.
+
+        Args:
+            datos_cliente: Diccionario con datos del cliente
+                - nombre: str (requerido)
+                - ruc: str (requerido, único)
+                - email: str (opcional)
+                - telefono: str (opcional)
+                - direccion: str (opcional)
+                - ciudad: str (opcional)
+                - departamento: str (opcional)
+                - persona_contacto: str (opcional)
+                - cargo_contacto: str (opcional)
+            db: Sesión de SQLAlchemy
+
+        Returns:
+            Cliente: Objeto Cliente de la base de datos o None si error
+        """
+
+        try:
+            from app.models.cliente import Cliente
+
+            # Validar datos mínimos requeridos
+            if not datos_cliente:
+                logger.warning("⚠️ No se proporcionaron datos de cliente")
+                return None
+
+            nombre = datos_cliente.get("nombre", "").strip()
+            ruc = datos_cliente.get("ruc", "").strip()
+
+            if not nombre or not ruc:
+                logger.warning(f"⚠️ Cliente sin nombre o RUC: {datos_cliente}")
+                return None
+
+            # Buscar cliente por RUC (único)
+            cliente = db.query(Cliente).filter(Cliente.ruc == ruc).first()
+
+            if cliente:
+                # Cliente existe - actualizar datos si cambiaron
+                logger.info(f"📋 Cliente encontrado en BD: {cliente.nombre} (RUC: {ruc})")
+
+                # Actualizar campos si los nuevos datos son más completos
+                if nombre and nombre != cliente.nombre:
+                    cliente.nombre = nombre
+
+                if datos_cliente.get("email") and datos_cliente["email"] != cliente.email:
+                    cliente.email = datos_cliente["email"]
+
+                if datos_cliente.get("telefono") and datos_cliente["telefono"] != cliente.telefono:
+                    cliente.telefono = datos_cliente["telefono"]
+
+                if datos_cliente.get("direccion") and datos_cliente["direccion"] != cliente.direccion:
+                    cliente.direccion = datos_cliente["direccion"]
+
+                if datos_cliente.get("ciudad") and datos_cliente["ciudad"] != cliente.ciudad:
+                    cliente.ciudad = datos_cliente["ciudad"]
+
+                if datos_cliente.get("departamento") and datos_cliente["departamento"] != cliente.departamento:
+                    cliente.departamento = datos_cliente["departamento"]
+
+                if datos_cliente.get("persona_contacto"):
+                    cliente.persona_contacto = datos_cliente["persona_contacto"]
+
+                if datos_cliente.get("cargo_contacto"):
+                    cliente.cargo_contacto = datos_cliente["cargo_contacto"]
+
+                db.commit()
+                db.refresh(cliente)
+                logger.info(f"✅ Cliente actualizado: {cliente.nombre}")
+
+            else:
+                # Cliente no existe - crear nuevo
+                logger.info(f"🆕 Creando nuevo cliente: {nombre} (RUC: {ruc})")
+
+                nuevo_cliente = Cliente(
+                    nombre=nombre,
+                    ruc=ruc,
+                    telefono=datos_cliente.get("telefono", ""),
+                    email=datos_cliente.get("email", ""),
+                    direccion=datos_cliente.get("direccion", ""),
+                    ciudad=datos_cliente.get("ciudad", "Huancayo"),
+                    departamento=datos_cliente.get("departamento", "Junín"),
+                    tipo_cliente="empresa",  # Por defecto
+                    persona_contacto=datos_cliente.get("persona_contacto", ""),
+                    cargo_contacto=datos_cliente.get("cargo_contacto", ""),
+                    activo="activo"
+                )
+
+                db.add(nuevo_cliente)
+                db.commit()
+                db.refresh(nuevo_cliente)
+
+                cliente = nuevo_cliente
+                logger.info(f"✅ Cliente creado exitosamente: {cliente.nombre} (ID: {cliente.id})")
+
+            return cliente
+
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo/creando cliente: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
     def generar_desde_json_pili(
         self,
         datos_json: Dict[str, Any],
         tipo_documento: str = "cotizacion",
         opciones: Optional[Dict[str, Any]] = None,
         logo_base64: Optional[str] = None,
-        ruta_salida: Optional[str] = None
+        ruta_salida: Optional[str] = None,
+        db: Optional[Session] = None  # 🆕 NUEVO: Sesión de BD para guardar cliente
     ) -> Dict[str, Any]:
         """
-        🤖 NUEVO PILI v3.0 - Genera documento Word desde JSON estructurado de PILI
+        🤖 PILI v4.0 - Genera documento Word desde JSON + BD de Clientes
 
         Args:
             datos_json: Datos estructurados por PILI
@@ -145,6 +259,7 @@ class WordGenerator:
             opciones: Opciones de personalización
             logo_base64: Logo en base64
             ruta_salida: Ruta personalizada para guardar el archivo
+            db: Sesión de base de datos para guardar/buscar cliente
 
         Returns:
             Información del documento generado
@@ -152,6 +267,26 @@ class WordGenerator:
 
         try:
             logger.info(f"🤖 PILI generando documento {tipo_documento} desde JSON")
+
+            # 🆕 PASO 0: Obtener o crear cliente en BD (si hay sesión DB)
+            if db and datos_json.get("datos_extraidos", {}).get("cliente"):
+                datos_cliente_raw = datos_json["datos_extraidos"]["cliente"]
+                cliente_obj = self._obtener_o_crear_cliente(datos_cliente_raw, db)
+
+                if cliente_obj:
+                    # Reemplazar datos del cliente con datos completos de BD
+                    datos_json["datos_extraidos"]["cliente"] = {
+                        "nombre": cliente_obj.nombre,
+                        "ruc": cliente_obj.ruc,
+                        "telefono": cliente_obj.telefono or "",
+                        "email": cliente_obj.email or "",
+                        "direccion": cliente_obj.direccion or "",
+                        "ciudad": cliente_obj.ciudad or "Huancayo",
+                        "departamento": cliente_obj.departamento or "Junín",
+                        "persona_contacto": cliente_obj.persona_contacto or "",
+                        "cargo_contacto": cliente_obj.cargo_contacto or ""
+                    }
+                    logger.info(f"✅ Cliente obtenido/creado en BD: {cliente_obj.nombre} (RUC: {cliente_obj.ruc})")
 
             # 1. Validar y procesar datos JSON
             datos_procesados = self._procesar_json_pili(datos_json, tipo_documento)
