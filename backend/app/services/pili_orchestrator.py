@@ -1,16 +1,21 @@
 """
-🎯 PILI ORCHESTRATOR LITE - INTEGRACIÓN CON ESTRUCTURA EXISTENTE
+🎯 PILI ORCHESTRATOR INTELIGENTE - INTEGRACIÓN DE 3 ESPECIALISTAS
 📁 RUTA: services/pili_orchestrator.py
 
-INTEGRA CON TUS SERVICIOS EXISTENTES SIN TOCARLOS:
+ORQUESTA 3 ESPECIALISTAS PILI:
+✅ pili_cotizadora.py - Cotizaciones inteligentes para 10 servicios
+✅ pili_proyectos.py - Proyectos simples y complejos PMI
+✅ pili_informes.py - Informes técnicos y ejecutivos APA
+
+INTEGRA CON SERVICIOS EXISTENTES:
 ✅ file_processor.py (tu versión)
-✅ gemini_service.py (tu versión) 
+✅ gemini_service.py (tu versión)
 ✅ rag_service.py (tu versión)
 ✅ template_processor.py (tu versión)
 ✅ word_generator.py (tu versión)
 ✅ pdf_generator.py (tu versión)
 
-ESTE ARCHIVO ES EL COORDINADOR QUE UNE TODO TU SISTEMA EXISTENTE.
+ESTE ARCHIVO ES EL COORDINADOR MAESTRO QUE UNE TODO EL SISTEMA PILI.
 """
 
 import logging
@@ -18,6 +23,19 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 import asyncio
 import json
+
+# Imports de los 3 especialistas PILI
+try:
+    from .pili_cotizadora import pili_cotizadora
+    from .pili_proyectos import pili_proyectos
+    from .pili_informes import pili_informes
+    logger_temp = logging.getLogger(__name__)
+    logger_temp.info("✅ Especialistas PILI importados correctamente")
+except ImportError as e:
+    logging.warning(f"⚠️ Error importando especialistas PILI: {e}")
+    pili_cotizadora = None
+    pili_proyectos = None
+    pili_informes = None
 
 # Imports de tus servicios existentes
 try:
@@ -34,7 +52,7 @@ except ImportError as e:
         import sys
         import os
         sys.path.append(os.path.dirname(__file__))
-        
+
         import gemini_service
         import file_processor
         import rag_service
@@ -48,22 +66,31 @@ logger = logging.getLogger(__name__)
 
 class PILIOrchestrator:
     """
-    🎯 ORQUESTADOR LITE - Se integra con tu estructura existente
-    
-    NO modifica tus archivos existentes.
-    SOLO los coordina para crear flujos end-to-end.
+    🎯 ORQUESTADOR INTELIGENTE - Coordina 3 especialistas PILI
+
+    Orquesta los 3 especialistas PILI:
+    - PILICotizadora: Guía conversacional para cotizaciones de 10 servicios
+    - PILIProyectos: Creación de proyectos simples y complejos PMI
+    - PILIInformes: Generación de informes técnicos y ejecutivos APA
+
+    Además se integra con servicios existentes para generación de documentos.
     """
-    
+
     def __init__(self):
-        """Inicializa con tus servicios existentes"""
-        
+        """Inicializa orquestador con los 3 especialistas PILI"""
+
         self.servicios = {}
         self.modo_demo = False
-        
+
+        # Conectar los 3 especialistas PILI
+        self.cotizadora = pili_cotizadora
+        self.proyectos = pili_proyectos
+        self.informes = pili_informes
+
         # Conectar con tus servicios existentes
         self._conectar_servicios_existentes()
-        
-        logger.info("✅ PILI Orchestrator conectado con tus servicios existentes")
+
+        logger.info("✅ PILI Orchestrator con 3 especialistas inicializado")
     
     def _conectar_servicios_existentes(self):
         """Conecta con tus servicios sin modificarlos"""
@@ -138,9 +165,98 @@ class PILIOrchestrator:
             self.servicios['pdf'] = None
 
     # ═══════════════════════════════════════════════════════════════
-    # 🎯 MÉTODOS PRINCIPALES - USAN TUS SERVICIOS EXISTENTES
+    # 🎯 MÉTODO PRINCIPAL - ENRUTA A ESPECIALISTAS PILI
     # ═══════════════════════════════════════════════════════════════
-    
+
+    def procesar(
+        self,
+        mensaje: str,
+        historial: List[Dict[str, str]],
+        tipo_flujo: str
+    ) -> Dict[str, Any]:
+        """
+        🎯 MÉTODO PRINCIPAL - Enruta al especialista PILI correcto
+
+        Args:
+            mensaje: Mensaje del usuario
+            historial: Historial de conversación
+            tipo_flujo: Tipo de flujo (cotizacion-simple, proyecto-pmi, informe-tecnico, etc.)
+
+        Returns:
+            Respuesta del especialista correspondiente
+
+        Tipos de flujo soportados:
+            - cotizacion-simple, cotizacion-rapida, cotizacion-compleja → PILICotizadora
+            - proyecto-simple, proyecto-complejo, proyecto-pmi → PILIProyectos
+            - informe-simple, informe-tecnico, informe-ejecutivo → PILIInformes
+        """
+
+        logger.info(f"🎯 Orquestador recibió mensaje para flujo: {tipo_flujo}")
+
+        try:
+            # ENRUTAR A PILI COTIZADORA (10 servicios)
+            if any(keyword in tipo_flujo.lower() for keyword in ["cotizacion", "cotizar", "presupuesto"]):
+                if self.cotizadora:
+                    logger.info("📋 Enrutando a PILICotizadora...")
+                    return self.cotizadora.procesar(mensaje, historial)
+                else:
+                    return {
+                        "accion": "error",
+                        "mensaje_pili": "❌ PILICotizadora no está disponible",
+                        "error": "Módulo pili_cotizadora no cargado"
+                    }
+
+            # ENRUTAR A PILI PROYECTOS (simple y PMI)
+            elif any(keyword in tipo_flujo.lower() for keyword in ["proyecto"]):
+                if self.proyectos:
+                    logger.info("📁 Enrutando a PILIProyectos...")
+                    return self.proyectos.procesar(mensaje, historial, tipo_flujo)
+                else:
+                    return {
+                        "accion": "error",
+                        "mensaje_pili": "❌ PILIProyectos no está disponible",
+                        "error": "Módulo pili_proyectos no cargado"
+                    }
+
+            # ENRUTAR A PILI INFORMES (técnico y ejecutivo APA)
+            elif any(keyword in tipo_flujo.lower() for keyword in ["informe"]):
+                if self.informes:
+                    logger.info("📄 Enrutando a PILIInformes...")
+                    return self.informes.procesar(mensaje, historial, tipo_flujo)
+                else:
+                    return {
+                        "accion": "error",
+                        "mensaje_pili": "❌ PILIInformes no está disponible",
+                        "error": "Módulo pili_informes no cargado"
+                    }
+
+            # FLUJO DESCONOCIDO
+            else:
+                logger.warning(f"⚠️ Tipo de flujo desconocido: {tipo_flujo}")
+                return {
+                    "accion": "error",
+                    "mensaje_pili": f"No sé cómo procesar el flujo: {tipo_flujo}.\n\n"
+                                   "Tipos válidos:\n"
+                                   "- cotizacion-simple, cotizacion-compleja\n"
+                                   "- proyecto-simple, proyecto-pmi\n"
+                                   "- informe-tecnico, informe-ejecutivo",
+                    "flujo_solicitado": tipo_flujo
+                }
+
+        except Exception as e:
+            logger.error(f"❌ Error en orquestador: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "accion": "error",
+                "mensaje_pili": f"Error procesando tu solicitud: {str(e)}",
+                "error": str(e)
+            }
+
+    # ═══════════════════════════════════════════════════════════════
+    # 🎯 MÉTODOS AUXILIARES - GENERACIÓN COMPLETA
+    # ═══════════════════════════════════════════════════════════════
+
     async def procesar_cotizacion_completa(
         self,
         descripcion: str,
@@ -391,51 +507,92 @@ Genera una cotización profesional para instalación eléctrica en Perú.
     # ═══════════════════════════════════════════════════════════════
     
     def obtener_estado(self) -> Dict[str, Any]:
-        """Obtiene estado de todos tus servicios"""
-        
+        """Obtiene estado de todos los servicios y especialistas PILI"""
+
         estado = {
             "pili_orchestrator": "✅ ACTIVO",
             "modo_demo": self.modo_demo,
+            "especialistas_pili": {},
             "servicios_conectados": {},
             "total_servicios": len(self.servicios)
         }
-        
+
+        # Estado de los 3 especialistas PILI
+        estado["especialistas_pili"]["cotizadora"] = "✅ ACTIVO" if self.cotizadora else "❌ NO DISPONIBLE"
+        estado["especialistas_pili"]["proyectos"] = "✅ ACTIVO" if self.proyectos else "❌ NO DISPONIBLE"
+        estado["especialistas_pili"]["informes"] = "✅ ACTIVO" if self.informes else "❌ NO DISPONIBLE"
+
+        # Estado de servicios auxiliares
         for nombre, servicio in self.servicios.items():
             if servicio is not None:
                 estado["servicios_conectados"][nombre] = "✅ CONECTADO"
             else:
                 estado["servicios_conectados"][nombre] = "❌ NO DISPONIBLE"
-        
+
         return estado
     
     def listar_capacidades(self) -> Dict[str, Any]:
-        """Lista qué puede hacer con tus servicios actuales"""
-        
+        """Lista capacidades de los 3 especialistas PILI y servicios"""
+
         capacidades = {
+            "especialistas_pili": {},
             "flujos_completos": [],
             "generadores_disponibles": [],
             "procesadores_disponibles": []
         }
-        
+
+        # Capacidades de los 3 especialistas PILI
+        if self.cotizadora:
+            capacidades["especialistas_pili"]["cotizadora"] = {
+                "activo": True,
+                "servicios": [
+                    "Instalaciones Eléctricas (Residencial/Comercial/Industrial)",
+                    "Certificados ITSE",
+                    "Puestas a Tierra",
+                    "Sistemas Contra Incendios",
+                    "Domótica",
+                    "CCTV",
+                    "Redes de Datos",
+                    "Automatización",
+                    "Saneamiento",
+                    "Expedientes Técnicos"
+                ],
+                "descripcion": "Guía conversacional paso a paso para 10 servicios"
+            }
+
+        if self.proyectos:
+            capacidades["especialistas_pili"]["proyectos"] = {
+                "activo": True,
+                "tipos": ["Proyecto Simple (5 pasos)", "Proyecto Complejo PMI (8 pasos + Gantt)"],
+                "descripcion": "Creación de proyectos con metodología PMI"
+            }
+
+        if self.informes:
+            capacidades["especialistas_pili"]["informes"] = {
+                "activo": True,
+                "tipos": ["Informe Técnico (8 secciones)", "Informe Ejecutivo APA (13 secciones)"],
+                "descripcion": "Generación de informes profesionales con formato APA 7"
+            }
+
         # Verificar flujos completos disponibles
         if self.servicios['gemini'] and self.servicios['word']:
             capacidades["flujos_completos"].append("cotizacion_completa_word")
-        
+
         if self.servicios['gemini'] and self.servicios['pdf']:
             capacidades["flujos_completos"].append("cotizacion_completa_pdf")
-        
+
         if self.servicios['word']:
             capacidades["generadores_disponibles"].append("word_documents")
-        
+
         if self.servicios['pdf']:
             capacidades["generadores_disponibles"].append("pdf_documents")
-        
+
         if self.servicios['file_processor']:
             capacidades["procesadores_disponibles"].append("file_analysis")
-        
+
         if self.servicios['template']:
             capacidades["procesadores_disponibles"].append("template_processing")
-        
+
         return capacidades
 
 # ═══════════════════════════════════════════════════════════════
@@ -461,28 +618,116 @@ def get_pili_orchestrator():
     return pili_orchestrator
 
 # ═══════════════════════════════════════════════════════════════
-# 🎯 EJEMPLO DE USO CON TUS SERVICIOS
+# 🎯 EJEMPLOS DE USO CON LOS 3 ESPECIALISTAS PILI
 # ═══════════════════════════════════════════════════════════════
 
 """
-EJEMPLO DE CÓMO USARLO:
+EJEMPLO 1: USO DEL ORQUESTADOR CON LOS 3 ESPECIALISTAS
 
 from services.pili_orchestrator import get_pili_orchestrator
 
-# Crear instancia que usa TUS servicios existentes
+# Crear instancia del orquestador
 orchestrator = get_pili_orchestrator()
 
-# Ver estado de TUS servicios
+# Ver estado de los 3 especialistas
 print(orchestrator.obtener_estado())
+# Output:
+# {
+#   "especialistas_pili": {
+#     "cotizadora": "✅ ACTIVO",
+#     "proyectos": "✅ ACTIVO",
+#     "informes": "✅ ACTIVO"
+#   },
+#   "servicios_conectados": {...}
+# }
 
-# Procesar cotización usando TODO TU STACK existente
+# Ver capacidades de los especialistas
+print(orchestrator.listar_capacidades())
+
+# ═════════════════════════════════════════════════════════
+
+EJEMPLO 2: COTIZACIÓN CON PILI COTIZADORA (10 SERVICIOS)
+
+historial = []
+
+# Usuario inicia conversación
+respuesta = orchestrator.procesar(
+    mensaje="Necesito cotizar una instalación eléctrica",
+    historial=historial,
+    tipo_flujo="cotizacion-simple"
+)
+# → PILICotizadora pregunta: "¿Es residencial, comercial o industrial?"
+
+historial.append({"role": "user", "content": "Necesito cotizar una instalación eléctrica"})
+historial.append({"role": "assistant", "content": respuesta["mensaje_pili"]})
+
+# Usuario responde
+respuesta = orchestrator.procesar(
+    mensaje="Residencial",
+    historial=historial,
+    tipo_flujo="cotizacion-simple"
+)
+# → PILICotizadora pregunta: "¿Cuántos m² tiene el área?"
+
+# ... continúa preguntando paso a paso hasta tener todos los datos ...
+
+# Cuando tiene todo:
+# respuesta["accion"] == "cotizacion_generada"
+# respuesta["puede_generar"] == True
+# respuesta["datos_cotizacion"] == {...}  # JSON completo
+
+# ═════════════════════════════════════════════════════════
+
+EJEMPLO 3: PROYECTO CON PILI PROYECTOS (SIMPLE O PMI)
+
+# Proyecto simple (5 pasos)
+respuesta = orchestrator.procesar(
+    mensaje="Quiero crear un proyecto",
+    historial=[],
+    tipo_flujo="proyecto-simple"
+)
+# → PILIProyectos pregunta: "¿Cuál es el nombre del proyecto?"
+
+# Proyecto complejo PMI (8 pasos + Gantt + recursos)
+respuesta = orchestrator.procesar(
+    mensaje="Proyecto de automatización industrial",
+    historial=[],
+    tipo_flujo="proyecto-pmi"
+)
+# → PILIProyectos usa metodología PMI completa
+
+# ═════════════════════════════════════════════════════════
+
+EJEMPLO 4: INFORME CON PILI INFORMES (TÉCNICO O EJECUTIVO APA)
+
+# Informe técnico (8 secciones)
+respuesta = orchestrator.procesar(
+    mensaje="Necesito un informe técnico",
+    historial=[],
+    tipo_flujo="informe-tecnico"
+)
+# → PILIInformes pregunta por introducción, objetivos, metodología, etc.
+
+# Informe ejecutivo APA (13 secciones con análisis financiero)
+respuesta = orchestrator.procesar(
+    mensaje="Informe ejecutivo para la gerencia",
+    historial=[],
+    tipo_flujo="informe-ejecutivo"
+)
+# → PILIInformes usa formato APA 7 con análisis ROI, TIR, Payback
+
+# ═════════════════════════════════════════════════════════
+
+EJEMPLO 5: MÉTODOS AUXILIARES (GENERACIÓN COMPLETA)
+
+# Generar cotización completa con IA + documento Word
 resultado = await orchestrator.procesar_cotizacion_completa(
     descripcion="Instalación casa 120m²",
     cliente="Juan Pérez",
-    tipo_salida="word"  # usa TU word_generator.py
+    tipo_salida="word"
 )
 
-# Chat usando TU gemini_service.py
+# Chat inteligente
 chat = await orchestrator.chat_inteligente(
     mensaje="¿Cuánto cuesta instalar 10 puntos de luz?"
 )

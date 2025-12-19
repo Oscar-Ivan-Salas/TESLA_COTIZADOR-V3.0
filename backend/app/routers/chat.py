@@ -45,6 +45,7 @@ from app.schemas.cotizacion import (
 )
 from app.services.gemini_service import gemini_service
 from app.services.pili_brain import PILIBrain
+from app.services.pili_orchestrator import get_pili_orchestrator
 from app.models.cotizacion import Cotizacion
 from app.models.item import Item
 from datetime import datetime, timedelta
@@ -60,6 +61,14 @@ logger = logging.getLogger(__name__)
 
 # Inicializar PILIBrain para generación offline
 pili_brain = PILIBrain()
+
+# Inicializar PILI Orchestrator con los 3 especialistas
+try:
+    pili_orchestrator = get_pili_orchestrator()
+    logger.info("✅ PILI Orchestrator cargado con éxito en chat.py")
+except Exception as e:
+    logger.warning(f"⚠️ Error cargando PILI Orchestrator: {e}")
+    pili_orchestrator = None
 
 router = APIRouter()
 
@@ -2771,15 +2780,91 @@ async def chat_contextualizado(
     db: Session = Depends(get_db)
 ):
     """
-    🔄 CONSERVADO v2.0 + MEJORADO PILI v3.0
+    🔄 CONSERVADO v2.0 + MEJORADO PILI v3.0 + 🎯 ORQUESTADOR v4.0
 
     Chat inteligente con contexto específico según el servicio.
-    PILI ahora responde con su personalidad específica por agente.
+    PILI ahora usa 3 especialistas inteligentes:
+    - PILICotizadora: Cotizaciones guiadas para 10 servicios
+    - PILIProyectos: Proyectos simples y complejos PMI
+    - PILIInformes: Informes técnicos y ejecutivos APA
 
-    NUEVO: Genera vista previa HTML editable si generar_html=True
+    NUEVO: Usa orquestador que enruta al especialista correcto
     """
     try:
         logger.info(f"🤖 PILI chat contextualizado para {tipo_flujo}")
+
+        # 🎯 NUEVA LÓGICA: Intentar usar PILI Orchestrator primero
+        if pili_orchestrator:
+            try:
+                logger.info("🎯 Usando PILI Orchestrator con especialistas inteligentes")
+
+                # Llamar al orquestador que enruta al especialista correcto
+                respuesta_especialista = pili_orchestrator.procesar(
+                    mensaje=mensaje,
+                    historial=historial,
+                    tipo_flujo=tipo_flujo
+                )
+
+                # El especialista retorna un dict con estructura:
+                # {
+                #   "accion": "solicitar_info" | "cotizacion_generada" | "error",
+                #   "mensaje_pili": "Respuesta conversacional",
+                #   "botones": [...],  # opcional
+                #   "puede_generar": bool,
+                #   "datos_cotizacion": {...},  # cuando puede_generar=True
+                # }
+
+                # Determinar etapa basada en la respuesta del especialista
+                etapa_actual = "conversacion"
+                if respuesta_especialista.get("puede_generar"):
+                    etapa_actual = "generacion"
+                elif respuesta_especialista.get("accion") == "solicitar_info":
+                    etapa_actual = "refinamiento"
+
+                # Botones del especialista o contextuales
+                botones_sugeridos = respuesta_especialista.get("botones", [])
+                if not botones_sugeridos:
+                    # Fallback a botones contextuales antiguos
+                    botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
+
+                # Generar HTML preview si se solicita y hay datos
+                html_preview = None
+                if generar_html and respuesta_especialista.get("puede_generar"):
+                    datos_preview = respuesta_especialista.get("datos_cotizacion", {})
+                    if tipo_flujo.startswith("cotizacion"):
+                        html_preview = generar_preview_cotizacion_simple_editable(datos_preview, tipo_flujo)
+                    elif tipo_flujo.startswith("informe"):
+                        html_preview = generar_preview_informe(datos_preview, tipo_flujo)
+
+                return {
+                    "success": True,
+                    "agente_activo": f"PILI Orchestrator → {tipo_flujo}",
+                    "respuesta": respuesta_especialista.get("mensaje_pili", ""),
+                    "tipo_flujo": tipo_flujo,
+                    "etapa_actual": etapa_actual,
+                    "botones_sugeridos": botones_sugeridos,
+                    "contexto_pili": {
+                        "especialista_usado": respuesta_especialista.get("especialista", "desconocido"),
+                        "puede_generar": respuesta_especialista.get("puede_generar", False)
+                    },
+                    "html_preview": html_preview,
+                    "generar_html": generar_html,
+                    "datos_generados": respuesta_especialista.get("datos_cotizacion"),
+                    "timestamp": datetime.now().isoformat(),
+                    "pili_metadata": {
+                        "agente_id": tipo_flujo,
+                        "version": "4.0-orchestrator",
+                        "capabilities": ["chat", "guided_conversation", "json", "html_preview"]
+                    }
+                }
+
+            except Exception as e_orch:
+                logger.warning(f"⚠️ Error en PILI Orchestrator, usando fallback antiguo: {e_orch}")
+                # Continuar con lógica antigua si el orchestrator falla
+
+        # ════════════════════════════════════════════════════════════
+        # 🔄 FALLBACK A LÓGICA ANTIGUA (Gemini + PILIBrain)
+        # ════════════════════════════════════════════════════════════
 
         # Obtener contexto del servicio
         contexto = obtener_contexto_servicio(tipo_flujo)
@@ -2822,11 +2907,11 @@ async def chat_contextualizado(
                 contexto=f"Agente: {nombre_pili}. Servicio: {tipo_flujo}. {contexto_adicional}",
                 cotizacion_id=cotizacion_id
             )
-            
+
             # 🚨 DETECTAR MODO DEMO DE GEMINI Y FORZAR FALLBACK A PILIBRAIN
             if isinstance(respuesta, dict) and "PILI en modo demo" in str(respuesta.get("mensaje", "")):
                 raise Exception("Gemini en modo demo (sin API Key)")
-                
+
         except Exception as e:
             # 🧠 FALLBACK: Usar PILIBrain cuando Gemini no está disponible
             logger.warning(f"⚠️ Gemini no disponible, usando PILIBrain local: {e}")
