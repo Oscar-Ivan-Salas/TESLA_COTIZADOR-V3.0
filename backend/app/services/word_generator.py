@@ -595,23 +595,48 @@ class WordGenerator:
     
     def _insertar_datos_cliente_pili(self, doc: Document, datos: Dict[str, Any]):
         """Inserta datos del cliente con formato PILI"""
-        
+
         # Título sección
         titulo = doc.add_heading("DATOS DEL CLIENTE", level=2)
         self._aplicar_estilo_seccion(titulo)
-        
+
         # Tabla de datos
         table = doc.add_table(rows=0, cols=2)
         table.style = 'Table Grid'
-        
+
+        # ✅ EXTRAER DATOS DEL CLIENTE (puede ser dict o string)
+        cliente = datos.get("cliente", "[Cliente por definir]")
+        if isinstance(cliente, dict):
+            nombre_cliente = cliente.get("nombre", "[Cliente]")
+            ruc_cliente = cliente.get("ruc", "")
+            direccion_cliente = cliente.get("direccion", "")
+            telefono_cliente = cliente.get("telefono", "")
+            email_cliente = cliente.get("email", "")
+        else:
+            nombre_cliente = str(cliente)
+            ruc_cliente = ""
+            direccion_cliente = ""
+            telefono_cliente = ""
+            email_cliente = ""
+
         # Datos a mostrar
         campos_cliente = [
-            ("Cliente:", datos.get("cliente", "[Cliente por definir]")),
+            ("Cliente:", nombre_cliente),
             ("Proyecto:", datos.get("proyecto", "[Proyecto por definir]")),
             ("Número:", datos.get("numero", "[Número]")),
             ("Fecha:", datos.get("fecha_generacion", datetime.now().strftime("%d/%m/%Y"))),
         ]
-        
+
+        # Agregar datos adicionales del cliente si existen
+        if ruc_cliente:
+            campos_cliente.append(("RUC:", ruc_cliente))
+        if direccion_cliente:
+            campos_cliente.append(("Dirección:", direccion_cliente))
+        if telefono_cliente:
+            campos_cliente.append(("Teléfono:", telefono_cliente))
+        if email_cliente:
+            campos_cliente.append(("Email:", email_cliente))
+
         if "vigencia" in datos:
             campos_cliente.append(("Vigencia:", datos["vigencia"]))
         
