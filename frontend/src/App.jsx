@@ -704,7 +704,23 @@ const CotizadorTesla30 = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${tipoDocumento}_${entidadId}.${formato === 'word' ? 'docx' : 'pdf'}`;
+
+      // ✅ Generar nombre descriptivo del archivo
+      let nombreArchivo;
+      if (entidadId) {
+        // Si tiene ID, usar formato estándar
+        nombreArchivo = `${tipoDocumento}_${entidadId}.${formato === 'word' ? 'docx' : 'pdf'}`;
+      } else {
+        // Si es generación directa, usar nombre descriptivo
+        const clienteNombre = (clienteProyecto || datosFinales?.cliente?.nombre || datosFinales?.cliente || 'Cliente')
+          .toString()
+          .replace(/[^a-zA-Z0-9]/g, '_')
+          .substring(0, 30);
+        const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        nombreArchivo = `${tipoDocumento.toUpperCase()}_${clienteNombre}_${timestamp}.${formato === 'word' ? 'docx' : 'pdf'}`;
+      }
+
+      link.download = nombreArchivo;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
