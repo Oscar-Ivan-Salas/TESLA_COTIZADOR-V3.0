@@ -84,69 +84,88 @@ async def generar_documento_directo(
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         if formato == "word":
-            # Importar generador HTML→Word profesional
-            from app.services.html_to_word_generator import html_to_word_generator
+            # ✅ USAR GENERADOR PROFESIONAL CON BD DE CLIENTES
+            from app.services.word_generator import WordGenerator
 
-            filename = f"{tipo_plantilla}_{timestamp}.docx"
+            word_gen = WordGenerator()
+
+            # Determinar nombre del cliente para el archivo
+            cliente_nombre = "Cliente"
+            if isinstance(datos.get("cliente"), dict):
+                cliente_nombre = datos["cliente"].get("nombre", "Cliente")
+            elif isinstance(datos.get("cliente"), str):
+                cliente_nombre = datos["cliente"]
+
+            # Sanitizar nombre para archivo
+            cliente_nombre_limpio = cliente_nombre.replace(" ", "_").replace("/", "_")[:30]
+
+            filename = f"{tipo_plantilla}_{cliente_nombre_limpio}_{timestamp}.docx"
             filepath = storage_path / filename
 
-            # Seleccionar método de generación según tipo
-            if "cotizacion-simple" in tipo_plantilla:
-                ruta_generada = html_to_word_generator.generar_cotizacion_simple(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
-            elif "cotizacion-compleja" in tipo_plantilla:
-                ruta_generada = html_to_word_generator.generar_cotizacion_compleja(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
-            elif "proyecto-simple" in tipo_plantilla:
-                ruta_generada = html_to_word_generator.generar_proyecto_simple(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
-            elif "proyecto-complejo" in tipo_plantilla or "pmi" in tipo_plantilla.lower():
-                ruta_generada = html_to_word_generator.generar_proyecto_complejo(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
-            elif "informe-tecnico" in tipo_plantilla:
-                ruta_generada = html_to_word_generator.generar_informe_tecnico(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
-            elif "informe-ejecutivo" in tipo_plantilla or "apa" in tipo_plantilla.lower():
-                ruta_generada = html_to_word_generator.generar_informe_ejecutivo(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
-            else:
-                # Fallback a cotización simple
-                logger.warning(f"Tipo no reconocido '{tipo_plantilla}', usando cotización simple")
-                ruta_generada = html_to_word_generator.generar_cotizacion_simple(
-                    datos=datos,
-                    ruta_salida=filepath
-                )
+            # ✅ GENERAR CON WORD_GENERATOR PROFESIONAL
+            logger.info(f"📄 Generando documento Word profesional con datos: {datos.get('numero', 'N/A')}")
+            logger.info(f"👤 Cliente: {cliente_nombre}")
 
-            archivo = str(ruta_generada)
+            # Preparar datos en formato JSON esperado por word_generator
+            datos_json = {
+                "tipo_documento": datos.get("tipo_documento", "cotizacion"),
+                "puede_generar": True,
+                "datos_extraidos": {
+                    "numero": datos.get("numero", f"DOC-{timestamp}"),
+                    "fecha": datos.get("fecha", datetime.now().strftime("%d/%m/%Y")),
+                    "cliente": datos.get("cliente", {}),
+                    "proyecto": datos.get("proyecto", ""),
+                    "descripcion": datos.get("descripcion", ""),
+                    "items": datos.get("items", []),
+                    "subtotal": float(datos.get("subtotal", 0)),
+                    "igv": float(datos.get("igv", 0)),
+                    "total": float(datos.get("total", 0)),
+                    "observaciones": datos.get("observaciones", "Precios incluyen IGV. Válido por 30 días."),
+                    "vigencia": datos.get("vigencia", "30 días")
+                }
+            }
+
+            # Generar documento profesional
+            resultado = word_gen.generar_desde_json_pili(
+                datos_json=datos_json,
+                tipo_documento=datos.get("tipo_documento", "cotizacion"),
+                opciones=datos.get("opciones_personalizacion"),
+                logo_base64=datos.get("logo_base64"),
+                ruta_salida=str(filepath),
+                db=None  # Por ahora sin BD, generación directa
+            )
+
+            archivo = str(filepath)
             media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
         else:  # PDF
-            # Usar generador PDF
-            from app.services.pdf_generator import pdf_generator
+            # ✅ USAR GENERADOR PDF PROFESIONAL
+            from app.services.pdf_generator import PDFGenerator
 
-            filename = f"{tipo_plantilla}_{timestamp}.pdf"
+            pdf_gen = PDFGenerator()
+
+            # Determinar nombre del cliente para el archivo
+            cliente_nombre = "Cliente"
+            if isinstance(datos.get("cliente"), dict):
+                cliente_nombre = datos["cliente"].get("nombre", "Cliente")
+            elif isinstance(datos.get("cliente"), str):
+                cliente_nombre = datos["cliente"]
+
+            # Sanitizar nombre para archivo
+            cliente_nombre_limpio = cliente_nombre.replace(" ", "_").replace("/", "_")[:30]
+
+            filename = f"{tipo_plantilla}_{cliente_nombre_limpio}_{timestamp}.pdf"
             filepath = storage_path / filename
             archivo = str(filepath)
 
-            # Determinar tipo para PDF
-            if "proyecto" in tipo_plantilla:
-                pdf_generator.generar_informe_proyecto(datos=datos, ruta_salida=archivo)
-            elif "informe" in tipo_plantilla:
-                pdf_generator.generar_informe_simple(datos=datos, ruta_salida=archivo)
-            else:
-                pdf_generator.generar_cotizacion(datos=datos, ruta_salida=archivo)
+            logger.info(f"📄 Generando PDF profesional")
+            logger.info(f"👤 Cliente: {cliente_nombre}")
+
+            # Generar PDF profesional
+            pdf_gen.generar_cotizacion(
+                datos=datos,
+                ruta_salida=archivo
+            )
 
             media_type = "application/pdf"
 
