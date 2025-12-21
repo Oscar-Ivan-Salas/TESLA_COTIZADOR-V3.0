@@ -59,6 +59,26 @@ google-generativeai==0.8.3
 chromadb==0.5.23
 sentence-transformers==3.4.0
 
+# ═══════════════════════════════════════════════════════════════
+# 🚀 LANGCHAIN + LITELLM (PILI Ultra Inteligente)
+# ═══════════════════════════════════════════════════════════════
+
+# LangChain Core
+langchain==0.1.0
+langchain-community==0.0.13
+langchain-core==0.1.10
+
+# LiteLLM - Multi-IA Router
+litellm==1.17.0
+
+# LangChain Integrations
+langchain-google-genai==1.0.1  # Gemini
+# langchain-openai==0.0.2  # OpenAI (descomenta si usas)
+# langchain-anthropic==0.0.1  # Claude (descomenta si usas)
+
+# Vector Store para RAG
+faiss-cpu==1.8.0  # Búsquedas vectoriales ultra-rápidas
+
 # Utilidades
 python-dotenv==1.0.1
 python-jose[cryptography]==3.3.0
