@@ -146,14 +146,22 @@ class HTMLToWordGenerator:
         Returns:
             Nombre del cliente como string
         """
+        logger.info(f"🔍 DEBUG _extraer_nombre_cliente - Tipo recibido: {type(cliente_data)}")
+        logger.info(f"🔍 DEBUG _extraer_nombre_cliente - Valor: {cliente_data}")
+        
         if isinstance(cliente_data, dict):
             # Si es un objeto, extraer el campo 'nombre'
-            return cliente_data.get('nombre', 'Cliente Demo')
+            nombre = cliente_data.get('nombre', 'Cliente Demo')
+            logger.info(f"✅ Extraído nombre de dict: {nombre}")
+            return nombre
         elif isinstance(cliente_data, str):
             # Si ya es string, usarlo directamente
-            return cliente_data if cliente_data else 'Cliente Demo'
+            nombre = cliente_data if cliente_data else 'Cliente Demo'
+            logger.info(f"✅ Usando string directamente: {nombre}")
+            return nombre
         else:
             # Fallback
+            logger.warning(f"⚠️ Tipo no reconocido, usando fallback: Cliente Demo")
             return 'Cliente Demo'
 
     # ========================================================================
@@ -188,6 +196,12 @@ class HTMLToWordGenerator:
             Path al documento Word generado
         """
         logger.info("🔄 Generando cotización simple...")
+        
+        # 🔍 DEBUG: Ver qué items recibimos
+        items_recibidos = datos.get('items', [])
+        logger.info(f"🔍 DEBUG generar_cotizacion_simple - Items recibidos: {len(items_recibidos)}")
+        for i, item in enumerate(items_recibidos[:3]):  # Solo primeros 3 para no saturar logs
+            logger.info(f"  Item {i+1}: {item}")
 
         # Cargar plantilla
         html = self._cargar_plantilla("cotizacion_simple")

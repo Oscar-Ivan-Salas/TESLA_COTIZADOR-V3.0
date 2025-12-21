@@ -46,6 +46,7 @@ const CotizadorTesla30 = () => {
   const [fuenteDocumento, setFuenteDocumento] = useState('Calibri'); // Calibri, Arial, Times New Roman
   const [tamañoFuente, setTamañoFuente] = useState(11); // 10, 11, 12
   const [mostrarLogo, setMostrarLogo] = useState(true);
+  const [posicionLogo, setPosicionLogo] = useState('center'); // left, center, right
   const [mostrarPanelPersonalizacion, setMostrarPanelPersonalizacion] = useState(false);
 
   // Estados específicos para cada tipo
@@ -785,153 +786,116 @@ const CotizadorTesla30 = () => {
     setExito('');
 
     try {
-      // Determinar entidad según tipo de documento
-      const entidadActual = tipoDocumento === 'cotizacion' ? cotizacion :
-        tipoDocumento === 'proyecto' ? proyecto : informe;
-
-      // Usar datos editables si existen, sino usar entidad del tipo correcto
-      const datosFinales = datosEditables || entidadActual;
-      let entidadId = datosFinales?.id;
-
-      // ¡TEMPORAL! Forzar generación directa con datos editados
-      // Saltamos el guardado en BD para usar datos editados frescos
-      entidadId = null;  // Esto fuerza el uso del método directo
-
-      /* DESHABILITADO TEMPORALMENTE - Guardado en BD
-      // Si no tiene ID, guardar primero
-      if (!entidadId) {
-        console.log(`📝 Guardando ${tipoDocumento} en el backend...`);
-        ...
-      }
-      */
-
-      // Generar documento - LÓGICA HÍBRIDA PROFESIONAL
-      console.log(`📄 Generando ${formato.toUpperCase()}`);
+      console.log(`📄 Generando ${formato.toUpperCase()} con V2 (sin HTML parsing)...`);
       setExito(`Generando ${formato.toUpperCase()}...`);
 
-      let docResponse;
+      // Usar datos editables si existen
+      const datosFinales = datosEditables || entidad;
+      const itemsActuales = datosFinales?.items || [];
 
-      // Método 1: Intentar generar desde BD si tenemos ID
-      if (entidadId) {
-        try {
-          const endpoint = tipoDocumento === 'cotizacion' ? 'cotizaciones' :
-            tipoDocumento === 'proyecto' ? 'proyectos' : 'informes';
+      // 🐛 DEBUG: Ver qué datos tenemos
+      console.log('🔍 DEBUG COMPLETO handleDescargar:');
+      console.log('  datosEditables:', datosEditables);
+      console.log('  datosEditables?.items:', datosEditables?.items);
+      console.log('  entidad:', entidad);
+      console.log('  datosFinales:', datosFinales);
+      console.log('  itemsActuales:', itemsActuales);
 
-          console.log(`🗄️ Intentando generar desde BD (ID: ${entidadId})...`);
-          docResponse = await fetch(`http://localhost:8000/api/${endpoint}/${entidadId}/generar-${formato}`, {
-            method: 'POST'
-          });
+      // Recalcular totales
+      const subtotalCalculado = itemsActuales.reduce((sum, item) =>
+        sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
+      );
+      const igvCalculado = subtotalCalculado * 0.18;
+      const totalCalculado = subtotalCalculado + igvCalculado;
 
-          if (!docResponse.ok) {
-            throw new Error(`Error en generación desde BD`);
-          }
+      // ✅ V2: Preparar datos JSON limpios (SIN HTML)
+      const datosLimpios = {
+        tipo_documento: tipoFlujo,  // cotizacion-simple, proyecto-complejo, informe-tecnico, etc.
+        numero: datosFinales?.numero || `COT-${Date.now()}`,
+        fecha: new Date().toLocaleDateString('es-PE'),
+        vigencia: '30 días',
 
-          console.log(`✅ Documento generado desde BD`);
-        } catch (errorBD) {
-          console.warn(`⚠️ BD no disponible, usando generación directa...`, errorBD);
-          entidadId = null; // Forzar uso de generación directa
-        }
-      }
-
-      // Método 2: Generación directa (fallback o principal)
-      if (!entidadId) {
-        console.log(`🚀 Generando documento directo (sin BD)...`);
-
-        // DEBUG: Ver qué datos tenemos
-        console.log('🔍 DEBUG COMPLETO:');
-        console.log('  datosCliente:', datosCliente);
-        console.log('  datosEditables:', datosEditables);
-        console.log('  datosFinales:', datosFinales);
-        console.log('  datosFinales?.items:', datosFinales?.items);
-
-        // Recalcular totales con items editados
-        const itemsActuales = datosFinales?.items || [];
-        const subtotalCalculado = itemsActuales.reduce((sum, item) =>
-          sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
-        );
-        const igvCalculado = subtotalCalculado * 0.18;
-        const totalCalculado = subtotalCalculado + igvCalculado;
-
-        console.log('📊 TOTALES CALCULADOS:');
-        console.log('  Items:', itemsActuales.length);
-        console.log('  Subtotal:', subtotalCalculado);
-        console.log('  IGV:', igvCalculado);
-        console.log('  Total:', totalCalculado);
-
-        // Preparar datos finales para generación directa
-        const datosParaGeneracion = {
-          tipo_documento: tipoDocumento,
-          numero: datosFinales?.numero || `${tipoDocumento.toUpperCase()}-${Date.now()}`,
-          // ✅ Usar datos del cliente universal (para todos los 6 tipos)
-          cliente: datosCliente.nombre || datosFinales?.cliente || '[Cliente]',
+        // Cliente (como objeto completo)
+        cliente: {
+          nombre: datosCliente.nombre || '[Cliente]',
           ruc: datosCliente.ruc || '',
           direccion: datosCliente.direccion || '',
           telefono: datosCliente.telefono || '',
-          email: datosCliente.email || '',
-          proyecto: nombreProyecto || datosFinales?.proyecto || '[Proyecto]',
-          descripcion: contextoUsuario || datosFinales?.descripcion || '',
-          // ✅ Normalizar nombres de campos a snake_case para backend
-          items: itemsActuales.map(item => ({
-            descripcion: item.descripcion,
-            cantidad: parseFloat(item.cantidad || 0),
-            unidad: item.unidad || 'und',
-            precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0),
-            subtotal: parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)
-          })),
-          subtotal: parseFloat(subtotalCalculado.toFixed(2)),
-          igv: parseFloat(igvCalculado.toFixed(2)),
-          total: parseFloat(totalCalculado.toFixed(2)),
-          observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
-          fecha: new Date().toLocaleDateString('es-PE'),
-          vigencia: '30 días'
-        };
+          email: datosCliente.email || ''
+        },
 
-        // ✅ Agregar logo si existe Y si está habilitado
-        if (logoBase64 && mostrarLogo) {
-          datosParaGeneracion.logo_base64 = logoBase64;
-        }
+        // Proyecto
+        proyecto: nombreProyecto || '[Proyecto]',
+        descripcion: contextoUsuario || '',
 
-        // ✅ Agregar parámetros de personalización
-        datosParaGeneracion.opciones_personalizacion = {
-          esquema_colores: esquemaColores, // 'azul-tesla', 'rojo-energia', 'verde-ecologico', 'personalizado'
-          fuente: fuenteDocumento, // 'Calibri', 'Arial', 'Times New Roman'
-          tamaño_fuente: tamañoFuente, // 10, 11, 12
+        // Items (desde datosEditables, NO desde HTML)
+        items: itemsActuales.map(item => ({
+          descripcion: item.descripcion || '',
+          cantidad: parseFloat(item.cantidad || 0),
+          unidad: item.unidad || 'und',
+          precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0)
+        })),
+
+        // Totales
+        subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+        igv: parseFloat(igvCalculado.toFixed(2)),
+        total: parseFloat(totalCalculado.toFixed(2)),
+
+        observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
+
+        // ✅ Opciones de personalización profesional
+        personalizacion: {
+          esquema_colores: esquemaColores,  // azul-tesla, rojo-energia, verde-ecologico, personalizado
+          fuente: fuenteDocumento,  // Calibri, Arial, Times New Roman
+          tamano_fuente: tamañoFuente,  // 10, 11, 12
           mostrar_logo: mostrarLogo,
+          posicion_logo: posicionLogo,  // left, center, right
+          logo_base64: logoBase64 || null,
           ocultar_igv: ocultarIGV,
           ocultar_precios_unitarios: ocultarPreciosUnitarios
-        };
+        }
+      };
 
-        docResponse = await fetch(`http://localhost:8000/api/generar-documento-directo?formato=${formato}`, {
+      console.log('📦 Datos limpios V2 a enviar:', datosLimpios);
+      console.log('  - Tipo:', datosLimpios.tipo_documento);
+      console.log('  - Cliente:', datosLimpios.cliente.nombre);
+      console.log('  - Items:', datosLimpios.items.length);
+      console.log('  - Items detalle:', datosLimpios.items);
+      console.log('  - Total:', datosLimpios.total);
+      console.log('  - Personalización:', datosLimpios.personalizacion);
+
+      // ✅ V2: Llamar endpoint limpio (SIN HTML)
+      const response = await fetch(
+        `http://localhost:8000/api/generar-documento-v2?formato=${formato}&guardar_bd=false`,
+        {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            datos: datosParaGeneracion,
-            html_editado: htmlPreview || null,  // Enviar HTML preview si existe
-            tipo_plantilla: tipoFlujo  // ej: "cotizacion-simple"
-          })
-        });
-
-        if (!docResponse.ok) {
-          throw new Error(`Error al generar ${formato}`);
+          body: JSON.stringify(datosLimpios)  // Solo JSON, sin HTML
         }
+      );
 
-        console.log(`✅ Documento generado directamente`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
       }
 
-      const blob = await docResponse.blob();
+      // Descargar archivo
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${tipoDocumento}_${entidadId}.${formato === 'word' ? 'docx' : 'pdf'}`;
+      link.download = `cotizacion_${datosLimpios.numero}.${formato === 'word' ? 'docx' : 'pdf'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
+      console.log(`✅ ${formato.toUpperCase()} V2 descargado exitosamente`);
       setExito(`✅ ${formato.toUpperCase()} descargado exitosamente`);
       setTimeout(() => setExito(''), 4000);
+
     } catch (error) {
-      console.error('Error al descargar:', error);
+      console.error('❌ Error al descargar V2:', error);
       setError(`Error al generar el documento: ${error.message}`);
     } finally {
       setDescargando(null);
@@ -1935,7 +1899,7 @@ const CotizadorTesla30 = () => {
                   {/* VISTA PREVIA CON BOTONES DE GENERACIÓN */}
                   <VistaPrevia
                     cotizacion={cotizacion || proyecto || informe || {}}
-                    onGenerarDocumento={handleGenerarDocumento}
+                    onGenerarDocumento={handleDescargar}
                     tipoDocumento={tipoFlujo}
                     htmlPreview={htmlPreview}
                   />

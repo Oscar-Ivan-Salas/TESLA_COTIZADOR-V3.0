@@ -46,6 +46,13 @@ async def generar_documento_directo(
     """
     try:
         logger.info(f"📄 Generando documento {formato.upper()} profesional")
+        
+        # 🔍 DEBUG: Ver datos JSON recibidos del frontend
+        logger.info(f"🔍 DEBUG - Datos JSON recibidos del frontend:")
+        logger.info(f"  - cliente: {datos.get('cliente')}")
+        logger.info(f"  - proyecto: {datos.get('proyecto')}")
+        logger.info(f"  - numero: {datos.get('numero')}")
+        logger.info(f"  - items: {len(datos.get('items', []))} items")
 
         # ═══════════════════════════════════════════════════════════
         # PASO 1: PARSEAR HTML EDITADO SI SE RECIBIÓ
@@ -59,12 +66,20 @@ async def generar_documento_directo(
                 html=html_editado,
                 tipo_documento=tipo_plantilla or "cotizacion"
             )
+            
+            logger.info(f"🔍 DEBUG - Datos parseados del HTML:")
+            logger.info(f"  - cliente: {datos_parseados.get('cliente')}")
+            logger.info(f"  - proyecto: {datos_parseados.get('proyecto')}")
 
             # ✅ CRÍTICO: Priorizar datos JSON del frontend sobre HTML parseado
-            # Los datos estructurados del frontend son más confiables y completos
-            # Solo usar HTML parseado para campos que no vengan en JSON
-            datos = {**datos, **datos_parseados}  # JSON tiene prioridad
+            # HTML parseado primero, luego JSON lo sobrescribe
+            # Esto asegura que los datos correctos del frontend NO sean reemplazados por strings vacíos del HTML
+            datos = {**datos_parseados, **datos}  # JSON sobrescribe HTML ✅
             logger.info(f"✅ HTML parseado: {len(datos_parseados)} campos extraídos")
+            
+            logger.info(f"🔍 DEBUG - Datos FINALES después de fusión:")
+            logger.info(f"  - cliente: {datos.get('cliente')}")
+            logger.info(f"  - proyecto: {datos.get('proyecto')}")
 
         # ═══════════════════════════════════════════════════════════
         # PASO 2: DETERMINAR TIPO DE DOCUMENTO
@@ -166,3 +181,84 @@ async def generar_documento_directo(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# ENDPOINT V2: GENERACIÓN LIMPIA SIN HTML PARSING
+# ============================================================================
+
+@router.post("/generar-documento-v2")
+async def generar_documento_v2(
+    datos: Dict = Body(...),
+    formato: str = Query("word", regex="^(word|pdf)$"),
+    guardar_bd: bool = Query(False)
+):
+    """
+    🆕 GENERACIÓN V2: Flujo limpio JSON → Word/PDF
+    
+    Flujo:
+    1. Recibir JSON limpio del frontend (SIN HTML)
+    2. Guardar en ChromaDB para RAG de PILI
+    3. Generar Word con python-docx
+    4. Convertir a PDF si necesario
+    5. Retornar archivo
+    
+    Args:
+        datos: Datos JSON completos de la cotización
+        formato: 'word' o 'pdf'
+        guardar_bd: Si guardar en BD relacional (futuro)
+    """
+    try:
+        logger.info(f"📄 Generación V2 - Formato: {formato}")
+        logger.info(f"📦 Datos recibidos: {datos.get('numero')}")
+        
+        # Importar servicios V2
+        from app.services.word_generator_v2 import word_generator_v2
+        from app.services.pdf_generator_v2 import pdf_generator_v2
+        from app.services.vector_db import get_vector_db
+        
+        # PASO 1: Guardar en ChromaDB para RAG de PILI
+        logger.info("🔍 Guardando en ChromaDB para RAG...")
+        try:
+            vector_db = get_vector_db()  # Lazy initialization
+            vector_db.agregar_cotizacion(
+                cotizacion_id=datos.get('numero', f"COT-{datetime.now().timestamp()}"),
+                datos=datos
+            )
+        except Exception as e:
+            logger.warning(f"⚠️ Error al guardar en ChromaDB (no crítico): {e}")
+        
+        # PASO 2: Generar Word con python-docx
+        logger.info("📝 Generando documento Word con python-docx...")
+        ruta_word = word_generator_v2.generar_cotizacion(datos)
+        
+        # PASO 3: Generar PDF si se solicita
+        if formato == 'pdf':
+            logger.info("📄 Convirtiendo a PDF...")
+            try:
+                ruta_pdf = pdf_generator_v2.convertir_word_a_pdf(ruta_word)
+                ruta_final = ruta_pdf
+                media_type = "application/pdf"
+            except Exception as e:
+                logger.error(f"❌ Error al convertir a PDF: {e}")
+                logger.info("📝 Retornando Word en su lugar")
+                ruta_final = ruta_word
+                media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        else:
+            ruta_final = ruta_word
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        
+        # PASO 4: Retornar archivo
+        logger.info(f"✅ Documento V2 generado exitosamente: {ruta_final.name}")
+        
+        return FileResponse(
+            path=str(ruta_final),
+            media_type=media_type,
+            filename=ruta_final.name,
+            headers={"Content-Disposition": f'attachment; filename="{ruta_final.name}"'}
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Error en generación V2: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
