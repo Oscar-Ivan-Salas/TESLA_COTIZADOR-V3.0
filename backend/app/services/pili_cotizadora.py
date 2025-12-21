@@ -596,46 +596,604 @@ _Indica número de tomacorrientes (puedes ajustar la recomendación)_""",
         # SERVICIO: ITSE
         elif servicio == "itse":
 
+            # Pregunta 1: Tipo de local (mejorada con botones)
             if not datos.get("tipo_local"):
                 return {
                     "accion": "solicitar_info",
-                    "mensaje_pili": "🏢 ¿Qué tipo de local es?\n\n_Ejemplo: Restaurante, Consultorio, Tienda, Oficina_",
+                    "mensaje_pili": """¡Hola! Soy especialista en **Certificados ITSE** (Inspección Técnica de Seguridad en Edificaciones).
+
+📋 **Primero necesito saber: ¿Qué tipo de establecimiento es?**
+
+💡 **¿Por qué es importante?**
+El tipo de local determina el NIVEL de inspección ITSE requerido:
+
+🍽️ **RESTAURANTE/BAR** → ITSE de Detalle (inspección in-situ obligatoria)
+🏥 **SALUD (Clínica/Consultorio)** → ITSE de Detalle + Defensa Civil
+🏫 **EDUCATIVO (Colegio/Academia)** → ITSE de Detalle (aforo crítico)
+🏪 **COMERCIO/TIENDA** → ITSE Básico Ex-Post (< 100 m²) o Detalle (> 100 m²)
+🏢 **OFICINA** → ITSE Básico (hasta 500 m²)
+🏨 **HOSPEDAJE/HOTEL** → ITSE de Detalle (riesgo alto)
+🏋️ **GYM/RECREACIÓN** → ITSE según aforo
+🏭 **INDUSTRIAL/ALMACÉN** → ITSE de Detalle + requisitos especiales
+
+**Importante**: El nivel de ITSE afecta:
+- Documentación requerida
+- Plazo de aprobación
+- Costo del trámite
+
+¿Qué tipo de local es?""",
+                    "botones": [
+                        "🍽️ Restaurante/Bar",
+                        "🏥 Salud (Clínica/Consultorio)",
+                        "🏪 Comercio/Tienda",
+                        "🏢 Oficina",
+                        "🏨 Hospedaje/Hotel",
+                        "🏫 Educativo",
+                        "🏋️ Gym/Recreación",
+                        "🏭 Industrial/Almacén"
+                    ],
                     "campo_esperado": "tipo_local",
                     "puede_generar": False
                 }
 
+            # Pregunta 2: Área (con contexto según tipo de local)
             if not datos.get("area_m2"):
+                tipo_local = datos.get("tipo_local", "").lower()
+
+                # Contexto específico según tipo de local
+                if "restaurante" in tipo_local or "bar" in tipo_local:
+                    contexto = """**Restaurante/Bar** - Perfecto.
+
+📐 **¿Cuántos metros cuadrados (m²) tiene el local?**
+
+🍽️ **Para restaurantes, el área determina:**
+
+**< 100 m²** (pequeño):
+- ITSE: **Básico Ex-Post** (presentación de documentos)
+- Aforo: ~30-40 personas (3 m² por persona en comedor)
+- Plazo aprobación: 7-10 días hábiles
+- Costo ITSE: S/ 300-500 aprox
+
+**100-500 m²** (mediano):
+- ITSE: **De Detalle con Inspección**
+- Aforo: 100-150 personas
+- Requiere: Planos, memoria descriptiva, extinción manual
+- Plazo: 15-20 días hábiles
+- Costo ITSE: S/ 800-1,200
+
+**> 500 m²** (grande):
+- ITSE: **Detalle Multidisciplinario**
+- Aforo: > 150 personas
+- Requiere: Sistema contra incendios completo, señalización, evacuación
+- Plazo: 30-45 días hábiles
+- Costo ITSE: S/ 1,500-2,500
+
+⚠️ **Restaurantes SIEMPRE requieren certificado de DIGESA adicional**
+
+_Indica el área en m²_"""
+
+                elif "salud" in tipo_local or "clínica" in tipo_local or "consultorio" in tipo_local:
+                    contexto = """**Establecimiento de Salud** - Importante.
+
+📐 **¿Cuántos metros cuadrados (m²) tiene la clínica/consultorio?**
+
+🏥 **Para salud, el área determina requisitos ESPECIALES:**
+
+**< 100 m²** (consultorio simple):
+- ITSE: **De Detalle** (inspección obligatoria aunque sea pequeño)
+- Requiere: Señalización evacuación, luces emergencia, extintores
+- Certificado MINSA adicional
+- Plazo: 20-30 días
+- Costo ITSE: S/ 800-1,000
+
+**100-500 m²** (clínica mediana):
+- ITSE: **De Detalle con Inspección Rigurosa**
+- Requiere: Sistema contra incendios, detectores humo, evacuación
+- Certificación médica MINSA
+- Aforo calculado por ambientes
+- Plazo: 30-45 días
+- Costo ITSE: S/ 1,500-2,000
+
+**> 500 m²** (hospital/clínica grande):
+- ITSE: **Multidisciplinario + Defensa Civil**
+- Requiere: Sistema completo contra incendios, plan evacuación, simulacros
+- Certificaciones múltiples
+- Plazo: 45-60 días
+- Costo ITSE: S/ 3,000-5,000
+
+⚠️ **Salud tiene los requisitos MÁS ESTRICTOS de todos los rubros**
+
+_Indica el área en m²_"""
+
+                elif "comercio" in tipo_local or "tienda" in tipo_local:
+                    contexto = """**Local Comercial/Tienda** - Excelente.
+
+📐 **¿Cuántos metros cuadrados (m²) tiene la tienda?**
+
+🏪 **Para comercio, el área es DETERMINANTE:**
+
+**< 100 m²** (tienda pequeña):
+- ITSE: **Básico Ex-Post** (solo documentos, SIN inspección)
+- Aforo: ~30 personas (3 m² por persona)
+- Documentos: Plano de ubicación, distribución, croquis
+- Plazo: 7 días hábiles
+- Costo ITSE: S/ 200-400
+- **MÁS ECONÓMICO Y RÁPIDO**
+
+**100-500 m²** (tienda mediana):
+- ITSE: **De Detalle con Inspección**
+- Aforo: 100-150 personas
+- Requiere: Planos arquitectónicos, instalaciones eléctricas, señalización
+- Extinción manual (extintores)
+- Plazo: 15-20 días
+- Costo ITSE: S/ 800-1,200
+
+**> 500 m²** (tienda grande/mall):
+- ITSE: **De Detalle Multidisciplinario**
+- Aforo: > 150 personas
+- Requiere: Sistema contra incendios completo, evacuación, simulacros
+- Plazo: 30-45 días
+- Costo ITSE: S/ 1,500-2,500
+
+💡 **Consejo**: Si tu local es 95-105 m², considera declarar < 100 m² para ITSE Básico (más económico)
+
+_Indica el área en m²_"""
+
+                else:
+                    contexto = """📐 **¿Cuántos metros cuadrados (m²) tiene el local?**
+
+📊 **El área determina el tipo de ITSE:**
+
+- **< 100 m²** → ITSE Básico Ex-Post (S/ 200-400, 7 días)
+- **100-500 m²** → ITSE de Detalle (S/ 800-1,200, 15-20 días)
+- **> 500 m²** → ITSE Detalle Multidisciplinario (S/ 1,500+, 30-45 días)
+
+_Indica el área en m²_"""
+
                 return {
                     "accion": "solicitar_info",
-                    "mensaje_pili": "📐 ¿Cuántos **metros cuadrados (m²)** tiene el local?\n\n_Ejemplo: 80 m²_",
+                    "mensaje_pili": contexto,
                     "campo_esperado": "area_m2",
                     "tipo_input": "numero",
                     "puede_generar": False
                 }
 
-            return None
+            # Pregunta 3: Número de pisos (NUEVA - importante para evacuación)
+            if not datos.get("pisos"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """🏢 **¿Cuántos pisos tiene el edificio/local?**
+
+📊 **El número de pisos afecta los requisitos de ITSE:**
+
+**1 Piso** (simple):
+- Evacuación directa a la calle
+- 1 salida puede ser suficiente (según aforo)
+- Señalización básica
+
+**2-3 Pisos** (medio):
+- Requiere escalera de evacuación señalizada
+- Mínimo 2 salidas de emergencia
+- Señalización en cada piso
+- Luces de emergencia obligatorias
+
+**4+ Pisos** (alto):
+- Escalera presurizada (en algunos casos)
+- Señalización completa de evacuación
+- Sistema de alarma en todos los pisos
+- Puertas cortafuego en escaleras
+- Simulacros de evacuación obligatorios
+
+💡 **Más pisos = Más requisitos de seguridad**
+
+_Indica número de pisos (ejemplo: 1, 2, 3...)_""",
+                    "botones": ["1 Piso", "2 Pisos", "3 Pisos", "4+ Pisos"],
+                    "campo_esperado": "pisos",
+                    "tipo_input": "numero",
+                    "puede_generar": False
+                }
+
+            # Pregunta 4: ¿Tiene licencia de funcionamiento? (NUEVA)
+            if not datos.get("tiene_licencia"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """📋 **¿Ya cuentas con Licencia de Funcionamiento Municipal?**
+
+💡 **¿Por qué pregunto?**
+
+**SÍ tengo licencia**:
+- El ITSE es RENOVACIÓN o actualización
+- Trámite más rápido
+- Puede usar documentos anteriores
+
+**NO tengo licencia (local nuevo)**:
+- El ITSE es PRIMERA VEZ
+- Requiere documentación completa
+- Plazo mayor de aprobación
+- Después del ITSE → tramitar Licencia de Funcionamiento
+
+⚠️ **IMPORTANTE**: La Licencia de Funcionamiento REQUIERE el certificado ITSE aprobado.
+
+¿Ya tienes Licencia de Funcionamiento?""",
+                    "botones": ["✅ Sí, tengo licencia", "❌ No, es local nuevo"],
+                    "campo_esperado": "tiene_licencia",
+                    "puede_generar": False
+                }
+
+            # YA TENEMOS TODO - Dar resumen
+            tipo_local = datos.get("tipo_local", "No especificado")
+            area = datos.get("area_m2", 0)
+            pisos = datos.get("pisos", 1)
+
+            # Determinar tipo de ITSE según área
+            if area < 100:
+                tipo_itse = "ITSE BÁSICO EX-POST"
+                plazo = "7-10 días hábiles"
+                costo_estimado = "S/ 200-500"
+            elif area < 500:
+                tipo_itse = "ITSE DE DETALLE"
+                plazo = "15-20 días hábiles"
+                costo_estimado = "S/ 800-1,500"
+            else:
+                tipo_itse = "ITSE DETALLE MULTIDISCIPLINARIO"
+                plazo = "30-45 días hábiles"
+                costo_estimado = "S/ 1,500-3,000"
+
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo toda la información para tu certificado ITSE:**
+
+📋 **Resumen del Local:**
+- **Tipo**: {tipo_local}
+- **Área**: {area} m²
+- **Pisos**: {pisos} nivel(es)
+- **Licencia**: {datos.get('tiene_licencia', 'No especificado')}
+
+📊 **Tipo de ITSE Requerido:** {tipo_itse}
+
+📝 **Documentación que prepararemos:**
+
+✅ **Planos arquitectónicos**:
+   - Plano de ubicación y localización
+   - Plano de distribución (arquitectura)
+   - Plano de evacuación y señalización
+   - Cálculo de aforo por ambientes
+
+✅ **Instalaciones Eléctricas**:
+   - Plano de instalaciones eléctricas
+   - Certificado de conformidad
+   - Memoria descriptiva
+
+✅ **Seguridad contra incendios**:
+   - Plan de seguridad
+   - Equipos de extinción (extintores, gabinetes)
+   - Señalización de seguridad
+   - Luces de emergencia
+
+✅ **Memoria descriptiva** según actividad
+
+📅 **Plazo de aprobación estimado:** {plazo}
+
+💰 **Costo del trámite ITSE:** {costo_estimado}
+💰 **Costo preparación documentos:** (incluido en cotización)
+
+⚠️ **Nota**: Si el área es > 500 m² o el local es de salud/educación, puede requerir inspección de Defensa Civil adicional.
+
+💰 **Generando cotización profesional completa para ITSE...**""",
+                "puede_generar": True
+            }
 
         # SERVICIO: POZO A TIERRA
         elif servicio == "pozo-tierra":
 
+            # Pregunta 1: Tipo de instalación (mejorada con contexto)
             if not datos.get("tipo_instalacion"):
                 return {
                     "accion": "solicitar_info",
-                    "mensaje_pili": "⚡ ¿Es para instalación **residencial**, **comercial** o **industrial**?",
+                    "mensaje_pili": """¡Hola! Soy especialista en **Pozos a Tierra (SPT)** según el **Código Nacional de Electricidad**.
+
+⚡ **Primero necesito saber el tipo de instalación:**
+
+💡 **¿Por qué es importante?**
+El tipo determina la RESISTENCIA MÁXIMA permitida:
+
+🏠 **RESIDENCIAL** (Viviendas, Casas):
+- Resistencia máxima: **≤ 25 Ω** (CNE 2011)
+- Pozo típico: 1 varilla de 2.4m (copperweld)
+- Profundidad: 2.5-3 metros
+- Tratamiento: Bentonita + Sal industrial
+- **Costo**: S/ 350-600
+
+🏢 **COMERCIAL** (Oficinas, Tiendas, Locales):
+- Resistencia máxima: **≤ 15 Ω** (más estricto)
+- Pozo típico: 2 varillas en paralelo o 1 varilla de 3m
+- Profundidad: 3-4 metros
+- Requiere certificación para ITSE
+- **Costo**: S/ 600-1,000
+
+🏭 **INDUSTRIAL** (Fábricas, Talleres):
+- Resistencia máxima: **≤ 5-10 Ω** (muy estricto)
+- Pozo especial: 3-4 varillas en triángulo o malla
+- Profundidad: 4-6 metros
+- Tratamiento químico especial
+- Requiere certificación + mantenimiento anual
+- **Costo**: S/ 1,500-3,500
+
+⚠️ **Un pozo a tierra MAL HECHO puede:**
+- NO proteger contra descargas eléctricas
+- Dañar equipos electrónicos
+- Ocasionar accidentes fatales
+
+¿Qué tipo de instalación es?""",
                     "botones": ["🏠 Residencial", "🏢 Comercial", "🏭 Industrial"],
                     "campo_esperado": "tipo_instalacion",
                     "puede_generar": False
                 }
 
+            # Pregunta 2: Potencia instalada (con contexto según tipo)
             if not datos.get("potencia_instalada"):
+                tipo = datos.get("tipo_instalacion", "").lower()
+
+                if "residencial" in tipo:
+                    contexto = """**Instalación Residencial** - Perfecto.
+
+⚡ **¿Cuál es la potencia total instalada aproximada?**
+
+🏠 **Para residencias, la potencia determina el calibre del conductor:**
+
+**3-5 kW** (casa pequeña):
+- Tablero: 2×20A o 2×32A
+- Conductor a tierra: #10 AWG (6 mm²) desnudo
+- 1 varilla copperweld 2.4m
+- Resistencia objetivo: 20-25 Ω
+
+**5-10 kW** (casa mediana):
+- Tablero: 2×32A o 2×40A
+- Conductor a tierra: #8 AWG (10 mm²) desnudo
+- 1 varilla copperweld 2.4m
+- Resistencia objetivo: 15-20 Ω
+
+**10-20 kW** (casa grande con A/C):
+- Tablero: 2×50A o 2×63A
+- Conductor a tierra: #6 AWG (16 mm²) desnudo
+- 2 varillas en paralelo (si es necesario)
+- Resistencia objetivo: 10-15 Ω
+
+💡 **Si no sabes la potencia exacta, puedes indicar:**
+- Tamaño de tu interruptor general (ejemplo: 32A, 40A)
+- O área de la casa (estimaremos)
+
+_Indica potencia en kW o amperaje del interruptor_"""
+
+                elif "comercial" in tipo:
+                    contexto = """**Instalación Comercial** - Excelente.
+
+⚡ **¿Cuál es la potencia total instalada?**
+
+🏢 **Para comercial, la potencia determina el tipo de pozo:**
+
+**10-30 kW** (local pequeño/mediano):
+- Tablero: 3×32A o 3×50A
+- Conductor: #6 AWG (16 mm²) o #4 AWG (25 mm²)
+- 1-2 varillas según resistencia del suelo
+- Certificación obligatoria para ITSE
+- Resistencia objetivo: ≤ 15 Ω
+
+**30-100 kW** (local grande/tienda):
+- Tablero: 3×100A o 3×125A
+- Conductor: #2 AWG (35 mm²) o #1/0 AWG
+- 2-3 varillas en paralelo
+- Tratamiento químico del suelo
+- Medición anual recomendada
+- Resistencia objetivo: ≤ 10 Ω
+
+**> 100 kW** (edificio comercial):
+- Sistema trifásico con subestación
+- Malla de puesta a tierra
+- Múltiples varillas interconectadas
+- Certificación profesional
+- Resistencia objetivo: ≤ 5 Ω
+
+_Indica potencia en kW (ejemplo: 25 kW, 80 kW)_"""
+
+                elif "industrial" in tipo:
+                    contexto = """**Instalación Industrial** - Crítico para seguridad.
+
+⚡ **¿Cuál es la potencia total instalada?**
+
+🏭 **Para industrial, el pozo a tierra ES CRÍTICO:**
+
+**50-150 kW** (taller pequeño):
+- Alimentación trifásica 380V
+- Conductor: #1/0 AWG o 2/0 AWG
+- 3 varillas en triángulo equilátero (3m separación)
+- Tratamiento químico Thor Gel o similar
+- Mediciones trimestrales
+- Resistencia objetivo: ≤ 10 Ω
+
+**150-500 kW** (nave industrial):
+- Subestación eléctrica
+- Malla de cobre desnudo 70 mm²
+- 6-10 varillas interconectadas
+- Sistema de tratamiento permanente
+- Mediciones mensuales
+- Resistencia objetivo: ≤ 5 Ω
+
+**> 500 kW** (planta industrial):
+- Sistema de tierras separadas (fuerza/control)
+- Malla extensa con múltiples puntos
+- Estudio de resistividad del suelo
+- Mantenimiento mensual obligatorio
+- Certificación anual
+- Resistencia objetivo: ≤ 3 Ω
+
+⚠️ **IMPORTANTE**: Instalaciones con equipos sensibles (PLC, variadores, servidores) requieren tierra "limpia" separada.
+
+_Indica potencia en kW (ejemplo: 200 kW)_"""
+
+                else:
+                    contexto = """⚡ **¿Cuál es la potencia instalada aproximada?**
+
+Ejemplos:
+- Casa: 5-10 kW
+- Local comercial: 20-50 kW
+- Industria: 100-500 kW
+
+_Indica potencia en kW_"""
+
                 return {
                     "accion": "solicitar_info",
-                    "mensaje_pili": "⚡ ¿Cuál es la **potencia instalada** aproximada?\n\n_Ejemplo: 10 kW, 50 kW, 200 kW_",
+                    "mensaje_pili": contexto,
                     "campo_esperado": "potencia_instalada",
+                    "tipo_input": "numero",
                     "puede_generar": False
                 }
 
-            return None
+            # Pregunta 3: Tipo de suelo (NUEVA - crítica para resistividad)
+            if not datos.get("tipo_suelo"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """🌍 **¿Qué tipo de suelo predomina en la zona?**
+
+💡 **¿Por qué es CRÍTICO?**
+El tipo de suelo afecta DIRECTAMENTE la resistencia del pozo:
+
+🪨 **ROCOSO/PEDREGOSO**:
+- Resistividad: MUY ALTA (>1000 Ω·m)
+- Problema: Difícil perforación
+- Solución: Perforación con cincel, tratamiento químico intensivo
+- Puede necesitar: 2-3 varillas en paralelo
+- **Costo adicional**: +30-50%
+
+🟤 **ARCILLOSO/HÚMEDO**:
+- Resistividad: BAJA (50-200 Ω·m)
+- **IDEAL para pozos a tierra**
+- Perforación fácil
+- Tratamiento básico suficiente
+- 1 varilla generalmente logra < 15 Ω
+- **Costo normal**
+
+🟡 **ARENOSO/SECO**:
+- Resistividad: MEDIA-ALTA (200-800 Ω·m)
+- Requiere tratamiento químico
+- Bentonita + Sal + Thor Gel
+- Puede necesitar 2 varillas
+- **Costo adicional**: +20%
+
+🏙️ **URBANO/CIMENTADO**:
+- Suelo compactado o con edificaciones
+- Dificulta perforación profunda
+- Puede requerir ubicación alternativa
+- Tratamiento especial
+- **Costo adicional**: +40%
+
+💡 **Si no estás seguro**: Indicaremos "Verificación en campo" en la cotización.
+
+¿Qué tipo de suelo tienes?""",
+                    "botones": [
+                        "🪨 Rocoso/Pedregoso",
+                        "🟤 Arcilloso/Húmedo (ideal)",
+                        "🟡 Arenoso/Seco",
+                        "🏙️ Urbano/Cimentado",
+                        "❓ No estoy seguro"
+                    ],
+                    "campo_esperado": "tipo_suelo",
+                    "puede_generar": False
+                }
+
+            # Pregunta 4: ¿Necesita certificación? (NUEVA)
+            if not datos.get("necesita_certificacion"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """📋 **¿Necesitas certificación del pozo a tierra?**
+
+💡 **¿Para qué sirve la certificación?**
+
+**SÍ necesito certificación** (recomendado):
+- Documento con medición oficial de resistencia
+- Válido para ITSE, licencias, inspecciones
+- Firma y sello de ingeniero colegiado
+- Garantía de instalación correcta
+- **Costo adicional**: S/ 150-300
+
+**NO necesito certificación**:
+- Solo instalación del pozo
+- Medición de resistencia informal
+- Sin documento oficial
+- Para uso interno o viviendas sin ITSE
+
+⚠️ **IMPORTANTE**: Locales comerciales/industriales que tramiten ITSE **REQUIEREN certificación obligatoria**.
+
+¿Necesitas certificación oficial?""",
+                    "botones": [
+                        "✅ Sí, con certificación",
+                        "⏭️ No, solo instalación"
+                    ],
+                    "campo_esperado": "necesita_certificacion",
+                    "puede_generar": False
+                }
+
+            # YA TENEMOS TODO - Dar resumen
+            tipo = datos.get("tipo_instalacion", "No especificado")
+            potencia = datos.get("potencia_instalada", 0)
+            suelo = datos.get("tipo_suelo", "No especificado")
+            cert = datos.get("necesita_certificacion", "No especificado")
+
+            # Determinar número de varillas y resistencia según potencia y tipo
+            if "residencial" in tipo.lower():
+                varillas = 1
+                resistencia_objetivo = "≤ 25 Ω"
+                conductor = "#10 AWG" if potencia < 10 else "#8 AWG"
+            elif "comercial" in tipo.lower():
+                varillas = 2 if potencia > 50 else 1
+                resistencia_objetivo = "≤ 15 Ω"
+                conductor = "#6 AWG" if potencia < 50 else "#4 AWG"
+            else:  # industrial
+                varillas = 3 if potencia > 200 else 2
+                resistencia_objetivo = "≤ 5-10 Ω"
+                conductor = "#2 AWG o superior"
+
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo toda la información para tu Pozo a Tierra:**
+
+📋 **Resumen del Sistema:**
+- **Tipo**: {tipo}
+- **Potencia instalada**: {potencia} kW
+- **Tipo de suelo**: {suelo}
+- **Certificación**: {cert}
+
+⚡ **Sistema de Puesta a Tierra Recomendado:**
+
+✅ **Pozos y varillas**:
+   - **{varillas} varilla(s)** copperweld 5/8" × 2.4m
+   - Separación entre varillas: 3 metros (si aplica)
+   - Profundidad de instalación: {2.5 if varillas == 1 else 3.5} metros
+
+✅ **Conductores**:
+   - Cable desnudo: **{conductor}** (cobre temple suave)
+   - Conector bimetálico varilla-cable
+   - Conductor hasta tablero principal
+
+✅ **Tratamiento del suelo**:
+   - Bentonita sódica: 25 kg por varilla
+   - Sal industrial: 5 kg por varilla
+   - Thor Gel (opcional para suelos difíciles)
+   - Carbón vegetal para mejorar conductividad
+
+✅ **Mediciones y pruebas**:
+   - Medición con telurómetro certificado
+   - Resistencia objetivo: **{resistencia_objetivo}**
+   - Certificado con firma de ingeniero (si solicitado)
+   - Garantía de 2 años
+
+📊 **Normativa aplicable**: CNE 2011 - Sección 250
+
+⚠️ **Nota sobre el suelo**: {"El suelo rocoso puede requerir varillas adicionales o tratamiento químico intensivo para lograr la resistencia objetivo." if "rocoso" in suelo.lower() or "pedregoso" in suelo.lower() else "El tipo de suelo es favorable para lograr buena resistencia."}
+
+💰 **Generando cotización profesional con precios actualizados 2025...**""",
+                "puede_generar": True
+            }
 
         # SERVICIO: CONTRA INCENDIOS
         elif servicio == "contraincendios":
@@ -875,27 +1433,516 @@ _Indica número de pisos (ejemplo: 1, 2, 3...)_""",
                 "puede_generar": True
             }
 
-        # SERVICIOS SIMPLES (CCTV, Redes, Domótica, Saneamiento, Expedientes)
-        else:
+        # SERVICIO: DOMÓTICA
+        elif servicio == "domotica":
 
-            if not datos.get("area_m2") and servicio in ["domotica", "redes-cctv", "saneamiento"]:
+            # Pregunta 1: Tipo de sistema domótico
+            if not datos.get("tipo_sistema"):
                 return {
                     "accion": "solicitar_info",
-                    "mensaje_pili": "📐 ¿Cuántos **metros cuadrados (m²)** tiene el área?",
+                    "mensaje_pili": """¡Hola! Soy especialista en **Domótica y Automatización de Viviendas**.
+
+🏠 **¿Qué tipo de sistema domótico quieres implementar?**
+
+💡 **Opciones disponibles:**
+
+💡 **ILUMINACIÓN INTELIGENTE**:
+- Control de luces por app/voz
+- Escenas predefinidas (Cine, Cena, Dormir)
+- Programación horaria
+- Sensor de presencia
+- **Costo**: S/ 80-150 por punto de luz
+
+🌡️ **CLIMATIZACIÓN INTELIGENTE**:
+- Termostatos WiFi
+- Control A/C por zonas
+- Programación semanal
+- Ahorro energético automático
+- **Costo**: S/ 400-800 por aire acondicionado
+
+🔐 **SEGURIDAD Y CONTROL ACCESOS**:
+- Cerraduras inteligentes
+- Videoportero IP
+- Control remoto de puertas
+- Notificaciones en smartphone
+- **Costo**: S/ 600-1,500 por puerta
+
+📹 **CÁMARAS Y VIGILANCIA**:
+- Cámaras WiFi con visión nocturna
+- Grabación en nube
+- Detección de movimiento
+- Alertas instantáneas
+- **Costo**: S/ 300-600 por cámara
+
+🎵 **AUDIO MULTIROOM**:
+- Música sincronizada en toda la casa
+- Control por voz (Alexa/Google)
+- Sistema Sonos o similar
+- **Costo**: S/ 800-2,000 por habitación
+
+🏡 **SISTEMA COMPLETO (TODO EN UNO)**:
+- Incluye iluminación + clima + seguridad
+- Hub central (SmartThings, Home Assistant)
+- Control unificado por app
+- Escenas automatizadas
+- **Costo**: S/ 5,000-15,000 según tamaño
+
+¿Qué sistema te interesa?""",
+                    "botones": [
+                        "💡 Iluminación Inteligente",
+                        "🌡️ Climatización",
+                        "🔐 Seguridad y Accesos",
+                        "📹 Cámaras WiFi",
+                        "🎵 Audio Multiroom",
+                        "🏡 Sistema Completo"
+                    ],
+                    "campo_esperado": "tipo_sistema",
+                    "puede_generar": False
+                }
+
+            # Pregunta 2: Área
+            if not datos.get("area_m2"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """📐 **¿Cuántos metros cuadrados (m²) tiene la vivienda?**
+
+🏠 **El área ayuda a estimar cantidad de dispositivos:**
+
+- **Departamento pequeño (< 80 m²)**: ~8-12 dispositivos
+- **Casa mediana (80-150 m²)**: ~15-25 dispositivos
+- **Casa grande (> 150 m²)**: ~30-50 dispositivos
+
+_Indica el área en m²_""",
                     "campo_esperado": "area_m2",
                     "tipo_input": "numero",
                     "puede_generar": False
                 }
 
+            # Resumen domótica
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo la información para tu sistema domótico:**
+
+📋 **Resumen:**
+- **Sistema**: {datos.get('tipo_sistema', 'No especificado')}
+- **Área**: {datos.get('area_m2', 0)} m²
+
+🏠 **Sistema Domótico Recomendado incluirá:**
+
+✅ Dispositivos inteligentes según área
+✅ Hub central de control
+✅ App móvil para control remoto
+✅ Configuración y programación
+✅ Capacitación de uso
+
+💰 **Generando cotización con precios actualizados 2025...**""",
+                "puede_generar": True
+            }
+
+        # SERVICIO: CCTV / REDES
+        elif servicio == "redes-cctv":
+
+            # Pregunta 1: ¿CCTV o Redes de Datos?
+            if not datos.get("tipo_servicio"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """¡Hola! Puedo ayudarte con **CCTV** o **Redes de Datos**.
+
+🎯 **¿Qué servicio necesitas?**
+
+📹 **CCTV (Videovigilancia)**:
+- Cámaras de seguridad
+- Grabación continua (DVR/NVR)
+- Visión nocturna
+- Acceso remoto
+- Detección de movimiento
+
+🌐 **REDES DE DATOS**:
+- Cableado estructurado Cat 6 o Cat 6A
+- Puntos de red (RJ45)
+- Rack de comunicaciones
+- Switch administrable
+- WiFi empresarial
+
+¿Cuál necesitas?""",
+                    "botones": [
+                        "📹 CCTV (Videovigilancia)",
+                        "🌐 Redes de Datos",
+                        "📹🌐 Ambos servicios"
+                    ],
+                    "campo_esperado": "tipo_servicio",
+                    "puede_generar": False
+                }
+
+            # Si es CCTV, preguntar cantidad de cámaras
+            if "cctv" in datos.get("tipo_servicio", "").lower() or "videovigilancia" in datos.get("tipo_servicio", "").lower():
+                if not datos.get("cantidad_camaras"):
+                    return {
+                        "accion": "solicitar_info",
+                        "mensaje_pili": """📹 **¿Cuántas cámaras de seguridad necesitas?**
+
+💡 **Recomendación según tipo de local:**
+
+🏠 **Vivienda/Casa**:
+- Mínimo: 4 cámaras (esquinas + entrada)
+- Recomendado: 6-8 cámaras (cobertura completa)
+- **Costo**: S/ 1,800-3,500 (incluye DVR 8 canales)
+
+🏪 **Local Comercial**:
+- Pequeño (< 100 m²): 4-6 cámaras
+- Mediano (100-300 m²): 8-12 cámaras
+- **Costo**: S/ 3,500-6,500 (incluye NVR 16 canales)
+
+🏭 **Industrial/Almacén**:
+- Según perímetro y zonas críticas
+- Típico: 12-24 cámaras
+- Cámaras PTZ para áreas grandes
+- **Costo**: S/ 8,000-15,000
+
+_Indica número de cámaras_""",
+                        "botones": ["4 Cámaras", "6 Cámaras", "8 Cámaras", "12+ Cámaras"],
+                        "campo_esperado": "cantidad_camaras",
+                        "tipo_input": "numero",
+                        "puede_generar": False
+                    }
+
+            # Si es Redes, preguntar cantidad de puntos
+            if "redes" in datos.get("tipo_servicio", "").lower() or "datos" in datos.get("tipo_servicio", "").lower():
+                if not datos.get("puntos_red"):
+                    return {
+                        "accion": "solicitar_info",
+                        "mensaje_pili": """🌐 **¿Cuántos puntos de red necesitas?**
+
+💡 **Recomendación según uso:**
+
+🏢 **Oficina**:
+- 1-2 puntos por estación de trabajo
+- 1 punto para impresora de red
+- 1 punto para Access Point WiFi cada 100 m²
+- **Ejemplo**: Oficina 150 m² → 12-15 puntos
+
+🏪 **Comercio**:
+- Puntos para POS (cajas registradoras)
+- Puntos para cámaras IP
+- Access Points para WiFi clientes
+- **Ejemplo**: Tienda → 8-12 puntos
+
+_Indica número de puntos de red_""",
+                        "botones": ["6 Puntos", "12 Puntos", "24 Puntos", "48+ Puntos"],
+                        "campo_esperado": "puntos_red",
+                        "tipo_input": "numero",
+                        "puede_generar": False
+                    }
+
+            # Resumen CCTV/Redes
+            tipo_serv = datos.get("tipo_servicio", "")
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo la información:**
+
+📋 **Resumen:**
+- **Servicio**: {tipo_serv}
+- **Cámaras**: {datos.get('cantidad_camaras', 'N/A')}
+- **Puntos de red**: {datos.get('puntos_red', 'N/A')}
+
+{"📹 **Sistema CCTV incluirá**: Cámaras, DVR/NVR, Disco duro, Cableado, Fuente, Instalación" if "cctv" in tipo_serv.lower() else ""}
+{"🌐 **Red de Datos incluirá**: Cableado Cat 6A, Puntos RJ45, Patch Panel, Switch, Rack" if "redes" in tipo_serv.lower() or "datos" in tipo_serv.lower() else ""}
+
+💰 **Generando cotización con precios actualizados 2025...**""",
+                "puede_generar": True
+            }
+
+        # SERVICIO: AUTOMATIZACIÓN INDUSTRIAL
+        elif servicio == "automatizacion-industrial":
+
+            # Pregunta 1: Tipo de automatización
+            if not datos.get("tipo_automatizacion"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """¡Hola! Soy especialista en **Automatización Industrial**.
+
+🏭 **¿Qué tipo de automatización necesitas?**
+
+🤖 **CONTROL DE MOTORES**:
+- Variadores de frecuencia (VFD)
+- Arrancadores suaves
+- Control de velocidad
+- Ahorro energético
+- **Aplicación**: Bombas, ventiladores, transportadores
+
+📊 **CONTROL DE PROCESOS (PLC)**:
+- PLC Siemens/Allen Bradley/Schneider
+- HMI touch panel
+- SCADA para supervisión
+- Recetas y lógica compleja
+- **Aplicación**: Líneas de producción, embotellado, envasado
+
+🌡️ **INSTRUMENTACIÓN**:
+- Sensores de temperatura, presión, nivel
+- Transmisores 4-20mA
+- Control PID
+- Registro de datos
+- **Aplicación**: Calderas, tanques, procesos térmicos
+
+🔄 **SISTEMA COMPLETO**:
+- Integración PLC + VFD + HMI + Sensores
+- Tablero de control industrial
+- Programación completa
+- Puesta en marcha y capacitación
+
+¿Qué tipo de automatización necesitas?""",
+                    "botones": [
+                        "🤖 Control de Motores (VFD)",
+                        "📊 Control PLC",
+                        "🌡️ Instrumentación",
+                        "🔄 Sistema Completo"
+                    ],
+                    "campo_esperado": "tipo_automatizacion",
+                    "puede_generar": False
+                }
+
+            # Resumen automatización
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo la información para tu proyecto de automatización:**
+
+📋 **Resumen:**
+- **Tipo**: {datos.get('tipo_automatizacion', 'No especificado')}
+
+🏭 **El sistema incluirá:**
+
+✅ Equipos industriales certificados
+✅ Tablero de control
+✅ Programación según proceso
+✅ Pruebas y puesta en marcha
+✅ Capacitación de operadores
+✅ Manuales técnicos
+
+💰 **Generando cotización con especificaciones técnicas...**""",
+                "puede_generar": True
+            }
+
+        # SERVICIO: SANEAMIENTO
+        elif servicio == "saneamiento":
+
+            # Pregunta 1: Tipo de saneamiento
+            if not datos.get("tipo_saneamiento"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """¡Hola! Soy especialista en **Instalaciones Sanitarias**.
+
+🚰 **¿Qué tipo de instalación sanitaria necesitas?**
+
+💧 **AGUA FRÍA**:
+- Red de distribución de agua
+- Tuberías PVC o CPVC
+- Llaves, grifería
+- Tanque elevado/cisterna
+- **Aplicación**: Viviendas, edificios
+
+♨️ **AGUA CALIENTE**:
+- Red de agua caliente
+- Terma eléctrica o solar
+- Tuberías aisladas
+- Recirculación
+- **Aplicación**: Hoteles, viviendas
+
+🚽 **DESAGÜE**:
+- Red de evacuación
+- Tuberías PVC SAL
+- Cajas de registro
+- Trampa de grasa (si requiere)
+- **Aplicación**: Todos los inmuebles
+
+🌧️ **AGUAS PLUVIALES**:
+- Canaletas y bajadas
+- Sistema de drenaje
+- Sumideros
+- **Aplicación**: Techos, terrazas
+
+💧🚽 **INSTALACIÓN COMPLETA**:
+- Agua fría + desagüe
+- Aparatos sanitarios
+- Grifería completa
+- Pruebas de presión
+
+¿Qué instalación necesitas?""",
+                    "botones": [
+                        "💧 Agua Fría",
+                        "♨️ Agua Caliente",
+                        "🚽 Desagüe",
+                        "🌧️ Aguas Pluviales",
+                        "💧🚽 Instalación Completa"
+                    ],
+                    "campo_esperado": "tipo_saneamiento",
+                    "puede_generar": False
+                }
+
+            # Pregunta 2: Área
+            if not datos.get("area_m2"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """📐 **¿Cuántos metros cuadrados (m²) tiene el inmueble?**
+
+🏠 **El área ayuda a estimar:**
+- Longitud de tuberías
+- Cantidad de aparatos sanitarios
+- Tamaño de tanque/cisterna
+
+_Indica el área en m²_""",
+                    "campo_esperado": "area_m2",
+                    "tipo_input": "numero",
+                    "puede_generar": False
+                }
+
+            # Resumen saneamiento
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo la información para tu instalación sanitaria:**
+
+📋 **Resumen:**
+- **Tipo**: {datos.get('tipo_saneamiento', 'No especificado')}
+- **Área**: {datos.get('area_m2', 0)} m²
+
+🚰 **El sistema incluirá:**
+
+✅ Diseño según RNE (Reglamento Nacional de Edificaciones)
+✅ Tuberías certificadas
+✅ Accesorios de calidad
+✅ Pruebas de presión y estanqueidad
+✅ Planos as-built
+
+💰 **Generando cotización con metrados y especificaciones técnicas...**""",
+                "puede_generar": True
+            }
+
+        # SERVICIO: EXPEDIENTES TÉCNICOS
+        elif servicio == "expedientes":
+
+            # Pregunta 1: Tipo de expediente
+            if not datos.get("tipo_expediente"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """¡Hola! Soy especialista en **Expedientes Técnicos** para obras.
+
+📋 **¿Qué tipo de expediente necesitas?**
+
+🏗️ **EXPEDIENTE DE OBRA NUEVA**:
+- Para construcción nueva
+- Incluye: Arquitectura, Estructuras, Instalaciones (EE, SS, II)
+- Metrados, presupuesto, cronograma
+- Especificaciones técnicas
+- **Aplicación**: Casas, edificios nuevos
+
+🔧 **EXPEDIENTE DE REMODELACIÓN**:
+- Para ampliación o remodelación
+- Levantamiento del estado actual
+- Propuesta de intervención
+- Metrados y presupuesto
+- **Aplicación**: Ampliaciones, cambios de uso
+
+⚡ **EXPEDIENTE ELÉCTRICO**:
+- Solo instalaciones eléctricas
+- Para licencia de obra o ITSE
+- Memoria de cálculo según CNE
+- Planos de instalaciones eléctricas
+- **Aplicación**: Renovación eléctrica
+
+🚰 **EXPEDIENTE SANITARIO**:
+- Solo instalaciones sanitarias
+- Según RNE
+- Planos de agua y desagüe
+- Memoria de cálculo
+- **Aplicación**: Redes sanitarias
+
+📐 **EXPEDIENTE COMPLETO PMI**:
+- Gestión de proyectos según PMI
+- Incluye todas las especialidades
+- Plan de gestión completo
+- Cronograma Gantt detallado
+- Análisis de riesgos
+
+¿Qué tipo de expediente necesitas?""",
+                    "botones": [
+                        "🏗️ Obra Nueva",
+                        "🔧 Remodelación",
+                        "⚡ Solo Eléctrico",
+                        "🚰 Solo Sanitario",
+                        "📐 Expediente Completo PMI"
+                    ],
+                    "campo_esperado": "tipo_expediente",
+                    "puede_generar": False
+                }
+
+            # Pregunta 2: Área del proyecto
+            if not datos.get("area_proyecto"):
+                return {
+                    "accion": "solicitar_info",
+                    "mensaje_pili": """📐 **¿Cuál es el área total del proyecto (m²)?**
+
+🏗️ **El área determina la complejidad del expediente:**
+
+- **< 100 m²**: Expediente básico
+- **100-500 m²**: Expediente medio
+- **> 500 m²**: Expediente complejo con múltiples especialidades
+
+_Indica el área total del proyecto en m²_""",
+                    "campo_esperado": "area_proyecto",
+                    "tipo_input": "numero",
+                    "puede_generar": False
+                }
+
+            # Resumen expediente
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Tengo la información para tu expediente técnico:**
+
+📋 **Resumen:**
+- **Tipo**: {datos.get('tipo_expediente', 'No especificado')}
+- **Área**: {datos.get('area_proyecto', 0)} m²
+
+📐 **El expediente incluirá:**
+
+✅ **Memoria descriptiva** de la obra
+✅ **Planos** (arquitectura, instalaciones según alcance)
+✅ **Especificaciones técnicas** detalladas
+✅ **Metrados** y análisis de precios unitarios
+✅ **Presupuesto** detallado con cronograma
+✅ **Cronograma** de obra (Gantt)
+✅ **Fórmula polinómica** (si aplica)
+
+📊 **Formato**: Según estándares OSCE y RNE
+
+💰 **Generando cotización para elaboración de expediente técnico...**""",
+                "puede_generar": True
+            }
+
+        # OTROS SERVICIOS (fallback genérico)
+        else:
             if not datos.get("descripcion"):
                 return {
                     "accion": "solicitar_info",
-                    "mensaje_pili": "📝 Por favor describe brevemente el proyecto:\n\n_Ejemplo: Sistema de CCTV para vigilancia perimetral_",
+                    "mensaje_pili": f"""📝 **Por favor describe brevemente el proyecto de {servicio}:**
+
+Incluye detalles como:
+- ¿Qué necesitas exactamente?
+- ¿Para qué tipo de local/vivienda?
+- ¿Algún requerimiento especial?
+
+_Ejemplo: Sistema de automatización para línea de producción de 50 metros_""",
                     "campo_esperado": "descripcion",
                     "puede_generar": False
                 }
 
-            return None
+            return {
+                "accion": "confirmar_datos",
+                "mensaje_pili": f"""✅ **Perfecto! Información recibida para {servicio}:**
+
+📋 **Descripción**: {datos.get('descripcion', 'No especificado')}
+
+💰 **Generando cotización personalizada...**""",
+                "puede_generar": True
+            }
 
     def _generar_cotizacion_final(self, servicio: str, datos: Dict) -> Dict[str, Any]:
         """
