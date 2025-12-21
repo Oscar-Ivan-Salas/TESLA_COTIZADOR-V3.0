@@ -278,6 +278,12 @@ class WordGeneratorV2:
         
         # Crear tabla (columnas dinámicas según opciones)
         items = datos.get('items', [])
+        
+        # 🐛 DEBUG: Ver qué items recibimos
+        logger.info(f"🔍 DEBUG TABLA - Total items recibidos: {len(items)}")
+        for idx, item in enumerate(items):
+            logger.info(f"  Item {idx}: desc='{item.get('descripcion')}', cant={item.get('cantidad')}, precio={item.get('precio_unitario')}")
+        
         num_cols = 4 if ocultar_precios else 5
         tabla = doc.add_table(rows=1, cols=num_cols)
         tabla.style = 'Light Grid Accent 1'
@@ -307,30 +313,62 @@ class WordGeneratorV2:
                     run.font.color.rgb = colors['secondary']
         
         # Agregar items
-        for item in items:
+        logger.info(f"📝 Agregando {len(items)} items a la tabla...")
+        for idx, item in enumerate(items):
             row = tabla.add_row().cells
             col_idx = 0
             
-            row[col_idx].text = str(item.get('descripcion', ''))
-            col_idx += 1
-            row[col_idx].text = str(item.get('cantidad', 0))
-            col_idx += 1
-            row[col_idx].text = str(item.get('unidad', 'und'))
+            descripcion = str(item.get('descripcion', ''))
+            cantidad = item.get('cantidad', 0)
+            unidad = str(item.get('unidad', 'und'))
+            precio_unitario = item.get('precio_unitario', 0)
+            
+            logger.info(f"  Fila {idx}: {descripcion} | {cantidad} {unidad} | S/ {precio_unitario}")
+            
+            
+            # Agregar datos a las celdas Y aplicar estilo inmediatamente
+            # Descripción
+            row[col_idx].text = descripcion
+            for paragraph in row[col_idx].paragraphs:
+                for run in paragraph.runs:
+                    run.font.name = font_name
+                    run.font.size = Pt(font_size)
             col_idx += 1
             
+            # Cantidad
+            row[col_idx].text = str(cantidad)
+            for paragraph in row[col_idx].paragraphs:
+                for run in paragraph.runs:
+                    run.font.name = font_name
+                    run.font.size = Pt(font_size)
+            col_idx += 1
+            
+            # Unidad
+            row[col_idx].text = unidad
+            for paragraph in row[col_idx].paragraphs:
+                for run in paragraph.runs:
+                    run.font.name = font_name
+                    run.font.size = Pt(font_size)
+            col_idx += 1
+            
+            # Precio unitario (si no está oculto)
             if not ocultar_precios:
-                row[col_idx].text = f"S/ {item.get('precio_unitario', 0):,.2f}"
-                col_idx += 1
-            
-            subtotal_item = item.get('cantidad', 0) * item.get('precio_unitario', 0)
-            row[col_idx].text = f"S/ {subtotal_item:,.2f}"
-            
-            # Aplicar fuente a todas las celdas
-            for cell in row:
-                for paragraph in cell.paragraphs:
+                row[col_idx].text = f"S/ {precio_unitario:,.2f}"
+                for paragraph in row[col_idx].paragraphs:
                     for run in paragraph.runs:
                         run.font.name = font_name
                         run.font.size = Pt(font_size)
+                col_idx += 1
+            
+            # Subtotal
+            subtotal_item = cantidad * precio_unitario
+            row[col_idx].text = f"S/ {subtotal_item:,.2f}"
+            for paragraph in row[col_idx].paragraphs:
+                for run in paragraph.runs:
+                    run.font.name = font_name
+                    run.font.size = Pt(font_size)
+            
+            logger.info(f"    Subtotal calculado: S/ {subtotal_item:,.2f}")
         
         doc.add_paragraph()  # Espacio
     

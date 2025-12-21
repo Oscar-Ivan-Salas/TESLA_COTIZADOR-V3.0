@@ -510,15 +510,28 @@ const CotizadorTesla30 = () => {
     if (!datosEditables?.items) return;
 
     const nuevosItems = [...datosEditables.items];
-    nuevosItems[index][campo] = parseFloat(valor) || 0;
+
+    // Normalizar nombre de campo (precioUnitario -> precio_unitario)
+    const campoNormalizado = campo === 'precioUnitario' ? 'precio_unitario' : campo;
+
+    // Actualizar el campo
+    if (campoNormalizado === 'descripcion') {
+      nuevosItems[index][campoNormalizado] = valor;
+    } else {
+      nuevosItems[index][campoNormalizado] = parseFloat(valor) || 0;
+    }
 
     // Recalcular total del item
-    if (campo === 'cantidad' || campo === 'precioUnitario') {
-      nuevosItems[index].total = nuevosItems[index].cantidad * nuevosItems[index].precioUnitario;
+    if (campoNormalizado === 'cantidad' || campoNormalizado === 'precio_unitario') {
+      const cantidad = nuevosItems[index].cantidad || 0;
+      const precioUnitario = nuevosItems[index].precio_unitario || 0;
+      nuevosItems[index].total = cantidad * precioUnitario;
     }
 
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
+
+    console.log(`✏️ Item ${index} editado - ${campoNormalizado}:`, valor, '| Item completo:', nuevosItems[index]);
 
     // Actualizar estado específico
     if (tipoFlujo.includes('cotizacion')) {
@@ -1744,7 +1757,7 @@ const CotizadorTesla30 = () => {
                                 </thead>
                                 <tbody>
                                   {datosEditables.items.map((item, index) => {
-                                    const subtotalItem = (parseFloat(item.cantidad || 0) * parseFloat(item.precioUnitario || 0));
+                                    const subtotalItem = (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0));
 
                                     return (
                                       <tr key={index} className="border-b-2 border-gray-300 hover:bg-gray-50">
@@ -1782,7 +1795,7 @@ const CotizadorTesla30 = () => {
                                             <input
                                               type="number"
                                               step="0.01"
-                                              value={item.precioUnitario}
+                                              value={item.precio_unitario || item.precioUnitario || 0}
                                               onChange={(e) => actualizarItem(index, 'precioUnitario', e.target.value)}
                                               className="w-full px-2 py-2 text-right border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-bold bg-white"
                                               style={{ color: '#000000' }}

@@ -50,7 +50,7 @@ const VistaPrevia = forwardRef(({
   // Calcular totales
   const calcularTotales = () => {
     const subtotal = cotizacionEditable.items?.reduce((sum, item) =>
-      sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precioUnitario || 0)), 0
+      sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
     ) || 0;
     const igv = subtotal * 0.18;
     const total = subtotal + igv;
@@ -118,8 +118,8 @@ const VistaPrevia = forwardRef(({
               <button
                 onClick={() => setModoEdicion(!modoEdicion)}
                 className={`px-4 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all border-2 shadow-xl ${modoEdicion
-                    ? 'bg-green-800 hover:bg-green-700 border-green-600'
-                    : 'bg-blue-800 hover:bg-blue-700 border-blue-600'
+                  ? 'bg-green-800 hover:bg-green-700 border-green-600'
+                  : 'bg-blue-800 hover:bg-blue-700 border-blue-600'
                   } text-white`}
               >
                 {modoEdicion ? <><Save className="w-5 h-5" /> Finalizar</> : <><Edit className="w-5 h-5" /> Editar</>}
@@ -131,8 +131,8 @@ const VistaPrevia = forwardRef(({
                   <button
                     onClick={() => setOcultarPreciosUnitarios(!ocultarPreciosUnitarios)}
                     className={`px-4 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all border-2 shadow-xl ${ocultarPreciosUnitarios
-                        ? 'bg-purple-800 hover:bg-purple-700 border-purple-600'
-                        : 'bg-gray-700 hover:bg-gray-600 border-gray-500'
+                      ? 'bg-purple-800 hover:bg-purple-700 border-purple-600'
+                      : 'bg-gray-700 hover:bg-gray-600 border-gray-500'
                       } text-white`}
                   >
                     {ocultarPreciosUnitarios ? <><Eye className="w-5 h-5" /> P.U.</> : <><EyeOff className="w-5 h-5" /> P.U.</>}
@@ -141,8 +141,8 @@ const VistaPrevia = forwardRef(({
                   <button
                     onClick={() => setOcultarTotalesPorItem(!ocultarTotalesPorItem)}
                     className={`px-4 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all border-2 shadow-xl ${ocultarTotalesPorItem
-                        ? 'bg-indigo-800 hover:bg-indigo-700 border-indigo-600'
-                        : 'bg-gray-700 hover:bg-gray-600 border-gray-500'
+                      ? 'bg-indigo-800 hover:bg-indigo-700 border-indigo-600'
+                      : 'bg-gray-700 hover:bg-gray-600 border-gray-500'
                       } text-white`}
                   >
                     {ocultarTotalesPorItem ? <><Eye className="w-5 h-5" /> Totales</> : <><EyeOff className="w-5 h-5" /> Totales</>}
@@ -263,7 +263,7 @@ const VistaPrevia = forwardRef(({
                 <tbody>
                   {itemsPorCapitulo[capitulo].map((item, itemIndex) => {
                     const globalIndex = cotizacionEditable.items.findIndex(i => i === item);
-                    const subtotalItem = parseFloat(item.cantidad || 0) * parseFloat(item.precioUnitario || 0);
+                    const subtotalItem = parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0);
 
                     return (
                       <tr key={itemIndex} className="border-b border-gray-200">
@@ -308,12 +308,12 @@ const VistaPrevia = forwardRef(({
                               <input
                                 type="number"
                                 step="0.01"
-                                value={item.precioUnitario}
+                                value={item.precio_unitario || item.precioUnitario || 0}
                                 onChange={(e) => actualizarItem(globalIndex, 'precioUnitario', e.target.value)}
                                 className="w-24 px-2 py-1 border border-gray-300 rounded text-right focus:ring-2 focus:ring-red-500 focus:outline-none"
                               />
                             ) : (
-                              `S/ ${parseFloat(item.precioUnitario).toFixed(2)}`
+                              `S/ ${parseFloat(item.precio_unitario || item.precioUnitario || 0).toFixed(2)}`
                             )}
                           </td>
                         )}
