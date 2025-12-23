@@ -868,7 +868,50 @@ async def http_exception_handler(request, exc):
         content={"error": exc.detail}
     )
 
-@app.exception_handler(Exception)
+
+# ═══════════════════════════════════════════════════════════════
+# 🆕 ENDPOINT PARA SERVIR PLANTILLAS HTML
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/templates/{tipo}")
+async def obtener_plantilla_html(tipo: str):
+    """Sirve plantillas HTML profesionales al frontend"""
+    try:
+        plantillas_map = {
+            'cotizacion-simple': 'PLANTILLA_HTML_COTIZACION_SIMPLE.html',
+            'cotizacion-compleja': 'PLANTILLA_HTML_COTIZACION_COMPLEJA.html',
+            'proyecto-simple': 'PLANTILLA_HTML_PROYECTO_SIMPLE.html',
+            'proyecto-pmi': 'PLANTILLA_HTML_PROYECTO_COMPLEJO_PMI.html',
+            'informe-tecnico': 'PLANTILLA_HTML_INFORME_TECNICO.html',
+            'informe-ejecutivo': 'PLANTILLA_HTML_INFORME_EJECUTIVO_APA.html',
+        }
+        
+        archivo = plantillas_map.get(tipo)
+        if not archivo:
+            raise HTTPException(status_code=404, detail=f"Plantilla '{tipo}' no encontrada")
+        
+        templates_dir = Path(__file__).parent / "templates" / "documentos"
+        template_path = templates_dir / archivo
+        
+        if not template_path.exists():
+            raise HTTPException(status_code=404, detail=f"Archivo no encontrado: {archivo}")
+        
+        with open(template_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        logger.info(f"📄 Plantilla servida: {tipo}")
+        return JSONResponse(content={"html": html_content, "tipo": tipo})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error sirviendo plantilla {tipo}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════
+# 🔄 EXCEPTION HANDLERS
+# ═══════════════════════════════════════════════════════════════
+
 async def general_exception_handler(request, exc):
     logger.error(f"❌ Unhandled exception: {exc}")
     return JSONResponse(

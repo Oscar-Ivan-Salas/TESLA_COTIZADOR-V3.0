@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
 import ChatIA from './components/ChatIA';
-import VistaPrevia from './components/VistaPrevia';
+import VistaPreviaProfesional from './components/VistaPreviaProfesional';
 
 const CotizadorTesla30 = () => {
   // ============================================
@@ -46,6 +46,7 @@ const CotizadorTesla30 = () => {
   const [fuenteDocumento, setFuenteDocumento] = useState('Calibri'); // Calibri, Arial, Times New Roman
   const [tamañoFuente, setTamañoFuente] = useState(11); // 10, 11, 12
   const [mostrarLogo, setMostrarLogo] = useState(true);
+  const [logoUrl, setLogoUrl] = useState(null); // URL del logo subido
   const [posicionLogo, setPosicionLogo] = useState('center'); // left, center, right
   const [mostrarPanelPersonalizacion, setMostrarPanelPersonalizacion] = useState(false);
 
@@ -348,26 +349,50 @@ const CotizadorTesla30 = () => {
 
       const data = await response.json();
 
+
       if (data.success) {
         const mensajeIA = { tipo: 'asistente', mensaje: data.respuesta };
         setConversacion(prev => [...prev, mensajeIA]);
 
-        // ACTUALIZAR VISTA PREVIA HTML
-        if (data.html_preview) {
-          setHtmlPreview(data.html_preview);
-          setMostrarPreview(true);
-        }
-
         // Manejar datos según el tipo de flujo
+        let datosParaHTML = null;
+
         if (tipoFlujo.includes('cotizacion') && data.cotizacion_generada) {
           setCotizacion(data.cotizacion_generada);
           setDatosEditables(data.cotizacion_generada);
+          datosParaHTML = data.cotizacion_generada;
+        } else if (tipoFlujo.includes('cotizacion') && data.estructura_generada) {
+          setCotizacion(data.estructura_generada);
+          setDatosEditables(data.estructura_generada);
+          datosParaHTML = data.estructura_generada;
         } else if (tipoFlujo.includes('proyecto') && data.proyecto_generado) {
           setProyecto(data.proyecto_generado);
           setDatosEditables(data.proyecto_generado);
+          datosParaHTML = data.proyecto_generado;
         } else if (tipoFlujo.includes('informe') && data.informe_generado) {
           setInforme(data.informe_generado);
           setDatosEditables(data.informe_generado);
+          datosParaHTML = data.informe_generado;
+        }
+
+        // GENERAR HTML USANDO PLANTILLAS PROFESIONALES
+        if (datosParaHTML) {
+          try {
+            const htmlGenerado = await obtenerHTMLSegunTipo(datosParaHTML);
+            setHtmlPreview(htmlGenerado);
+            setMostrarPreview(true);
+          } catch (error) {
+            console.error('Error generando HTML:', error);
+            // Fallback al HTML del backend si existe
+            if (data.html_preview) {
+              setHtmlPreview(data.html_preview);
+              setMostrarPreview(true);
+            }
+          }
+        } else if (data.html_preview) {
+          // Fallback si no hay datos estructurados
+          setHtmlPreview(data.html_preview);
+          setMostrarPreview(true);
         }
 
         // Actualizar botones contextuales
@@ -375,7 +400,8 @@ const CotizadorTesla30 = () => {
           setBotonesContextuales(data.botones_contextuales);
         }
       } else {
-        throw new Error(data.error || 'Error en la respuesta');
+        const mensajeError = { tipo: 'asistente', mensaje: data.respuesta || 'Error en la respuesta' };
+        setConversacion(prev => [...prev, mensajeError]);
       }
     } catch (error) {
       console.error('Error en chat:', error);
@@ -543,7 +569,7 @@ const CotizadorTesla30 = () => {
     }
 
     // Regenerar HTML
-    regenerarHTML();
+    actualizarVistaPrevia();
   };
 
   const agregarItem = () => {
@@ -565,7 +591,7 @@ const CotizadorTesla30 = () => {
       setCotizacion(nuevosDatos);
     }
 
-    regenerarHTML();
+    actualizarVistaPrevia();
   };
 
   const eliminarItem = (index) => {
@@ -579,142 +605,159 @@ const CotizadorTesla30 = () => {
       setCotizacion(nuevosDatos);
     }
 
-    regenerarHTML();
+    actualizarVistaPrevia();
   };
 
-  const regenerarHTML = () => {
+  const actualizarVistaPrevia = async () => {
     if (!datosEditables) return;
 
     // Generar HTML actualizado basado en los datos editables
-    let htmlActualizado = generarHTMLPreview(datosEditables);
+    let htmlActualizado = await obtenerHTMLSegunTipo(datosEditables);
     setHtmlPreview(htmlActualizado);
   };
 
-  const generarHTMLPreview = (datos) => {
+  const obtenerHTMLSegunTipo = async (datos) => {
     if (tipoFlujo.includes('cotizacion')) {
-      return generarHTMLCotizacion(datos);
+      return await generarHTMLCotizacion(datos);
     } else if (tipoFlujo.includes('proyecto')) {
-      return generarHTMLProyecto(datos);
+      return await generarHTMLProyecto(datos);
     } else if (tipoFlujo.includes('informe')) {
-      return generarHTMLInforme(datos);
+      return await generarHTMLInforme(datos);
     }
     return '';
   };
 
-  const generarHTMLCotizacion = (datos) => {
-    const totales = calcularTotales(datos?.items || []);
+  const generarHTMLCotizacion = async (datos) => {
+    try {
+      // 1. Cargar plantilla profesional desde API
+      const response = await fetch('/api/templates/cotizacion-simple');
+      const { html } = await response.json();
 
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
-        <div style="border-bottom: 3px solid #8B0000; padding-bottom: 20px; margin-bottom: 20px;">
-          <h1 style="color: #8B0000; margin: 0; font-size: 28px;">COTIZACIÓN</h1>
-          <p style="color: #D4AF37; font-weight: bold; margin: 5px 0;">Tesla Electricidad y Automatización S.A.C.</p>
-          <p style="color: #666; margin: 0;">RUC: 20601138787</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #8B0000; border-bottom: 2px solid #D4AF37; padding-bottom: 10px;">DETALLES DE LA COTIZACIÓN</h2>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            <thead>
-              <tr style="background: #8B0000; color: white;">
-                <th style="padding: 12px; text-align: left; border: 1px solid #8B0000;">DESCRIPCIÓN</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #8B0000; width: 80px;">CANT.</th>
-                ${!ocultarPreciosUnitarios ? '<th style="padding: 12px; text-align: center; border: 1px solid #8B0000; width: 100px;">P. UNIT.</th>' : ''}
-                <th style="padding: 12px; text-align: center; border: 1px solid #8B0000; width: 100px;">TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(datos?.items || []).map((item, index) => `
-                <tr style="border-bottom: 1px solid #ddd;">
-                  <td style="padding: 10px; border: 1px solid #ddd;">${item.descripcion}</td>
-                  <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${item.cantidad}</td>
-                  ${!ocultarPreciosUnitarios ? `<td style="padding: 10px; text-align: center; border: 1px solid #ddd;">S/ ${item.precioUnitario?.toFixed(2) || '0.00'}</td>` : ''}
-                  <td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-weight: bold;">S/ ${((item.cantidad || 0) * (item.precioUnitario || 0)).toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        
-        <div style="margin-top: 30px; text-align: right;">
-          <div style="display: inline-block; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 2px solid #D4AF37;">
-            <div style="margin-bottom: 10px;">
-              <span style="font-weight: bold;">Subtotal:</span>
-              <span style="margin-left: 20px; font-size: 18px;">S/ ${totales.subtotal}</span>
-            </div>
-            ${!ocultarIGV ? `
-              <div style="margin-bottom: 10px;">
-                <span style="font-weight: bold;">IGV (18%):</span>
-                <span style="margin-left: 20px; font-size: 18px;">S/ ${totales.igv}</span>
-              </div>
-            ` : ''}
-            <div style="border-top: 2px solid #8B0000; padding-top: 10px; margin-top: 15px;">
-              <span style="font-weight: bold; font-size: 20px; color: #8B0000;">TOTAL:</span>
-              <span style="margin-left: 20px; font-size: 24px; font-weight: bold; color: #8B0000;">S/ ${ocultarIGV ? totales.subtotal : totales.total}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #D4AF37; color: #666; font-size: 14px;">
-          <p><strong>Condiciones:</strong> Precios ${ocultarIGV ? 'no incluyen' : 'incluyen'} IGV. Válido por 30 días.</p>
-          <p><strong>Contacto:</strong> ${datosEmpresa.telefono} | ${datosEmpresa.email}</p>
-        </div>
-      </div>
-    `;
+      // 2. Calcular totales
+      const totales = calcularTotales(datos?.items || []);
+
+      // 3. Reemplazar variables básicas
+      let htmlFinal = html
+        .replace(/\{\{CLIENTE_NOMBRE\}\}/g, datos.cliente || 'Cliente')
+        .replace(/\{\{NUMERO_COTIZACION\}\}/g, datos.numero || `COT-${new Date().getTime()}`)
+        .replace(/\{\{FECHA_COTIZACION\}\}/g, new Date().toLocaleDateString('es-PE'))
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, datos.proyecto || 'Proyecto')
+        .replace(/\{\{SUBTOTAL\}\}/g, totales.subtotal)
+        .replace(/\{\{IGV\}\}/g, totales.igv)
+        .replace(/\{\{TOTAL\}\}/g, totales.total)
+        .replace(/\{\{VIGENCIA\}\}/g, '30 días')
+        .replace(/\{\{SERVICIO_NOMBRE\}\}/g, datos.servicio || 'Instalaciones Eléctricas')
+        .replace(/\{\{NORMATIVA_APLICABLE\}\}/g, 'CNE - Código Nacional de Electricidad');
+
+      // 4. Aplicar colores personalizados según esquema actual
+      const ESQUEMAS_COLORES = {
+        'azul': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF' },
+        'rojo': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEE2E2' },
+        'verde': { primario: '#065F46', secundario: '#047857', acento: '#10B981', claro: '#D1FAE5' },
+        'dorado': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FEF3C7' },
+      };
+
+      const colores = ESQUEMAS_COLORES[esquemaColores] || ESQUEMAS_COLORES.azul;
+      htmlFinal = htmlFinal
+        .replace(/#0052A3/g, colores.primario)
+        .replace(/#1E40AF/g, colores.secundario)
+        .replace(/#3B82F6/g, colores.acento)
+        .replace(/#EFF6FF/g, colores.claro)
+        .replace(/#DBEAFE/g, colores.claro);
+
+      return htmlFinal;
+    } catch (error) {
+      console.error('Error cargando plantilla:', error);
+      // Fallback al HTML básico si falla
+      const totales = calcularTotales(datos?.items || []);
+      return `<div style="padding: 20px;"><h1>Cotización</h1><p>Total: S/ ${totales.total}</p></div>`;
+    }
   };
 
-  const generarHTMLProyecto = (datos) => {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
-        <div style="border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px;">
-          <h1 style="color: #2563eb; margin: 0; font-size: 28px;">PROYECTO</h1>
-          <p style="color: #D4AF37; font-weight: bold; margin: 5px 0;">Tesla Electricidad y Automatización S.A.C.</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #2563eb; margin-bottom: 15px;">${nombreProyecto || 'Nuevo Proyecto'}</h2>
-          <p><strong>Cliente:</strong> ${clienteProyecto}</p>
-          <p><strong>Presupuesto:</strong> S/ ${presupuestoEstimado}</p>
-          <p><strong>Duración:</strong> ${duracionMeses} meses</p>
-        </div>
-        
-        <div style="margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb;">
-          <h3 style="color: #2563eb; margin-top: 0;">Descripción del Proyecto</h3>
-          <p>${contextoUsuario}</p>
-        </div>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D4AF37; color: #666; font-size: 14px;">
-          <p><strong>Contacto:</strong> ${datosEmpresa.telefono} | ${datosEmpresa.email}</p>
-        </div>
-      </div>
-    `;
+  const generarHTMLProyecto = async (datos) => {
+    try {
+      // 1. Cargar plantilla profesional
+      const response = await fetch('/api/templates/proyecto-simple');
+      const { html } = await response.json();
+
+      // 2. Reemplazar variables
+      let htmlFinal = html
+        .replace(/\{\{NOMBRE_PROYECTO\}\}/g, nombreProyecto || 'Nuevo Proyecto')
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, nombreProyecto || 'Nuevo Proyecto')
+        .replace(/\{\{CLIENTE\}\}/g, clienteProyecto || 'Cliente')
+        .replace(/\{\{CLIENTE_NOMBRE\}\}/g, clienteProyecto || 'Cliente')
+        .replace(/\{\{PRESUPUESTO\}\}/g, presupuestoEstimado || '0.00')
+        .replace(/\{\{TOTAL\}\}/g, presupuestoEstimado || '0.00')
+        .replace(/\{\{DURACION_TOTAL\}\}/g, `${duracionMeses} meses`)
+        .replace(/\{\{FECHA\}\}/g, new Date().toLocaleDateString('es-PE'))
+        .replace(/\{\{DESCRIPCION_PROYECTO\}\}/g, contextoUsuario || 'Descripción del proyecto');
+
+      // 3. Aplicar colores personalizados
+      const ESQUEMAS_COLORES = {
+        'azul': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF' },
+        'rojo': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEE2E2' },
+        'verde': { primario: '#065F46', secundario: '#047857', acento: '#10B981', claro: '#D1FAE5' },
+        'dorado': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FEF3C7' },
+      };
+
+      const colores = ESQUEMAS_COLORES[esquemaColores] || ESQUEMAS_COLORES.azul;
+      htmlFinal = htmlFinal
+        .replace(/#0052A3/g, colores.primario)
+        .replace(/#1E40AF/g, colores.secundario)
+        .replace(/#3B82F6/g, colores.acento)
+        .replace(/#EFF6FF/g, colores.claro)
+        .replace(/#DBEAFE/g, colores.claro);
+
+      return htmlFinal;
+    } catch (error) {
+      console.error('Error cargando plantilla proyecto:', error);
+      return `<div style="padding: 20px;"><h1>Proyecto</h1><p>${nombreProyecto}</p></div>`;
+    }
   };
 
-  const generarHTMLInforme = (datos) => {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
-        <div style="border-bottom: 3px solid #16a34a; padding-bottom: 20px; margin-bottom: 20px;">
-          <h1 style="color: #16a34a; margin: 0; font-size: 28px;">INFORME ${tipoFlujo.includes('ejecutivo') ? 'EJECUTIVO' : 'SIMPLE'}</h1>
-          <p style="color: #D4AF37; font-weight: bold; margin: 5px 0;">Tesla Electricidad y Automatización S.A.C.</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <p><strong>Proyecto:</strong> ${proyectosMock.find(p => p.id === proyectoSeleccionado)?.nombre || 'General'}</p>
-          <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
-          <p><strong>Formato:</strong> ${formatoInforme.toUpperCase()}</p>
-        </div>
-        
-        <div style="margin-bottom: 30px; background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #16a34a;">
-          <h3 style="color: #16a34a; margin-top: 0;">Contenido del Informe</h3>
-          <p>${contextoUsuario}</p>
-        </div>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D4AF37; color: #666; font-size: 14px;">
-          <p><strong>Contacto:</strong> ${datosEmpresa.telefono} | ${datosEmpresa.email}</p>
-        </div>
-      </div>
-    `;
+
+  const generarHTMLInforme = async (datos) => {
+    try {
+      // 1. Determinar tipo de informe
+      const tipoInforme = tipoFlujo.includes('ejecutivo') ? 'informe-ejecutivo' : 'informe-tecnico';
+
+      // 2. Cargar plantilla profesional
+      const response = await fetch(`/api/templates/${tipoInforme}`);
+      const { html } = await response.json();
+
+      // 3. Reemplazar variables
+      const proyectoNombre = proyectosMock.find(p => p.id === proyectoSeleccionado)?.nombre || 'General';
+      let htmlFinal = html
+        .replace(/\{\{TITULO_INFORME\}\}/g, proyectoNombre)
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, proyectoNombre)
+        .replace(/\{\{FECHA\}\}/g, new Date().toLocaleDateString('es-PE'))
+        .replace(/\{\{FORMATO\}\}/g, formatoInforme.toUpperCase())
+        .replace(/\{\{RESUMEN_EJECUTIVO\}\}/g, contextoUsuario || 'Contenido del informe')
+        .replace(/\{\{DESCRIPCION_PROYECTO\}\}/g, contextoUsuario || 'Contenido del informe');
+
+      // 4. Aplicar colores personalizados
+      const ESQUEMAS_COLORES = {
+        'azul': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF' },
+        'rojo': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEE2E2' },
+        'verde': { primario: '#065F46', secundario: '#047857', acento: '#10B981', claro: '#D1FAE5' },
+        'dorado': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FEF3C7' },
+      };
+
+      const colores = ESQUEMAS_COLORES[esquemaColores] || ESQUEMAS_COLORES.azul;
+      htmlFinal = htmlFinal
+        .replace(/#0052A3/g, colores.primario)
+        .replace(/#1E40AF/g, colores.secundario)
+        .replace(/#3B82F6/g, colores.acento)
+        .replace(/#EFF6FF/g, colores.claro)
+        .replace(/#DBEAFE/g, colores.claro);
+
+      return htmlFinal;
+    } catch (error) {
+      console.error('Error cargando plantilla informe:', error);
+      return `<div style="padding: 20px;"><h1>Informe</h1><p>${tipoFlujo}</p></div>`;
+    }
   };
+
 
   const calcularTotales = (items = []) => {
     const subtotal = items.reduce((sum, item) => sum + ((item.cantidad || 0) * (item.precioUnitario || 0)), 0);
@@ -1909,12 +1952,15 @@ const CotizadorTesla30 = () => {
                     </div>
                   </div>
 
-                  {/* VISTA PREVIA CON BOTONES DE GENERACIÓN */}
-                  <VistaPrevia
+                  {/* VISTA PREVIA PROFESIONAL CON BOTONES DE GENERACIÓN */}
+                  <VistaPreviaProfesional
                     cotizacion={cotizacion || proyecto || informe || {}}
                     onGenerarDocumento={handleDescargar}
                     tipoDocumento={tipoFlujo}
                     htmlPreview={htmlPreview}
+                    esquemaColores={esquemaColores}
+                    logoBase64={logoBase64}
+                    fuenteDocumento={fuenteDocumento}
                   />
 
                   {/* ✅ PANEL DE PERSONALIZACIÓN */}

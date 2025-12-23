@@ -86,6 +86,103 @@ class WordGeneratorV2:
         tipo_doc = datos.get('tipo_documento', 'cotizacion')
         logger.info(f"📄 Generando {tipo_doc} Word V2: {datos.get('numero')}")
         
+        
+        # 🆕 USAR GENERADOR PROFESIONAL para TODOS los tipos
+        tipos_profesionales = [
+            'cotizacion-simple', 'cotizacion', 'cotizacion-compleja',
+            'proyecto-simple', 'proyecto', 'proyecto-complejo', 'proyecto-pmi',
+            'informe-tecnico', 'informe', 'informe-ejecutivo', 'informe-apa'
+        ]
+        
+        if tipo_doc in tipos_profesionales:
+            try:
+                from .generators import generar_documento
+                
+                # Preparar opciones de personalización
+                personalizacion = datos.get('personalizacion', {})
+                
+                # Extraer logo si existe (puede venir como base64 o URL)
+                logo_path = None
+                if personalizacion.get('logo_base64'):
+                    # Convertir base64 a archivo temporal
+                    import base64
+                    import tempfile
+                    import os
+                    
+                    try:
+                        logo_base64 = personalizacion.get('logo_base64')
+                        
+                        # Remover prefijo data:image si existe
+                        if ',' in logo_base64:
+                            logo_base64 = logo_base64.split(',')[1]
+                        
+                        # Decodificar base64
+                        logo_data = base64.b64decode(logo_base64)
+                        
+                        # Crear archivo temporal
+                        temp_dir = tempfile.gettempdir()
+                        temp_filename = f"logo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+                        logo_path = os.path.join(temp_dir, temp_filename)
+                        
+                        # Guardar archivo
+                        with open(logo_path, 'wb') as f:
+                            f.write(logo_data)
+                        
+                        logger.info(f"✅ Logo convertido de base64 a: {logo_path}")
+                    except Exception as e:
+                        logger.error(f"❌ Error convirtiendo logo base64: {e}")
+                        logo_path = None
+                        
+                elif personalizacion.get('logo_url'):
+                    logo_path = personalizacion.get('logo_url')
+                
+                opciones = {
+                    'esquema_colores': personalizacion.get('esquema_colores', 'azul-tesla'),
+                    'fuente': personalizacion.get('fuente', 'Calibri'),
+                    'tamano_fuente': personalizacion.get('tamano_fuente', 11),
+                    'mostrar_logo': personalizacion.get('mostrar_logo', True),
+                    'logo_path': logo_path
+                }
+                
+                # Generar nombre de archivo
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                numero = datos.get('numero', f'DOC-{timestamp}')
+                filename = f"{numero.replace('/', '-')}_{timestamp}.docx"
+                output_path = self.output_dir / filename
+                
+                # Mapear tipo de documento al generador correcto
+                tipo_generador = tipo_doc
+                if tipo_doc == 'cotizacion':
+                    tipo_generador = 'cotizacion-simple'
+                elif tipo_doc == 'proyecto':
+                    tipo_generador = 'proyecto-simple'
+                elif tipo_doc == 'proyecto-pmi':
+                    tipo_generador = 'proyecto-complejo'
+                elif tipo_doc == 'informe':
+                    tipo_generador = 'informe-tecnico'
+                elif tipo_doc == 'informe-apa':
+                    tipo_generador = 'informe-ejecutivo'
+                
+                # Usar generador profesional
+                logger.info(f"✨ Usando generador profesional para {tipo_doc} → {tipo_generador}")
+                generar_documento(tipo_generador, datos, output_path, opciones)
+                
+                logger.info(f"✅ Documento profesional generado: {output_path}")
+                return output_path
+                
+            except ImportError as e:
+                logger.warning(f"⚠️ Generador profesional no disponible: {e}")
+                logger.info("🔄 Usando generador V2 clásico como fallback")
+                import traceback
+                traceback.print_exc()
+            except Exception as e:
+                logger.error(f"❌ Error en generador profesional: {e}")
+                logger.info("🔄 Usando generador V2 clásico como fallback")
+                import traceback
+                traceback.print_exc()
+        
+        # Fallback: Usar generador V2 clásico
+        
         # Crear documento
         doc = Document()
         
