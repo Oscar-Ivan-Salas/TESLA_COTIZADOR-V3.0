@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generador de Cotización Compleja
 Cotización con capítulos, subtotales y notas técnicas

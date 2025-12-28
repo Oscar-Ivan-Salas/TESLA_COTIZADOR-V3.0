@@ -185,6 +185,7 @@ ${servicioActual.capacidades.map(cap => `✅ ${cap}`).join('\n')}
           mensaje: inputChat,
           historial: nuevaConversacion,
           contexto_adicional: contextoPrincipal,
+          generar_html: true,  // ✅ SOLICITAR DATOS ESTRUCTURADOS
           archivos_procesados: archivos.map(a => ({
             nombre: a.nombre,
             contenido: a.contenidoTexto || a.contenido

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generador de Informe Técnico - COMPLETO
 Informe técnico profesional con análisis detallado
@@ -103,10 +104,12 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        introduccion = self.datos.get('introduccion', 'Introducción y contexto del informe...')
-        p_intro = self.doc.add_paragraph(introduccion)
-        p_intro.runs[0].font.size = Pt(12)
-        p_intro.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        
+        introduccion = self.datos.get('introduccion', 'Introducción del informe técnico...')
+        p_intro = self.doc.add_paragraph()
+        run_intro = p_intro.add_run(introduccion)
+        run_intro.font.size = Pt(12)
+        run_intro.font.color.rgb = RGBColor(55, 65, 81)
         p_intro.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
@@ -120,9 +123,10 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
         analisis = self.datos.get('analisis_tecnico', 'Análisis técnico detallado...')
-        p_analisis = self.doc.add_paragraph(analisis)
-        p_analisis.runs[0].font.size = Pt(12)
-        p_analisis.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        p_analisis = self.doc.add_paragraph()
+        run_analisis = p_analisis.add_run(analisis)
+        run_analisis.font.size = Pt(12)
+        run_analisis.font.color.rgb = RGBColor(55, 65, 81)
         p_analisis.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
@@ -136,9 +140,10 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
         resultados = self.datos.get('resultados', 'Resultados obtenidos...')
-        p_resultados = self.doc.add_paragraph(resultados)
-        p_resultados.runs[0].font.size = Pt(12)
-        p_resultados.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        p_resultados = self.doc.add_paragraph()
+        run_resultados = p_resultados.add_run(resultados)
+        run_resultados.font.size = Pt(12)
+        run_resultados.font.color.rgb = RGBColor(55, 65, 81)
         p_resultados.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
@@ -152,9 +157,10 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
         conclusiones = self.datos.get('conclusiones', 'Conclusiones del análisis...')
-        p_conclusiones = self.doc.add_paragraph(conclusiones)
-        p_conclusiones.runs[0].font.size = Pt(12)
-        p_conclusiones.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        p_conclusiones = self.doc.add_paragraph()
+        run_conclusiones = p_conclusiones.add_run(conclusiones)
+        run_conclusiones.font.size = Pt(12)
+        run_conclusiones.font.color.rgb = RGBColor(55, 65, 81)
         p_conclusiones.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
@@ -183,6 +189,7 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
     
     def generar(self, ruta_salida):
         """Genera el documento completo"""
+        # Agregar header con logo y datos de empresa
         self._agregar_header_basico()
         self._agregar_titulo()
         self._agregar_info_general()

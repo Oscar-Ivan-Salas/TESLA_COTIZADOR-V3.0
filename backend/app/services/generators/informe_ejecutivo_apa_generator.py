@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generador de Informe Ejecutivo APA - COMPLETO
 Informe ejecutivo profesional con formato APA

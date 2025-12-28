@@ -10,7 +10,10 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
     esquemaColores = 'azul-tesla',
     logoBase64 = null,
     fuenteDocumento = 'Calibri',
-    onDatosChange = () => { }
+    onDatosChange = () => { },
+    ocultarIGV = false,
+    ocultarPreciosUnitarios = false,
+    ocultarTotalesPorItem = false
 }) => {
 
     const [datosEditables, setDatosEditables] = useState({
@@ -37,6 +40,9 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
             dias_pruebas: datos.cronograma?.dias_pruebas || 3
         }
     });
+
+    // Estado para la moneda
+    const [moneda, setMoneda] = useState('S/'); // S/, $, €
 
     const COLORES = {
         'azul-tesla': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF', claroBorde: '#DBEAFE' },
@@ -91,7 +97,8 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                     ) : (
                         <div style={{ width: '180px', height: '80px', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '24px' }}>TESLA</div>
                     )}
-                    <p style={{ fontSize: '10px', color: '#6B7280', marginTop: '10px' }}>Electricidad y Automatización</p>
+                    {/* Solo mostrar texto si NO hay logo personalizado */}
+                    {!logoBase64 && <p style={{ fontSize: '10px', color: '#6B7280', marginTop: '10px' }}>Electricidad y Automatización</p>}
                 </div>
                 <div style={{ width: '65%', textAlign: 'right' }}>
                     <div style={{ fontSize: '20px', fontWeight: 'bold', color: colores.primario, marginBottom: '8px', textTransform: 'uppercase' }}>
@@ -103,6 +110,56 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                         <div>Teléfono: 906 315 961</div>
                         <div>Email: ingenieria.teslaelectricidad@gmail.com</div>
                     </div>
+                </div>
+
+                {/* SELECTOR DE MONEDA */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', gap: '10px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: colores.secundario }}>Moneda:</span>
+                    <button
+                        onClick={() => setMoneda('S/')}
+                        style={{
+                            padding: '6px 12px',
+                            background: moneda === 'S/' ? colores.primario : '#E5E7EB',
+                            color: moneda === 'S/' ? 'white' : '#6B7280',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                        }}
+                    >
+                        S/ Soles
+                    </button>
+                    <button
+                        onClick={() => setMoneda('$')}
+                        style={{
+                            padding: '6px 12px',
+                            background: moneda === '$' ? colores.primario : '#E5E7EB',
+                            color: moneda === '$' ? 'white' : '#6B7280',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                        }}
+                    >
+                        $ Dólares
+                    </button>
+                    <button
+                        onClick={() => setMoneda('€')}
+                        style={{
+                            padding: '6px 12px',
+                            background: moneda === '€' ? colores.primario : '#E5E7EB',
+                            color: moneda === '€' ? 'white' : '#6B7280',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                        }}
+                    >
+                        € Euros
+                    </button>
                 </div>
             </div>
 
@@ -176,8 +233,8 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                         <tr>
                             <th style={{ padding: '14px 10px', textAlign: 'left', fontSize: '12px', fontWeight: '700', width: '8%' }}>ITEM</th>
                             <th style={{ padding: '14px 10px', textAlign: 'left', fontSize: '12px', fontWeight: '700', width: '42%' }}>DESCRIPCIÓN</th>
-                            <th style={{ padding: '14px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '700', width: '10%' }}>CANT.</th>
-                            <th style={{ padding: '14px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '700', width: '10%' }}>UNIDAD</th>
+                            <th style={{ padding: '14px 10px', textAlign: 'center', fontSize: '12px', fontWeight: '700', width: '10%' }}>CANT.</th>
+                            <th style={{ padding: '14px 10px', textAlign: 'center', fontSize: '12px', fontWeight: '700', width: '10%' }}>UND.</th>
                             <th style={{ padding: '14px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '700', width: '15%' }}>P. UNIT.</th>
                             <th style={{ padding: '14px 10px', textAlign: 'right', fontSize: '12px', fontWeight: '700', width: '15%' }}>TOTAL</th>
                         </tr>
@@ -197,10 +254,10 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                                     <td style={{ padding: '12px 10px', textAlign: 'right', fontSize: '11px' }}>
                                         <input type="text" value={item.unidad} onChange={(e) => actualizarItem(index, 'unidad', e.target.value)} style={{ width: '50px', border: 'none', background: 'transparent', fontSize: '11px', textAlign: 'right' }} />
                                     </td>
-                                    <td style={{ padding: '12px 10px', textAlign: 'right', fontSize: '11px' }}>
-                                        $ <input type="number" value={item.precio_unitario} onChange={(e) => actualizarItem(index, 'precio_unitario', e.target.value)} style={{ width: '80px', border: 'none', background: 'transparent', fontSize: '11px', textAlign: 'right' }} />
+                                    <td style={{ padding: '12px 10px', textAlign: 'right', fontSize: '11px', color: ocultarPreciosUnitarios ? 'transparent' : '#1f2937' }}>
+                                        {moneda} <input type="number" value={item.precio_unitario} onChange={(e) => actualizarItem(index, 'precio_unitario', e.target.value)} style={{ width: '80px', border: 'none', background: 'transparent', fontSize: '11px', textAlign: 'right', color: ocultarPreciosUnitarios ? 'transparent' : '#1f2937' }} />
                                     </td>
-                                    <td style={{ padding: '12px 10px', textAlign: 'right', fontSize: '11px', fontWeight: '600' }}>$ {subtotalItem}</td>
+                                    <td style={{ padding: '12px 10px', textAlign: 'right', fontSize: '11px', fontWeight: '600', color: ocultarTotalesPorItem ? 'transparent' : '#1f2937' }}>{moneda} {subtotalItem}</td>
                                 </tr>
                             );
                         })}
@@ -219,15 +276,15 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                 <div style={{ width: '350px', border: `2px solid ${colores.primario}`, borderRadius: '6px', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: `1px solid ${colores.claroBorde}` }}>
                         <span style={{ fontWeight: '600', color: colores.secundario }}>SUBTOTAL:</span>
-                        <span style={{ fontWeight: '700', color: colores.primario }}>$ {totales.subtotal}</span>
+                        <span style={{ fontWeight: '700', color: colores.primario }}>{moneda} {totales.subtotal}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: `1px solid ${colores.claroBorde}` }}>
-                        <span style={{ fontWeight: '600', color: colores.secundario }}>IGV (18%):</span>
-                        <span style={{ fontWeight: '700', color: colores.primario }}>$ {totales.igv}</span>
+                        <span style={{ fontWeight: '600', color: ocultarIGV ? 'transparent' : colores.secundario }}>IGV (18%):</span>
+                        <span style={{ fontWeight: '700', color: ocultarIGV ? 'transparent' : colores.primario }}>{moneda} {totales.igv}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white', fontWeight: 'bold', fontSize: '16px' }}>
                         <span>TOTAL:</span>
-                        <span>$ {totales.total}</span>
+                        <span>{moneda} {ocultarIGV ? totales.subtotal : totales.total}</span>
                     </div>
                 </div>
             </div>

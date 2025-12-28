@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generador de Proyecto Simple - COMPLETO
 Proyecto con cronograma, fases y recursos
@@ -42,7 +43,12 @@ class ProyectoSimpleGenerator(BaseDocumentGenerator):
     
     def _agregar_info_grid(self):
         """Agrega grid de información clave (4 cards)"""
-        cliente = self.datos.get('cliente', '')
+        # Extraer nombre del cliente si es un diccionario
+        cliente_data = self.datos.get('cliente', '')
+        if isinstance(cliente_data, dict):
+            cliente = cliente_data.get('nombre', '')
+        else:
+            cliente = str(cliente_data) if cliente_data else ''
         duracion = self.datos.get('duracion_total', 45)
         fecha_inicio = self.datos.get('fecha_inicio', '01/01/2025')
         fecha_fin = self.datos.get('fecha_fin', '28/02/2025')

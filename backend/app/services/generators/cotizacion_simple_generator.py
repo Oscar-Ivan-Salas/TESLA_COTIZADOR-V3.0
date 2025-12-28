@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generador Profesional de Cotizaciones Simples
 Basado en PLANTILLA_HTML_COTIZACION_SIMPLE.html

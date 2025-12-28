@@ -1,0 +1,116 @@
+﻿
+================================================================================
+  DIAGNOSTICO COMPLETO - SISTEMA PILI
+================================================================================
+
+================================================================================
+  PRUEBA 1: Verificar Backend
+================================================================================
+
+[ERROR] No se puede conectar al backend
+        Verifica que el servidor este corriendo en puerto 8000
+
+================================================================================
+  PRUEBA 2: Estado de PILI Integrator
+================================================================================
+
+[WARN] Endpoint /api/pili/estado no disponible (status 404)
+       Esto es normal si el endpoint no existe
+
+================================================================================
+  PRUEBA 3: Endpoint de Chat
+================================================================================
+
+
+Probando: http://localhost:8000/api/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/api/pili/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/pili/chat
+[INFO] Endpoint no encontrado
+
+[ERROR] No se encontro ningun endpoint de chat funcional
+
+================================================================================
+  PRUEBA 4: Verificar Modo de PILI
+================================================================================
+
+
+================================================================================
+  PRUEBA 3: Endpoint de Chat
+================================================================================
+
+
+Probando: http://localhost:8000/api/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/api/pili/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/pili/chat
+[INFO] Endpoint no encontrado
+
+[ERROR] No se encontro ningun endpoint de chat funcional
+[ERROR] No se pudo obtener respuesta de PILI
+
+================================================================================
+  PRUEBA 5: Configuraci¾n del Frontend
+================================================================================
+
+Verificando archivos del frontend...
+[OK] Frontend configurado para usar localhost:8000
+[OK] No se encontro modo demo hardcodeado
+
+================================================================================
+  PRUEBA 6: Flujo Completo de Conversaci¾n
+================================================================================
+
+
+================================================================================
+  PRUEBA 3: Endpoint de Chat
+================================================================================
+
+
+Probando: http://localhost:8000/api/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/api/pili/chat
+[INFO] Endpoint no encontrado
+
+Probando: http://localhost:8000/pili/chat
+[INFO] Endpoint no encontrado
+
+[ERROR] No se encontro ningun endpoint de chat funcional
+[ERROR] No se puede probar flujo sin endpoint
+
+================================================================================
+  RESUMEN DE DIAGNOSTICO
+================================================================================
+
+[ERROR] backend_health
+[OK] pili_status
+[ERROR] chat_endpoint
+[ERROR] pili_mode
+[OK] frontend_config
+[ERROR] conversation_flow
+
+================================================================================
+  DIAGNOSTICO
+================================================================================
+
+PROBLEMA: Backend no esta corriendo
+SOLUCION: Iniciar el backend con 'python -m uvicorn app.main:app --reload'
+
+================================================================================
+

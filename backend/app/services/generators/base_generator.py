@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Clase Base para Generadores de Documentos
 Contiene funcionalidad compartida por todos los generadores

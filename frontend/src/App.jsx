@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
 import ChatIA from './components/ChatIA';
+import PiliITSEChat from './components/PiliITSEChat';
 import VistaPreviaProfesional from './components/VistaPreviaProfesional';
 
 const CotizadorTesla30 = () => {
@@ -40,6 +41,7 @@ const CotizadorTesla30 = () => {
   const [datosEditables, setDatosEditables] = useState(null);
   const [ocultarIGV, setOcultarIGV] = useState(false);
   const [ocultarPreciosUnitarios, setOcultarPreciosUnitarios] = useState(false);
+  const [ocultarTotalesPorItem, setOcultarTotalesPorItem] = useState(false);
 
   // ✅ Estados para personalización de documentos (NEW)
   const [esquemaColores, setEsquemaColores] = useState('azul-tesla'); // azul-tesla, rojo-energia, verde-ecologico, personalizado
@@ -78,6 +80,11 @@ const CotizadorTesla30 = () => {
   const [listaClientes, setListaClientes] = useState([]);
   const [guardandoCliente, setGuardandoCliente] = useState(false);
 
+  // ✅ NUEVO: Estados para progreso de chat conversacional
+  const [datosRecopilados, setDatosRecopilados] = useState([]);
+  const [datosFaltantes, setDatosFaltantes] = useState([]);
+  const [progresoChat, setProgresoChat] = useState('0/0');
+
   // Referencias
   const chatContainerRef = useRef(null);
   const fileInputLogoRef = useRef(null);
@@ -104,7 +111,9 @@ const CotizadorTesla30 = () => {
     { id: 'domotica', nombre: '🏠 Domótica', icon: '🏠', descripcion: 'Automatización inteligente' },
     { id: 'cctv', nombre: '📹 CCTV', icon: '📹', descripcion: 'Videovigilancia profesional' },
     { id: 'redes', nombre: '🌐 Redes', icon: '🌐', descripcion: 'Cableado estructurado' },
-    { id: 'automatizacion-industrial', nombre: '⚙️ Automatización Industrial', icon: '⚙️', descripcion: 'PLCs y control de procesos' }
+    { id: 'automatizacion-industrial', nombre: '⚙️ Automatización Industrial', icon: '⚙️', descripcion: 'PLCs y control de procesos' },
+    { id: 'expedientes', nombre: '📄 Expedientes Técnicos', icon: '📄', descripcion: 'Documentación técnica profesional' },
+    { id: 'saneamiento', nombre: '💧 Saneamiento', icon: '💧', descripcion: 'Sistemas de agua y desagüe' }
   ];
 
   const industrias = [
@@ -297,6 +306,34 @@ const CotizadorTesla30 = () => {
     }));
   };
 
+  // ✅ NUEVO: Sincronizar datosCliente con datosEditables automáticamente
+  useEffect(() => {
+    // Solo sincronizar si hay datos de cliente y datosEditables existe
+    if (datosCliente && (datosCliente.nombre || datosCliente.ruc)) {
+      setDatosEditables(prev => {
+        // Si no hay datosEditables aún, no hacer nada
+        if (!prev) return prev;
+
+        // Actualizar solo la sección de cliente
+        return {
+          ...prev,
+          cliente: {
+            nombre: datosCliente.nombre || '',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          }
+        };
+      });
+    }
+  }, [datosCliente]); // Se ejecuta cada vez que datosCliente cambia
+
+  // ✅ NUEVO: Cargar lista de clientes al iniciar
+  useEffect(() => {
+    cargarListaClientes();
+  }, []); // Solo una vez al montar el componente
+
   // ============================================
   // FUNCIONES DEL CHAT + VISTA PREVIA
   // ============================================
@@ -395,6 +432,49 @@ const CotizadorTesla30 = () => {
           setMostrarPreview(true);
         }
 
+        // ✅ NUEVO: Actualizar progreso de chat conversacional
+        if (data.datos_recopilados) {
+          setDatosRecopilados(data.datos_recopilados);
+        }
+        if (data.datos_faltantes) {
+          setDatosFaltantes(data.datos_faltantes);
+        }
+        if (data.progreso) {
+          setProgresoChat(data.progreso);
+        }
+
+        // ✅ NUEVO: Auto-rellenado en tiempo real con datos parciales de PILI
+        if (data.datos_generados) {
+          console.log('📊 Datos generados por PILI:', data.datos_generados);
+
+          // Actualizar datosEditables con los nuevos datos
+          setDatosEditables(prev => {
+            const nuevosDatos = {
+              ...prev,
+              ...data.datos_generados,
+              // Mantener cliente que ya teníamos del Punto 1
+              cliente: prev?.cliente || datosCliente
+            };
+
+            console.log('✅ datosEditables actualizados:', nuevosDatos);
+            return nuevosDatos;
+          });
+
+          // Actualizar el estado específico según el tipo
+          if (tipoFlujo.includes('cotizacion')) {
+            setCotizacion(prev => ({ ...prev, ...data.datos_generados }));
+          } else if (tipoFlujo.includes('proyecto')) {
+            setProyecto(prev => ({ ...prev, ...data.datos_generados }));
+          } else if (tipoFlujo.includes('informe')) {
+            setInforme(prev => ({ ...prev, ...data.datos_generados }));
+          }
+
+          // Mostrar vista previa si no está visible
+          if (!mostrarPreview) {
+            setMostrarPreview(true);
+          }
+        }
+
         // Actualizar botones contextuales
         if (data.botones_contextuales) {
           setBotonesContextuales(data.botones_contextuales);
@@ -443,28 +523,63 @@ const CotizadorTesla30 = () => {
       const previewElement = previewRef.current;
       const htmlEditado = previewElement ? previewElement.innerHTML : htmlPreview;
 
-      // Recalcular totales basados en items editados
-      const itemsActuales = entidad.items || [];
-      const subtotalCalculado = itemsActuales.reduce((sum, item) =>
-        sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
-      );
-      const igvCalculado = subtotalCalculado * 0.18;
-      const totalCalculado = subtotalCalculado + igvCalculado;
+      // Preparar datos para enviar según tipo de documento
+      let datosParaEnviar;
 
-      // Preparar datos para enviar
-      const datosParaEnviar = {
-        tipo_documento: tipoDocumento,
-        numero: entidad.numero || `${tipoDocumento.toUpperCase()}-${Date.now()}`,
-        cliente: entidad.cliente || { nombre: "[Cliente]" },
-        proyecto: entidad.proyecto || "[Proyecto]",
-        descripcion: entidad.descripcion || "",
-        items: itemsActuales,
-        subtotal: parseFloat(subtotalCalculado.toFixed(2)),
-        igv: parseFloat(igvCalculado.toFixed(2)),
-        total: parseFloat(totalCalculado.toFixed(2)),
-        fecha: new Date().toLocaleDateString('es-PE'),
-        vigencia: "30 días"
-      };
+      if (tipoDocumento === 'informe') {
+        // Estructura para INFORMES
+        datosParaEnviar = {
+          tipo_documento: tipoDocumento,
+          titulo: entidad.titulo || "Informe Técnico",
+          codigo: entidad.codigo || `INF-${Date.now()}`,
+          cliente: entidad.cliente || { nombre: "[Cliente]" },
+          fecha: entidad.fecha || new Date().toLocaleDateString('es-PE'),
+          resumen: entidad.resumen || entidad.resumen_ejecutivo || "",
+          introduccion: entidad.introduccion || "",
+          analisis_tecnico: entidad.analisis_tecnico || "",
+          resultados: entidad.resultados || "",
+          conclusiones: entidad.conclusiones || "",
+          recomendaciones: entidad.recomendaciones || [],
+          normativa: entidad.normativa || "CNE Suministro 2011"
+        };
+      } else if (tipoDocumento === 'proyecto') {
+        // Estructura para PROYECTOS
+        datosParaEnviar = {
+          tipo_documento: tipoDocumento,
+          nombre: entidad.nombre || entidad.nombre_proyecto || "[Proyecto]",
+          codigo: entidad.codigo || entidad.codigo_proyecto || `PROY-${Date.now()}`,
+          cliente: entidad.cliente || { nombre: "[Cliente]" },
+          presupuesto: entidad.presupuesto || 0,
+          duracion_total: entidad.duracion_total || entidad.duracion || 30,
+          fecha_inicio: entidad.fecha_inicio || new Date().toLocaleDateString('es-PE'),
+          fecha_fin: entidad.fecha_fin || "",
+          alcance: entidad.alcance || entidad.alcance_proyecto || "",
+          fases: entidad.fases || [],
+          normativa: entidad.normativa || "CNE Suministro 2011"
+        };
+      } else {
+        // Estructura para COTIZACIONES (default)
+        const itemsActuales = entidad.items || [];
+        const subtotalCalculado = itemsActuales.reduce((sum, item) =>
+          sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
+        );
+        const igvCalculado = subtotalCalculado * 0.18;
+        const totalCalculado = subtotalCalculado + igvCalculado;
+
+        datosParaEnviar = {
+          tipo_documento: tipoDocumento,
+          numero: entidad.numero || `COT-${Date.now()}`,
+          cliente: entidad.cliente || { nombre: "[Cliente]" },
+          proyecto: entidad.proyecto || "[Proyecto]",
+          descripcion: entidad.descripcion || "",
+          items: itemsActuales,
+          subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+          igv: parseFloat(igvCalculado.toFixed(2)),
+          total: parseFloat(totalCalculado.toFixed(2)),
+          fecha: new Date().toLocaleDateString('es-PE'),
+          vigencia: "30 días"
+        };
+      }
 
       console.log('📦 DEBUG - Datos completos a enviar:');
       console.log('  - Cliente:', datosParaEnviar.cliente);
@@ -865,59 +980,125 @@ const CotizadorTesla30 = () => {
       const totalCalculado = subtotalCalculado + igvCalculado;
 
       // ✅ V2: Preparar datos JSON limpios (SIN HTML)
-      const datosLimpios = {
-        tipo_documento: tipoFlujo,  // cotizacion-simple, proyecto-complejo, informe-tecnico, etc.
-        numero: datosFinales?.numero || `COT-${Date.now()}`,
-        fecha: new Date().toLocaleDateString('es-PE'),
-        vigencia: '30 días',
+      // Determinar tipo de documento
+      const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
+        tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
 
-        // Cliente (como objeto completo)
-        cliente: {
-          nombre: datosCliente.nombre || '[Cliente]',
-          ruc: datosCliente.ruc || '',
-          direccion: datosCliente.direccion || '',
-          telefono: datosCliente.telefono || '',
-          email: datosCliente.email || ''
-        },
+      let datosLimpios;
 
-        // Proyecto
-        proyecto: nombreProyecto || '[Proyecto]',
-        descripcion: contextoUsuario || '',
+      if (tipoDocumento === 'informe') {
+        // Estructura para INFORMES
+        datosLimpios = {
+          tipo_documento: tipoFlujo,
+          titulo: datosFinales?.titulo || "Informe Técnico",
+          codigo: datosFinales?.codigo || `INF-${Date.now()}`,
+          cliente: {
+            nombre: datosCliente.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          },
+          fecha: new Date().toLocaleDateString('es-PE'),
+          resumen: datosFinales?.resumen || datosFinales?.resumen_ejecutivo || "",
+          introduccion: datosFinales?.introduccion || "",
+          analisis_tecnico: datosFinales?.analisis_tecnico || "",
+          resultados: datosFinales?.resultados || "",
+          conclusiones: datosFinales?.conclusiones || "",
+          recomendaciones: datosFinales?.recomendaciones || [],
+          normativa: datosFinales?.normativa || "CNE Suministro 2011",
+          personalizacion: {
+            esquema_colores: esquemaColores,
+            fuente: fuenteDocumento,
+            tamano_fuente: tamañoFuente,
+            mostrar_logo: mostrarLogo,
+            posicion_logo: posicionLogo,
+            logo_base64: logoBase64 || null
+          }
+        };
+      } else if (tipoDocumento === 'proyecto') {
+        // Estructura para PROYECTOS
+        datosLimpios = {
+          tipo_documento: tipoFlujo,
+          nombre: datosFinales?.nombre || datosFinales?.nombre_proyecto || "[Proyecto]",
+          codigo: datosFinales?.codigo || datosFinales?.codigo_proyecto || `PROY-${Date.now()}`,
+          cliente: {
+            nombre: datosCliente.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          },
+          presupuesto: datosFinales?.presupuesto || 0,
+          duracion_total: datosFinales?.duracion_total || datosFinales?.duracion || 30,
+          fecha_inicio: datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
+          fecha_fin: datosFinales?.fecha_fin || "",
+          alcance: datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
+          fases: datosFinales?.fases || [],
+          normativa: datosFinales?.normativa || "CNE Suministro 2011",
+          personalizacion: {
+            esquema_colores: esquemaColores,
+            fuente: fuenteDocumento,
+            tamano_fuente: tamañoFuente,
+            mostrar_logo: mostrarLogo,
+            posicion_logo: posicionLogo,
+            logo_base64: logoBase64 || null
+          }
+        };
+      } else {
+        // Estructura para COTIZACIONES (default)
+        datosLimpios = {
+          tipo_documento: tipoFlujo,
+          numero: datosFinales?.numero || `COT-${Date.now()}`,
+          fecha: new Date().toLocaleDateString('es-PE'),
+          vigencia: '30 días',
+          cliente: {
+            nombre: datosCliente.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          },
+          proyecto: nombreProyecto || '[Proyecto]',
+          descripcion: contextoUsuario || '',
+          items: itemsActuales.map(item => ({
+            descripcion: item.descripcion || '',
+            cantidad: parseFloat(item.cantidad || 0),
+            unidad: item.unidad || 'und',
+            precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0)
+          })),
+          subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+          igv: parseFloat(igvCalculado.toFixed(2)),
+          total: parseFloat(totalCalculado.toFixed(2)),
+          observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
+          personalizacion: {
+            esquema_colores: esquemaColores,
+            fuente: fuenteDocumento,
+            tamano_fuente: tamañoFuente,
+            mostrar_logo: mostrarLogo,
+            posicion_logo: posicionLogo,
+            logo_base64: logoBase64 || null,
+            ocultar_igv: ocultarIGV,
+            ocultar_precios_unitarios: ocultarPreciosUnitarios
+          }
+        };
+      }
 
-        // Items (desde datosEditables, NO desde HTML)
-        items: itemsActuales.map(item => ({
-          descripcion: item.descripcion || '',
-          cantidad: parseFloat(item.cantidad || 0),
-          unidad: item.unidad || 'und',
-          precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0)
-        })),
-
-        // Totales
-        subtotal: parseFloat(subtotalCalculado.toFixed(2)),
-        igv: parseFloat(igvCalculado.toFixed(2)),
-        total: parseFloat(totalCalculado.toFixed(2)),
-
-        observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
-
-        // ✅ Opciones de personalización profesional
-        personalizacion: {
-          esquema_colores: esquemaColores,  // azul-tesla, rojo-energia, verde-ecologico, personalizado
-          fuente: fuenteDocumento,  // Calibri, Arial, Times New Roman
-          tamano_fuente: tamañoFuente,  // 10, 11, 12
-          mostrar_logo: mostrarLogo,
-          posicion_logo: posicionLogo,  // left, center, right
-          logo_base64: logoBase64 || null,
-          ocultar_igv: ocultarIGV,
-          ocultar_precios_unitarios: ocultarPreciosUnitarios
-        }
-      };
 
       console.log('📦 Datos limpios V2 a enviar:', datosLimpios);
       console.log('  - Tipo:', datosLimpios.tipo_documento);
       console.log('  - Cliente:', datosLimpios.cliente.nombre);
-      console.log('  - Items:', datosLimpios.items.length);
-      console.log('  - Items detalle:', datosLimpios.items);
-      console.log('  - Total:', datosLimpios.total);
+      if (tipoDocumento === 'cotizacion') {
+        console.log('  - Items:', datosLimpios.items.length);
+        console.log('  - Items detalle:', datosLimpios.items);
+        console.log('  - Total:', datosLimpios.total);
+      } else if (tipoDocumento === 'informe') {
+        console.log('  - Código:', datosLimpios.codigo);
+        console.log('  - Título:', datosLimpios.titulo);
+      } else if (tipoDocumento === 'proyecto') {
+        console.log('  - Código:', datosLimpios.codigo);
+        console.log('  - Presupuesto:', datosLimpios.presupuesto);
+      }
       console.log('  - Personalización:', datosLimpios.personalizacion);
 
       // ✅ V2: Llamar endpoint limpio (SIN HTML)
@@ -1610,113 +1791,176 @@ const CotizadorTesla30 = () => {
               <div className="max-w-full mx-auto h-[calc(100vh-200px)]">
                 <div className="grid grid-cols-12 h-full gap-4">
 
+
                   {/* CHAT (IZQUIERDA) */}
-                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
-                    <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
-                      <h3 className="text-xl font-bold text-black flex items-center gap-2">
-                        <div className="bg-white p-1 rounded-full">
-                          <PiliAvatar size={24} showCrown={true} />
-                        </div>
-                        👑 PILI - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
-                      </h3>
+                  {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6">
+                      <PiliITSEChat
+                        onCotizacionGenerada={(cot) => {
+                          setCotizacion(cot);
+                          setDatosEditables(cot);
+                          setMostrarPreview(true);
+                        }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
                     </div>
-
-                    {/* CONVERSACIÓN */}
-                    <div ref={chatContainerRef} className="flex-grow bg-gray-100 p-4 overflow-y-auto">
-                      {conversacion.length === 0 ? (
-                        <div className="text-center text-gray-600 mt-8">
-                          <div className="inline-block bg-yellow-600 p-3 rounded-full mb-3">
-                            <PiliAvatar size={32} showCrown={true} />
+                  ) : (
+                    <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
+                      <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
+                        <h3 className="text-xl font-bold text-black flex items-center gap-2">
+                          <div className="bg-white p-1 rounded-full">
+                            <PiliAvatar size={24} showCrown={true} />
                           </div>
-                          <p className="font-semibold text-lg">¡Hola! Soy 👑 PILI - Tu Asistente IA</p>
-                          <p className="text-xs text-gray-500 mb-2">Procesadora Inteligente de Licitaciones Industriales v3.0</p>
-                          <p className="text-sm mt-1">
-                            {esCotizacion && "Empezemos con tu cotización..."}
-                            {esProyecto && "Vamos a planificar tu proyecto..."}
-                            {esInforme && "Generemos tu informe profesional..."}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {conversacion.map((mensaje, index) => (
-                            <div key={index} className={`flex ${mensaje.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-[85%] p-3 rounded-2xl ${mensaje.tipo === 'usuario'
-                                ? 'bg-yellow-600 text-black'
-                                : 'bg-white border-2 border-gray-300 text-gray-800'
-                                }`}>
-                                <p className="text-sm">{mensaje.mensaje}</p>
-                              </div>
-                            </div>
-                          ))}
+                          👑 PILI - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
+                        </h3>
+                      </div>
 
-                          {analizando && (
-                            <div className="flex justify-start">
-                              <div className="bg-white border-2 border-gray-300 p-3 rounded-2xl">
-                                <div className="flex items-center gap-2 text-gray-600">
-                                  <div className="bg-yellow-600 p-1 rounded-full animate-pulse">
-                                    <PiliAvatar size={16} showCrown={true} />
-                                  </div>
-                                  <Loader className="w-4 h-4 animate-spin text-yellow-600" />
-                                  <span className="text-sm font-medium">PILI está pensando... 🤔</span>
+                      {/* CONVERSACIÓN */}
+                      <div ref={chatContainerRef} className="flex-grow bg-gray-100 p-4 overflow-y-auto">
+                        {conversacion.length === 0 ? (
+                          <div className="text-center text-gray-600 mt-8">
+                            <div className="inline-block bg-yellow-600 p-3 rounded-full mb-3">
+                              <PiliAvatar size={32} showCrown={true} />
+                            </div>
+                            <p className="font-semibold text-lg">¡Hola! Soy 👑 PILI - Tu Asistente IA</p>
+                            <p className="text-xs text-gray-500 mb-2">Procesadora Inteligente de Licitaciones Industriales v3.0</p>
+                            <p className="text-sm mt-1">
+                              {esCotizacion && "Empezemos con tu cotización..."}
+                              {esProyecto && "Vamos a planificar tu proyecto..."}
+                              {esInforme && "Generemos tu informe profesional..."}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {conversacion.map((mensaje, index) => (
+                              <div key={index} className={`flex ${mensaje.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[85%] p-3 rounded-2xl ${mensaje.tipo === 'usuario'
+                                  ? 'bg-yellow-600 text-black'
+                                  : 'bg-white border-2 border-gray-300 text-gray-800'
+                                  }`}>
+                                  <p className="text-sm">{mensaje.mensaje}</p>
                                 </div>
                               </div>
+                            ))}
+
+                            {analizando && (
+                              <div className="flex justify-start">
+                                <div className="bg-white border-2 border-gray-300 p-3 rounded-2xl">
+                                  <div className="flex items-center gap-2 text-gray-600">
+                                    <div className="bg-yellow-600 p-1 rounded-full animate-pulse">
+                                      <PiliAvatar size={16} showCrown={true} />
+                                    </div>
+                                    <Loader className="w-4 h-4 animate-spin text-yellow-600" />
+                                    <span className="text-sm font-medium">PILI está pensando... 🤔</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ✅ NUEVO: Indicador de Progreso de Datos */}
+                      {(datosRecopilados.length > 0 || datosFaltantes.length > 0) && (
+                        <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                          <div className="bg-white rounded-lg p-3 shadow-sm">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4 text-blue-600" />
+                                Progreso de Datos
+                              </span>
+                              <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                                {progresoChat}
+                              </span>
                             </div>
-                          )}
+
+                            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${(datosRecopilados.length / (datosRecopilados.length + datosFaltantes.length)) * 100}%`
+                                }}
+                              />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {datosRecopilados.map(campo => (
+                                <span
+                                  key={campo}
+                                  className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1"
+                                >
+                                  <CheckCircle className="w-3 h-3" />
+                                  {campo.replace('_', ' ')}
+                                </span>
+                              ))}
+                              {datosFaltantes.map(campo => (
+                                <span
+                                  key={campo}
+                                  className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs flex items-center gap-1"
+                                >
+                                  <Clock className="w-3 h-3" />
+                                  {campo.replace('_', ' ')}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       )}
-                    </div>
 
-                    {/* BOTONES CONTEXTUALES */}
-                    {botonesContextuales.length > 0 && (
-                      <div className="px-4 py-2 bg-gray-50 border-t">
-                        <div className="flex flex-wrap gap-2">
-                          {botonesContextuales.map((boton, index) => (
-                            <button
-                              key={index}
-                              onClick={() => enviarRespuestaRapida(boton)}
-                              className="px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-lg text-xs border border-yellow-300 transition-all">
-                              {boton}
-                            </button>
-                          ))}
+                      {/* BOTONES CONTEXTUALES */}
+                      {botonesContextuales.length > 0 && (
+                        <div className="px-4 py-2 bg-gray-50 border-t">
+                          <div className="flex flex-wrap gap-2">
+                            {botonesContextuales.map((boton, index) => (
+                              <button
+                                key={index}
+                                onClick={() => enviarRespuestaRapida(boton)}
+                                className="px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-lg text-xs border border-yellow-300 transition-all">
+                                {boton}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* INPUT CHAT */}
+                      <div className="p-4 bg-white border-t rounded-b-2xl">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={inputChat}
+                            onChange={(e) => setInputChat(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && !analizando && handleEnviarMensajeChat()}
+                            placeholder="Escribe aquí..."
+                            className="flex-grow p-2 border-2 border-gray-300 rounded-xl focus:border-yellow-500 focus:outline-none text-gray-800"
+                            disabled={analizando}
+                          />
+                          <button
+                            onClick={handleEnviarMensajeChat}
+                            disabled={analizando || !inputChat.trim()}
+                            className="p-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-400 text-black rounded-xl transition-all">
+                            <Send className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        <div className="flex justify-between items-center mt-3">
+                          <button
+                            onClick={() => setPaso(1)}
+                            className="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm">
+                            ← Configuración
+                          </button>
+                          <button
+                            onClick={() => setPaso(3)}
+                            disabled={!mostrarPreview}
+                            className="px-4 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white font-bold rounded-lg text-sm">
+                            Finalizar →
+                          </button>
                         </div>
                       </div>
-                    )}
-
-                    {/* INPUT CHAT */}
-                    <div className="p-4 bg-white border-t rounded-b-2xl">
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={inputChat}
-                          onChange={(e) => setInputChat(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && !analizando && handleEnviarMensajeChat()}
-                          placeholder="Escribe aquí..."
-                          className="flex-grow p-2 border-2 border-gray-300 rounded-xl focus:border-yellow-500 focus:outline-none text-gray-800"
-                          disabled={analizando}
-                        />
-                        <button
-                          onClick={handleEnviarMensajeChat}
-                          disabled={analizando || !inputChat.trim()}
-                          className="p-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-400 text-black rounded-xl transition-all">
-                          <Send className="w-5 h-5" />
-                        </button>
-                      </div>
-
-                      <div className="flex justify-between items-center mt-3">
-                        <button
-                          onClick={() => setPaso(1)}
-                          className="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm">
-                          ← Configuración
-                        </button>
-                        <button
-                          onClick={() => setPaso(3)}
-                          disabled={!mostrarPreview}
-                          className="px-4 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white font-bold rounded-lg text-sm">
-                          Finalizar →
-                        </button>
-                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* VISTA PREVIA (DERECHA) */}
                   <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
@@ -1767,157 +2011,19 @@ const CotizadorTesla30 = () => {
                         console.log('🔍 DEBUG - datosEditables:', datosEditables);
                         console.log('🔍 DEBUG - datosEditables?.items:', datosEditables?.items);
 
-                        return (cotizacion?.items || datosEditables?.items) ? (
-                          /* TABLA EDITABLE INLINE - ALTO CONTRASTE - SIEMPRE VISIBLE */
-                          <div className="space-y-4">
-                            {/* Encabezado */}
-                            <div className="border-b-4 border-red-900 pb-4 mb-4">
-                              <h2 className="text-2xl font-bold text-red-900">COTIZACIÓN ELÉCTRICA</h2>
-                              <p className="text-gray-700 mt-1">Cliente: {datosEditables.cliente?.nombre || cotizacion?.cliente?.nombre || 'Cliente Demo'}</p>
-                            </div>
-
-                            {/* Mensaje de ayuda */}
-                            <div className="bg-blue-50 border-2 border-blue-500 rounded-lg p-3 mb-4">
-                              <p className="text-sm font-semibold text-blue-900">
-                                ✏️ Haz clic en las celdas para editar. Los totales se calculan automáticamente.
-                              </p>
-                            </div>
-
-                            {/* TABLA EDITABLE */}
-                            <div className="overflow-x-auto border-2 border-gray-400 rounded-lg">
-                              <table className="w-full border-collapse">
-                                <thead>
-                                  <tr className="bg-red-900 text-white">
-                                    <th className="py-3 px-3 text-left border-r-2 border-red-800 font-bold">DESCRIPCIÓN</th>
-                                    <th className="py-3 px-3 text-center border-r-2 border-red-800 font-bold w-24">CANT.</th>
-                                    <th className="py-3 px-3 text-center border-r-2 border-red-800 font-bold w-20">UND.</th>
-                                    {!ocultarPreciosUnitarios && (
-                                      <th className="py-3 px-3 text-right border-r-2 border-red-800 font-bold w-32">P.U. (S/)</th>
-                                    )}
-                                    <th className="py-3 px-3 text-right border-r-2 border-red-800 font-bold w-32">TOTAL (S/)</th>
-                                    <th className="py-3 px-3 text-center font-bold w-16">🗑️</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {datosEditables.items.map((item, index) => {
-                                    const subtotalItem = (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0));
-
-                                    return (
-                                      <tr key={index} className="border-b-2 border-gray-300 hover:bg-gray-50">
-                                        {/* Descripción - EDITABLE */}
-                                        <td className="py-2 px-2 border-r border-gray-300">
-                                          <input
-                                            type="text"
-                                            value={item.descripcion}
-                                            onChange={(e) => actualizarItem(index, 'descripcion', e.target.value)}
-                                            className="w-full px-2 py-2 border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-medium bg-white"
-                                            style={{ color: '#000000' }}
-                                          />
-                                        </td>
-
-                                        {/* Cantidad - EDITABLE */}
-                                        <td className="py-2 px-2 border-r border-gray-300">
-                                          <input
-                                            type="number"
-                                            step="0.01"
-                                            value={item.cantidad}
-                                            onChange={(e) => actualizarItem(index, 'cantidad', e.target.value)}
-                                            className="w-full px-2 py-2 text-center border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-bold bg-white"
-                                            style={{ color: '#000000' }}
-                                          />
-                                        </td>
-
-                                        {/* Unidad */}
-                                        <td className="py-2 px-2 text-center border-r border-gray-300">
-                                          <span className="text-gray-900 font-medium">{item.unidad || 'pto'}</span>
-                                        </td>
-
-                                        {/* Precio Unitario - EDITABLE */}
-                                        {!ocultarPreciosUnitarios && (
-                                          <td className="py-2 px-2 border-r border-gray-300">
-                                            <input
-                                              type="number"
-                                              step="0.01"
-                                              value={item.precio_unitario || item.precioUnitario || 0}
-                                              onChange={(e) => actualizarItem(index, 'precioUnitario', e.target.value)}
-                                              className="w-full px-2 py-2 text-right border-2 border-gray-400 rounded focus:border-red-600 focus:outline-none text-gray-900 font-bold bg-white"
-                                              style={{ color: '#000000' }}
-                                            />
-                                          </td>
-                                        )}
-
-                                        {/* Total - CALCULADO */}
-                                        <td className="py-2 px-2 text-right border-r border-gray-300">
-                                          <span className="text-red-900 font-bold text-lg">
-                                            S/ {subtotalItem.toFixed(2)}
-                                          </span>
-                                        </td>
-
-                                        {/* Botón Eliminar */}
-                                        <td className="py-2 px-2 text-center">
-                                          <button
-                                            onClick={() => eliminarItem(index)}
-                                            disabled={datosEditables.items.length === 1}
-                                            className={`p-2 rounded ${datosEditables.items.length === 1
-                                              ? 'text-gray-400 cursor-not-allowed'
-                                              : 'text-red-600 hover:bg-red-100'
-                                              }`}
-                                          >
-                                            <Trash2 size={18} />
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-
-                            {/* Botón Agregar Ítem */}
-                            <button
-                              onClick={agregarItem}
-                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-all"
-                            >
-                              <Plus size={20} />
-                              Agregar Ítem
-                            </button>
-
-                            {/* TOTALES */}
-                            <div className="bg-gray-100 rounded-lg p-4 border-2 border-gray-400">
-                              <div className="flex justify-end">
-                                <div className="w-full md:w-1/2 space-y-3">
-                                  {!ocultarIGV && (
-                                    <>
-                                      <div className="flex justify-between text-lg border-b-2 border-gray-400 pb-2">
-                                        <span className="font-semibold text-gray-900">Subtotal:</span>
-                                        <span className="font-bold text-gray-900">
-                                          S/ {calcularTotales(datosEditables.items || []).subtotal}
-                                        </span>
-                                      </div>
-                                      <div className="flex justify-between text-lg border-b-2 border-gray-400 pb-2">
-                                        <span className="font-semibold text-gray-900">IGV (18%):</span>
-                                        <span className="font-bold text-gray-900">
-                                          S/ {calcularTotales(datosEditables.items || []).igv}
-                                        </span>
-                                      </div>
-                                    </>
-                                  )}
-                                  <div className="flex justify-between bg-gradient-to-r from-red-900 to-red-800 text-yellow-400 p-4 rounded-lg">
-                                    <span className="font-black text-2xl">TOTAL:</span>
-                                    <span className="font-black text-3xl">
-                                      S/ {calcularTotales(datosEditables.items || [])[ocultarIGV ? 'subtotal' : 'total']}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          /* VISTA PREVIA HTML PARA TODOS LOS DOCUMENTOS */
-                          <div
-                            ref={previewRef}
-                            className="w-full h-full"
-                            dangerouslySetInnerHTML={{ __html: htmlPreview }}
+                        // ✅ RENDERIZAR VistaPreviaProfesional en Paso 2
+                        return (
+                          <VistaPreviaProfesional
+                            cotizacion={cotizacion || proyecto || informe || datosEditables}
+                            onGenerarDocumento={handleDescargar}
+                            tipoDocumento={tipoFlujo}
+                            htmlPreview={htmlPreview}
+                            esquemaColores={esquemaColores}
+                            logoBase64={logoBase64}
+                            fuenteDocumento={fuenteDocumento}
+                            ocultarIGV={ocultarIGV}
+                            ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+                            ocultarTotalesPorItem={ocultarTotalesPorItem}
                           />
                         );
                       })()}
@@ -1952,7 +2058,7 @@ const CotizadorTesla30 = () => {
                     </div>
                   </div>
 
-                  {/* VISTA PREVIA PROFESIONAL CON BOTONES DE GENERACIÓN */}
+                  {/* ✅ VISTA PREVIA PROFESIONAL A PANTALLA COMPLETA */}
                   <VistaPreviaProfesional
                     cotizacion={cotizacion || proyecto || informe || {}}
                     onGenerarDocumento={handleDescargar}
@@ -1961,7 +2067,11 @@ const CotizadorTesla30 = () => {
                     esquemaColores={esquemaColores}
                     logoBase64={logoBase64}
                     fuenteDocumento={fuenteDocumento}
+                    ocultarIGV={ocultarIGV}
+                    ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+                    ocultarTotalesPorItem={ocultarTotalesPorItem}
                   />
+
 
                   {/* ✅ PANEL DE PERSONALIZACIÓN */}
                   <div className="mb-6 border-2 border-blue-500 rounded-xl overflow-hidden">
@@ -2121,6 +2231,14 @@ const CotizadorTesla30 = () => {
                                 : 'bg-gray-700 text-gray-300'
                                 }`}>
                               {ocultarPreciosUnitarios ? '✓ P. Unit. Ocultos' : 'Mostrar P. Unitarios'}
+                            </button>
+                            <button
+                              onClick={() => setOcultarTotalesPorItem(!ocultarTotalesPorItem)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${ocultarTotalesPorItem
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
+                              {ocultarTotalesPorItem ? '✓ Totales Ocultos' : 'Mostrar Totales por Ítem'}
                             </button>
                           </div>
                         </div>

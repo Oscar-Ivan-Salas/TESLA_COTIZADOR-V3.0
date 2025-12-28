@@ -32,6 +32,9 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
         ]
     });
 
+    // Estado para la moneda
+    const [moneda, setMoneda] = useState('S/'); // S/, $, €
+
     const COLORES = {
         'azul-tesla': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF', claroBorde: '#DBEAFE' },
         'rojo-energia': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEF2F2', claroBorde: '#FECACA' },
@@ -68,12 +71,20 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 <div>
                     {logoBase64 ? <img src={logoBase64} alt="Logo" style={{ width: '180px', height: '80px', objectFit: 'contain', borderRadius: '8px' }} /> :
                         <div style={{ width: '180px', height: '80px', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '24px' }}>TESLA</div>}
-                    <p style={{ fontSize: '10px', color: '#6B7280' }}>Electricidad y Automatización</p>
+                    {!logoBase64 && <p style={{ fontSize: '10px', color: '#6B7280' }}>Electricidad y Automatización</p>}
                 </div>
                 <div style={{ textAlign: 'right', fontSize: '11px', color: '#4b5563' }}>
                     <div style={{ fontSize: '20px', fontWeight: 'bold', color: colores.primario, marginBottom: '8px' }}>TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
                     <div>RUC: 20601138787</div><div>Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div><div>Teléfono: 906 315 961 | Email: ingenieria.teslaelectricidad@gmail.com</div>
                 </div>
+            </div>
+
+            {/* SELECTOR DE MONEDA */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', gap: '10px', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: colores.secundario }}>Moneda:</span>
+                <button onClick={() => setMoneda('S/')} style={{ padding: '6px 12px', background: moneda === 'S/' ? colores.primario : '#E5E7EB', color: moneda === 'S/' ? 'white' : '#6B7280', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>S/ Soles</button>
+                <button onClick={() => setMoneda('$')} style={{ padding: '6px 12px', background: moneda === '$' ? colores.primario : '#E5E7EB', color: moneda === '$' ? 'white' : '#6B7280', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>$ Dólares</button>
+                <button onClick={() => setMoneda('€')} style={{ padding: '6px 12px', background: moneda === '€' ? colores.primario : '#E5E7EB', color: moneda === '€' ? 'white' : '#6B7280', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>€ Euros</button>
             </div>
 
             {/* TÍTULO */}
@@ -109,7 +120,7 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
             <div style={{ textAlign: 'center', padding: '20px', background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`, borderRadius: '6px', margin: '20px 0' }}>
                 <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>PRESUPUESTO TOTAL DEL PROYECTO</div>
                 <div style={{ fontSize: '36px', color: colores.primario, fontWeight: 'bold' }}>
-                    $ <input type="text" value={datosEditables.presupuesto} onChange={(e) => setDatosEditables({ ...datosEditables, presupuesto: e.target.value })} style={{ width: '200px', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: '36px', textAlign: 'center' }} />
+                    {moneda} <input type="text" value={datosEditables.presupuesto} onChange={(e) => setDatosEditables({ ...datosEditables, presupuesto: e.target.value })} style={{ width: '200px', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: '36px', textAlign: 'center' }} />
                 </div>
             </div>
 
