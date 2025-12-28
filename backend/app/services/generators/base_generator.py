@@ -76,9 +76,9 @@ class BaseDocumentGenerator:
                 'acento': (255, 215, 0),
             },
             'personalizado': {
-                'primario': (147, 51, 234),  # Morado/Lila #9333EA
-                'secundario': (126, 34, 206),  # Morado oscuro #7E22CE
-                'acento': (168, 85, 247),  # Morado claro #A855F7
+                'primario': (139, 92, 246),  # Morado #8B5CF6
+                'secundario': (124, 58, 237),  # Morado oscuro #7C3AED
+                'acento': (167, 139, 250),  # Morado claro #A78BFA
             },
         }
         

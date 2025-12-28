@@ -1,6 +1,7 @@
 """
-Generador de Informe Técnico
-Informe con resumen ejecutivo, análisis técnico y conclusiones
+Generador de Informe Técnico - COMPLETO
+Informe técnico profesional con análisis detallado
+100% fidelidad al HTML profesional aprobado
 """
 
 from .base_generator import BaseDocumentGenerator
@@ -11,23 +12,70 @@ from docx.oxml import OxmlElement
 
 
 class InformeTecnicoGenerator(BaseDocumentGenerator):
-    """Generador para informes técnicos"""
+    """Generador para informes técnicos profesionales"""
     
     def _agregar_titulo(self):
         """Agrega título del documento"""
         p_titulo = self.doc.add_paragraph()
         p_titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run_titulo = p_titulo.add_run('INFORME TÉCNICO')
-        run_titulo.font.size = Pt(18)
+        run_titulo.font.size = Pt(30)
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        titulo_informe = self.datos.get('titulo', 'Informe Técnico')
+        titulo = self.datos.get('titulo', 'Informe Técnico')
         p_subtitulo = self.doc.add_paragraph()
         p_subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_subtitulo = p_subtitulo.add_run(titulo_informe)
-        run_subtitulo.font.size = Pt(14)
+        run_subtitulo = p_subtitulo.add_run(titulo)
+        run_subtitulo.font.size = Pt(16)
         run_subtitulo.font.color.rgb = self.COLOR_SECUNDARIO
+        run_subtitulo.font.bold = True
+        
+        codigo = self.datos.get('codigo', 'INF-TEC-001')
+        p_codigo = self.doc.add_paragraph()
+        p_codigo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run_codigo = p_codigo.add_run(f'Código: {codigo}')
+        run_codigo.font.size = Pt(14)
+        run_codigo.font.color.rgb = self.COLOR_SECUNDARIO
+        
+        self.doc.add_paragraph()
+    
+    def _agregar_info_general(self):
+        """Agrega información general en tabla"""
+        table = self.doc.add_table(rows=1, cols=2)
+        
+        # Cliente
+        cell_cliente = table.rows[0].cells[0]
+        p1 = cell_cliente.paragraphs[0]
+        run1 = p1.add_run('DATOS DEL CLIENTE')
+        run1.font.size = Pt(14)
+        run1.font.bold = True
+        run1.font.color.rgb = self.COLOR_PRIMARIO
+        
+        cliente_data = self.datos.get('cliente', {})
+        cliente = cliente_data.get('nombre', 'Cliente') if isinstance(cliente_data, dict) else str(cliente_data)
+        
+        cell_cliente.add_paragraph(f'Cliente: {cliente}').runs[0].font.size = Pt(12)
+        
+        # Informe
+        cell_inf = table.rows[0].cells[1]
+        p2 = cell_inf.paragraphs[0]
+        run2 = p2.add_run('DATOS DEL INFORME')
+        run2.font.size = Pt(14)
+        run2.font.bold = True
+        run2.font.color.rgb = self.COLOR_PRIMARIO
+        
+        fecha = self.datos.get('fecha', '01/01/2025')
+        codigo = self.datos.get('codigo', 'INF-TEC-001')
+        
+        cell_inf.add_paragraph(f'Fecha: {fecha}').runs[0].font.size = Pt(12)
+        cell_inf.add_paragraph(f'Código: {codigo}').runs[0].font.size = Pt(12)
+        
+        # Bordes
+        for cell in [cell_cliente, cell_inf]:
+            shading_elm = OxmlElement('w:shd')
+            shading_elm.set(qn('w:fill'), 'F9FAFB')
+            cell._element.get_or_add_tcPr().append(shading_elm)
         
         self.doc.add_paragraph()
     
@@ -35,13 +83,14 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
         """Agrega resumen ejecutivo"""
         p_titulo = self.doc.add_paragraph()
         run_titulo = p_titulo.add_run('RESUMEN EJECUTIVO')
-        run_titulo.font.size = Pt(14)
+        run_titulo.font.size = Pt(18)
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        resumen = self.datos.get('resumen_ejecutivo', 'Resumen del informe técnico...')
+        resumen = self.datos.get('resumen_ejecutivo', 'Resumen ejecutivo del informe...')
         p_resumen = self.doc.add_paragraph(resumen)
-        p_resumen.runs[0].font.size = Pt(11)
+        p_resumen.runs[0].font.size = Pt(13)
+        p_resumen.runs[0].font.color.rgb = RGBColor(55, 65, 81)
         p_resumen.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
@@ -50,108 +99,99 @@ class InformeTecnicoGenerator(BaseDocumentGenerator):
         """Agrega introducción"""
         p_titulo = self.doc.add_paragraph()
         run_titulo = p_titulo.add_run('1. INTRODUCCIÓN')
-        run_titulo.font.size = Pt(13)
+        run_titulo.font.size = Pt(20)
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        introduccion = self.datos.get('introduccion', 'Introducción del informe...')
+        introduccion = self.datos.get('introduccion', 'Introducción y contexto del informe...')
         p_intro = self.doc.add_paragraph(introduccion)
-        p_intro.runs[0].font.size = Pt(11)
+        p_intro.runs[0].font.size = Pt(12)
+        p_intro.runs[0].font.color.rgb = RGBColor(55, 65, 81)
         p_intro.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
     
     def _agregar_analisis_tecnico(self):
-        """Agrega análisis técnico detallado"""
+        """Agrega análisis técnico"""
         p_titulo = self.doc.add_paragraph()
         run_titulo = p_titulo.add_run('2. ANÁLISIS TÉCNICO')
-        run_titulo.font.size = Pt(13)
+        run_titulo.font.size = Pt(20)
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        analisis = self.datos.get('analisis_tecnico', {})
-        secciones = analisis.get('secciones', [])
+        analisis = self.datos.get('analisis_tecnico', 'Análisis técnico detallado...')
+        p_analisis = self.doc.add_paragraph(analisis)
+        p_analisis.runs[0].font.size = Pt(12)
+        p_analisis.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        p_analisis.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
-        for idx, seccion in enumerate(secciones, 1):
-            # Subsección
-            p_subseccion = self.doc.add_paragraph()
-            run_subseccion = p_subseccion.add_run(f"2.{idx}. {seccion.get('titulo', 'Sección')}")
-            run_subseccion.font.size = Pt(12)
-            run_subseccion.font.bold = True
-            run_subseccion.font.color.rgb = self.COLOR_SECUNDARIO
-            
-            # Contenido
-            contenido = seccion.get('contenido', '')
-            p_contenido = self.doc.add_paragraph(contenido)
-            p_contenido.runs[0].font.size = Pt(11)
-            p_contenido.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            
-            # Hallazgos
-            hallazgos = seccion.get('hallazgos', [])
-            if hallazgos:
-                p_hallazgos = self.doc.add_paragraph()
-                p_hallazgos.add_run('Hallazgos:\n').font.bold = True
-                for hallazgo in hallazgos:
-                    self.doc.add_paragraph(f"• {hallazgo}", style='List Bullet')
+        self.doc.add_paragraph()
+    
+    def _agregar_resultados(self):
+        """Agrega resultados"""
+        p_titulo = self.doc.add_paragraph()
+        run_titulo = p_titulo.add_run('3. RESULTADOS')
+        run_titulo.font.size = Pt(20)
+        run_titulo.font.bold = True
+        run_titulo.font.color.rgb = self.COLOR_PRIMARIO
+        
+        resultados = self.datos.get('resultados', 'Resultados obtenidos...')
+        p_resultados = self.doc.add_paragraph(resultados)
+        p_resultados.runs[0].font.size = Pt(12)
+        p_resultados.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        p_resultados.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
     
     def _agregar_conclusiones(self):
-        """Agrega conclusiones y recomendaciones"""
+        """Agrega conclusiones"""
         p_titulo = self.doc.add_paragraph()
-        run_titulo = p_titulo.add_run('3. CONCLUSIONES Y RECOMENDACIONES')
-        run_titulo.font.size = Pt(13)
+        run_titulo = p_titulo.add_run('CONCLUSIONES')
+        run_titulo.font.size = Pt(18)
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        # Conclusiones
-        p_conclusiones_titulo = self.doc.add_paragraph()
-        p_conclusiones_titulo.add_run('3.1. Conclusiones\n').font.bold = True
-        
-        conclusiones = self.datos.get('conclusiones', [])
-        for conclusion in conclusiones:
-            self.doc.add_paragraph(f"• {conclusion}", style='List Bullet')
-        
-        # Recomendaciones
-        p_recomendaciones_titulo = self.doc.add_paragraph()
-        p_recomendaciones_titulo.add_run('3.2. Recomendaciones\n').font.bold = True
-        
-        recomendaciones = self.datos.get('recomendaciones', [])
-        for recomendacion in recomendaciones:
-            self.doc.add_paragraph(f"• {recomendacion}", style='List Bullet')
+        conclusiones = self.datos.get('conclusiones', 'Conclusiones del análisis...')
+        p_conclusiones = self.doc.add_paragraph(conclusiones)
+        p_conclusiones.runs[0].font.size = Pt(12)
+        p_conclusiones.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+        p_conclusiones.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         
         self.doc.add_paragraph()
     
-    def _agregar_anexos(self):
-        """Agrega anexos técnicos"""
-        anexos = self.datos.get('anexos', [])
+    def _agregar_recomendaciones(self):
+        """Agrega recomendaciones"""
+        p_titulo = self.doc.add_paragraph()
+        run_titulo = p_titulo.add_run('RECOMENDACIONES')
+        run_titulo.font.size = Pt(20)
+        run_titulo.font.bold = True
+        run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        if anexos:
-            p_titulo = self.doc.add_paragraph()
-            run_titulo = p_titulo.add_run('ANEXOS')
-            run_titulo.font.size = Pt(13)
-            run_titulo.font.bold = True
-            run_titulo.font.color.rgb = self.COLOR_PRIMARIO
-            
-            for idx, anexo in enumerate(anexos, 1):
-                p_anexo = self.doc.add_paragraph()
-                run_anexo = p_anexo.add_run(f"Anexo {idx}: {anexo.get('titulo', 'Sin título')}")
-                run_anexo.font.bold = True
-                
-                descripcion = anexo.get('descripcion', '')
-                if descripcion:
-                    p_desc = self.doc.add_paragraph(descripcion)
-                    p_desc.runs[0].font.size = Pt(10)
+        recomendaciones = self.datos.get('recomendaciones', [
+            'Recomendación 1',
+            'Recomendación 2',
+            'Recomendación 3'
+        ])
+        
+        for rec in recomendaciones:
+            p_rec = self.doc.add_paragraph(f'● {rec}')
+            p_rec.runs[0].font.size = Pt(12)
+            p_rec.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+            p_rec.paragraph_format.left_indent = Inches(0.25)
+        
+        self.doc.add_paragraph()
     
     def generar(self, ruta_salida):
         """Genera el documento completo"""
         self._agregar_header_basico()
         self._agregar_titulo()
+        self._agregar_info_general()
         self._agregar_resumen_ejecutivo()
         self._agregar_introduccion()
         self._agregar_analisis_tecnico()
+        self._agregar_resultados()
         self._agregar_conclusiones()
-        self._agregar_anexos()
+        self._agregar_recomendaciones()
         self._agregar_footer_basico()
         
         self.doc.save(str(ruta_salida))

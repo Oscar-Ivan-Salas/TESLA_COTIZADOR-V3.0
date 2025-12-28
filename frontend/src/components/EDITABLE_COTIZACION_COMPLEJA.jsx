@@ -42,7 +42,7 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
         'azul-tesla': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF', claroBorde: '#DBEAFE' },
         'rojo-energia': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEF2F2', claroBorde: '#FECACA' },
         'verde-ecologico': { primario: '#27AE60', secundario: '#16A34A', acento: '#22C55E', claro: '#F0FDF4', claroBorde: '#BBF7D0' },
-        'dorado-premium': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FFFBEB', claroBorde: '#FDE68A' }
+        'personalizado': { primario: '#8B5CF6', secundario: '#7C3AED', acento: '#A78BFA', claro: '#F5F3FF', claroBorde: '#DDD6FE' }  // Morado personalizado
     };
 
     const colores = COLORES[esquemaColores] || COLORES['azul-tesla'];

@@ -1,6 +1,9 @@
 import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Eye, EyeOff, Download, FileText, Edit, Save } from 'lucide-react';
 
+// ✅ IMPORTAR COMPONENTE EDITABLE (PILOTO: COTIZACION_COMPLEJA)
+import EDITABLE_COTIZACION_COMPLEJA from './EDITABLE_COTIZACION_COMPLEJA';
+
 /**
  * VistaPrevia - Componente profesional con estilos de plantilla HTML
  * Mantiene funcionalidad editable + diseño profesional aprobado
@@ -28,6 +31,15 @@ const VistaPreviaProfesional = forwardRef((props) => {
   // Estado editable de la cotización
   const [cotizacionEditable, setCotizacionEditable] = useState(cotizacion || proyecto || informe || {});
 
+  // ✅ NUEVO: Callback para cuando cambian los datos en componente EDITABLE
+  const handleDatosChange = (nuevosDatos) => {
+    setCotizacionEditable(nuevosDatos);
+    // Opcional: Notificar al componente padre si existe callback
+    if (props.onCotizacionChange) {
+      props.onCotizacionChange(nuevosDatos);
+    }
+  };
+
   const documentoRef = useRef(null);
 
   // Exponer métodos al componente padre
@@ -36,7 +48,7 @@ const VistaPreviaProfesional = forwardRef((props) => {
       return documentoRef.current ? documentoRef.current.innerHTML : '';
     },
     isEditMode: () => modoEdicion,
-    getEditedData: () => cotizacionEditable
+    getEditedData: () => cotizacionEditable // ✅ Retorna datos del componente EDITABLE
   }));
 
   // Función para actualizar items (inline editing)
@@ -491,6 +503,25 @@ const VistaPreviaProfesional = forwardRef((props) => {
     }
   `;
 
+  // ✅ NUEVA FUNCIÓN: Renderizar componente EDITABLE según tipo de documento
+  const renderDocumentoEditable = () => {
+    // PILOTO: Para COTIZACION_COMPLEJA y COTIZACION genérica
+    if (tipoDocumento === 'cotizacion-compleja' || tipoDocumento === 'cotizacion') {
+      return (
+        <EDITABLE_COTIZACION_COMPLEJA
+          datos={cotizacionEditable}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+        />
+      );
+    }
+
+    // Para otros tipos, retornar null para usar renderizado inline existente
+    return null;
+  };
+
   return (
     <div>
       {/* Inyectar estilos profesionales */}
@@ -557,378 +588,383 @@ const VistaPreviaProfesional = forwardRef((props) => {
 
       {/* DOCUMENTO PROFESIONAL */}
       <div className="cotizacion-profesional" ref={documentoRef}>
-        {/* CABECERA */}
-        <div className="header">
-          <div className="logo-section">
-            <div className="logo-placeholder">
-              {logoBase64 ? (
-                <img src={logoBase64} alt="Logo empresa" />
-              ) : (
-                'TESLA'
-              )}
-            </div>
-            <p style={{ fontSize: '10px', color: '#6B7280' }}>Electricidad y Automatización</p>
-          </div>
-
-          <div className="empresa-info">
-            <div className="empresa-nombre">
-              TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.
-            </div>
-            <div className="empresa-detalles">
-              <div>RUC: 20601138787</div>
-              <div>Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div>
-              <div>Teléfono: 906 315 961</div>
-              <div>Email: ingenieria.teslaelectricidad@gmail.com</div>
-            </div>
-          </div>
-        </div>
-
-        {/* TÍTULO DOCUMENTO */}
-        <div className="titulo-documento">
-          <h1>{getTituloDocumento()}</h1>
-          <input
-            type="text"
-            className="numero-cotizacion"
-            value={cotizacionEditable.numero || 'COT-2025-001'}
-            onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, numero: e.target.value })}
-            disabled={!modoEdicion}
-          />
-        </div>
-
-        {/* CONTENIDO DINÁMICO SEGÚN TIPO DE DOCUMENTO */}
-        {(tipoDocumento.includes('cotizacion')) ? (
+        {/* ✅ RENDERIZAR COMPONENTE EDITABLE SI APLICA (PILOTO: COTIZACION_COMPLEJA) */}
+        {renderDocumentoEditable() || (
           <>
-            {/* INFORMACIÓN GENERAL - COTIZACIÓN */}
-            <div className="info-section">
-              <div className="info-box">
-                <h3>Datos del Cliente</h3>
-                <p><span className="info-label">Cliente:</span> {typeof cotizacionEditable.cliente === 'object' ? cotizacionEditable.cliente?.nombre : cotizacionEditable.cliente || 'Cliente'}</p>
-                <p><span className="info-label">Proyecto:</span> {cotizacionEditable.proyecto || 'Proyecto'}</p>
-                <p><span className="info-label">Área:</span> {cotizacionEditable.area_m2 || '0'} m²</p>
+            {/* CABECERA */}
+            <div className="header">
+              <div className="logo-section">
+                <div className="logo-placeholder">
+                  {logoBase64 ? (
+                    <img src={logoBase64} alt="Logo empresa" />
+                  ) : (
+                    'TESLA'
+                  )}
+                </div>
+                <p style={{ fontSize: '10px', color: '#6B7280' }}>Electricidad y Automatización</p>
               </div>
 
-              <div className="info-box">
-                <h3>Datos de la Cotización</h3>
-                <p><span className="info-label">Fecha:</span> {cotizacionEditable.fecha || new Date().toLocaleDateString('es-PE')}</p>
-                <p><span className="info-label">Vigencia:</span> {cotizacionEditable.vigencia || '30 días'}</p>
-                <p><span className="info-label">Servicio:</span> {cotizacionEditable.servicio || 'Instalaciones Eléctricas'}</p>
+              <div className="empresa-info">
+                <div className="empresa-nombre">
+                  TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.
+                </div>
+                <div className="empresa-detalles">
+                  <div>RUC: 20601138787</div>
+                  <div>Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div>
+                  <div>Teléfono: 906 315 961</div>
+                  <div>Email: ingenieria.teslaelectricidad@gmail.com</div>
+                </div>
               </div>
             </div>
 
-            {/* TABLA DE ITEMS - COTIZACIÓN */}
-            <div className="tabla-section">
-              <h2>Detalle de la Cotización</h2>
+            {/* TÍTULO DOCUMENTO */}
+            <div className="titulo-documento">
+              <h1>{getTituloDocumento()}</h1>
+              <input
+                type="text"
+                className="numero-cotizacion"
+                value={cotizacionEditable.numero || 'COT-2025-001'}
+                onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, numero: e.target.value })}
+                disabled={!modoEdicion}
+              />
+            </div>
 
-              <table className="tabla-items">
-                <thead>
-                  <tr>
-                    <th style={{ width: '8%' }}>ITEM</th>
-                    <th style={{ width: '42%' }}>DESCRIPCIÓN</th>
-                    <th style={{ width: '10%' }}>CANT.</th>
-                    <th style={{ width: '10%' }}>UNIDAD</th>
-                    {!ocultarPreciosUnitarios && <th style={{ width: '15%' }}>P. UNIT.</th>}
-                    {!ocultarTotalesPorItem && <th style={{ width: '15%' }}>TOTAL</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {cotizacionEditable.items?.map((item, index) => {
-                    const subtotalItem = (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0));
+            {/* CONTENIDO DINÁMICO SEGÚN TIPO DE DOCUMENTO */}
+            {(tipoDocumento.includes('cotizacion')) ? (
+              <>
+                {/* INFORMACIÓN GENERAL - COTIZACIÓN */}
+                <div className="info-section">
+                  <div className="info-box">
+                    <h3>Datos del Cliente</h3>
+                    <p><span className="info-label">Cliente:</span> {typeof cotizacionEditable.cliente === 'object' ? cotizacionEditable.cliente?.nombre : cotizacionEditable.cliente || 'Cliente'}</p>
+                    <p><span className="info-label">Proyecto:</span> {cotizacionEditable.proyecto || 'Proyecto'}</p>
+                    <p><span className="info-label">Área:</span> {cotizacionEditable.area_m2 || '0'} m²</p>
+                  </div>
 
-                    return (
-                      <tr key={index}>
-                        <td style={{ textAlign: 'center' }}>{String(index + 1).padStart(2, '0')}</td>
-                        <td>
-                          {modoEdicion ? (
-                            <input
-                              type="text"
-                              value={item.descripcion || ''}
-                              onChange={(e) => actualizarItem(index, 'descripcion', e.target.value)}
-                            />
-                          ) : (
-                            item.descripcion
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          {modoEdicion ? (
-                            <input
-                              type="number"
-                              value={item.cantidad || 0}
-                              onChange={(e) => actualizarItem(index, 'cantidad', e.target.value)}
-                              style={{ textAlign: 'right' }}
-                            />
-                          ) : (
-                            parseFloat(item.cantidad || 0).toFixed(2)
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          {modoEdicion ? (
-                            <input
-                              type="text"
-                              value={item.unidad || 'und'}
-                              onChange={(e) => actualizarItem(index, 'unidad', e.target.value)}
-                              style={{ textAlign: 'center' }}
-                            />
-                          ) : (
-                            item.unidad || 'und'
-                          )}
-                        </td>
-                        {!ocultarPreciosUnitarios && (
-                          <td style={{ textAlign: 'right' }}>
-                            {modoEdicion ? (
-                              <input
-                                type="number"
-                                value={item.precio_unitario || item.precioUnitario || 0}
-                                onChange={(e) => actualizarItem(index, 'precio_unitario', e.target.value)}
-                                style={{ textAlign: 'right' }}
-                              />
-                            ) : (
-                              `S/ ${parseFloat(item.precio_unitario || item.precioUnitario || 0).toFixed(2)}`
-                            )}
-                          </td>
-                        )}
-                        {!ocultarTotalesPorItem && (
-                          <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                            S/ {subtotalItem.toFixed(2)}
-                          </td>
-                        )}
+                  <div className="info-box">
+                    <h3>Datos de la Cotización</h3>
+                    <p><span className="info-label">Fecha:</span> {cotizacionEditable.fecha || new Date().toLocaleDateString('es-PE')}</p>
+                    <p><span className="info-label">Vigencia:</span> {cotizacionEditable.vigencia || '30 días'}</p>
+                    <p><span className="info-label">Servicio:</span> {cotizacionEditable.servicio || 'Instalaciones Eléctricas'}</p>
+                  </div>
+                </div>
+
+                {/* TABLA DE ITEMS - COTIZACIÓN */}
+                <div className="tabla-section">
+                  <h2>Detalle de la Cotización</h2>
+
+                  <table className="tabla-items">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '8%' }}>ITEM</th>
+                        <th style={{ width: '42%' }}>DESCRIPCIÓN</th>
+                        <th style={{ width: '10%' }}>CANT.</th>
+                        <th style={{ width: '10%' }}>UNIDAD</th>
+                        {!ocultarPreciosUnitarios && <th style={{ width: '15%' }}>P. UNIT.</th>}
+                        {!ocultarTotalesPorItem && <th style={{ width: '15%' }}>TOTAL</th>}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody>
+                      {cotizacionEditable.items?.map((item, index) => {
+                        const subtotalItem = (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0));
 
-            {/* TOTALES - COTIZACIÓN */}
-            <div className="totales-section">
-              <div className="totales-box">
-                <div className="totales-row">
-                  <span className="totales-label">SUBTOTAL:</span>
-                  <span className="totales-valor">S/ {totales.subtotal}</span>
+                        return (
+                          <tr key={index}>
+                            <td style={{ textAlign: 'center' }}>{String(index + 1).padStart(2, '0')}</td>
+                            <td>
+                              {modoEdicion ? (
+                                <input
+                                  type="text"
+                                  value={item.descripcion || ''}
+                                  onChange={(e) => actualizarItem(index, 'descripcion', e.target.value)}
+                                />
+                              ) : (
+                                item.descripcion
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              {modoEdicion ? (
+                                <input
+                                  type="number"
+                                  value={item.cantidad || 0}
+                                  onChange={(e) => actualizarItem(index, 'cantidad', e.target.value)}
+                                  style={{ textAlign: 'right' }}
+                                />
+                              ) : (
+                                parseFloat(item.cantidad || 0).toFixed(2)
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {modoEdicion ? (
+                                <input
+                                  type="text"
+                                  value={item.unidad || 'und'}
+                                  onChange={(e) => actualizarItem(index, 'unidad', e.target.value)}
+                                  style={{ textAlign: 'center' }}
+                                />
+                              ) : (
+                                item.unidad || 'und'
+                              )}
+                            </td>
+                            {!ocultarPreciosUnitarios && (
+                              <td style={{ textAlign: 'right' }}>
+                                {modoEdicion ? (
+                                  <input
+                                    type="number"
+                                    value={item.precio_unitario || item.precioUnitario || 0}
+                                    onChange={(e) => actualizarItem(index, 'precio_unitario', e.target.value)}
+                                    style={{ textAlign: 'right' }}
+                                  />
+                                ) : (
+                                  `S/ ${parseFloat(item.precio_unitario || item.precioUnitario || 0).toFixed(2)}`
+                                )}
+                              </td>
+                            )}
+                            {!ocultarTotalesPorItem && (
+                              <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                S/ {subtotalItem.toFixed(2)}
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-                <div className="totales-row">
-                  <span className="totales-label">IGV (18%):</span>
-                  <span className="totales-valor">S/ {totales.igv}</span>
+
+                {/* TOTALES - COTIZACIÓN */}
+                <div className="totales-section">
+                  <div className="totales-box">
+                    <div className="totales-row">
+                      <span className="totales-label">SUBTOTAL:</span>
+                      <span className="totales-valor">S/ {totales.subtotal}</span>
+                    </div>
+                    <div className="totales-row">
+                      <span className="totales-label">IGV (18%):</span>
+                      <span className="totales-valor">S/ {totales.igv}</span>
+                    </div>
+                    <div className="totales-row">
+                      <span className="totales-label">TOTAL:</span>
+                      <span className="totales-valor">S/ {totales.total}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="totales-row">
-                  <span className="totales-label">TOTAL:</span>
-                  <span className="totales-valor">S/ {totales.total}</span>
+
+                {/* OBSERVACIONES - COTIZACIÓN */}
+                <div className="observaciones">
+                  <h3>Observaciones Técnicas</h3>
+                  <ul>
+                    <li>Trabajos ejecutados según CNE - Código Nacional de Electricidad</li>
+                    <li>Materiales de primera calidad con certificación</li>
+                    <li>Mano de obra especializada</li>
+                    <li>Garantía de 12 meses en mano de obra</li>
+                    <li>Precios en soles peruanos (PEN)</li>
+                    <li>Forma de pago: 50% adelanto, 50% contra entrega</li>
+                    <li>Cotización válida por {cotizacionEditable.vigencia || '30 días'}</li>
+                  </ul>
                 </div>
-              </div>
-            </div>
+              </>
+            ) : tipoDocumento.includes('informe') ? (
+              <>
+                {/* CONTENIDO PARA INFORME TÉCNICO/EJECUTIVO */}
+                <div className="resumen-ejecutivo" style={{
+                  padding: '25px',
+                  background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`,
+                  borderLeft: `6px solid ${colores.primario}`,
+                  borderRadius: '4px',
+                  margin: '30px 0'
+                }}>
+                  <h3 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', textTransform: 'uppercase' }}>
+                    Resumen Ejecutivo
+                  </h3>
+                  {modoEdicion ? (
+                    <textarea
+                      value={cotizacionEditable.resumen_ejecutivo || 'Resumen del informe...'}
+                      onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, resumen_ejecutivo: e.target.value })}
+                      className="input-editable"
+                      style={{ width: '100%', minHeight: '100px', fontSize: '13px', lineHeight: '1.8' }}
+                    />
+                  ) : (
+                    <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
+                      {cotizacionEditable.resumen_ejecutivo || 'Resumen del informe...'}
+                    </p>
+                  )}
+                </div>
 
-            {/* OBSERVACIONES - COTIZACIÓN */}
-            <div className="observaciones">
-              <h3>Observaciones Técnicas</h3>
-              <ul>
-                <li>Trabajos ejecutados según CNE - Código Nacional de Electricidad</li>
-                <li>Materiales de primera calidad con certificación</li>
-                <li>Mano de obra especializada</li>
-                <li>Garantía de 12 meses en mano de obra</li>
-                <li>Precios en soles peruanos (PEN)</li>
-                <li>Forma de pago: 50% adelanto, 50% contra entrega</li>
-                <li>Cotización válida por {cotizacionEditable.vigencia || '30 días'}</li>
-              </ul>
-            </div>
-          </>
-        ) : tipoDocumento.includes('informe') ? (
-          <>
-            {/* CONTENIDO PARA INFORME TÉCNICO/EJECUTIVO */}
-            <div className="resumen-ejecutivo" style={{
-              padding: '25px',
-              background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`,
-              borderLeft: `6px solid ${colores.primario}`,
-              borderRadius: '4px',
-              margin: '30px 0'
-            }}>
-              <h3 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', textTransform: 'uppercase' }}>
-                Resumen Ejecutivo
-              </h3>
-              {modoEdicion ? (
-                <textarea
-                  value={cotizacionEditable.resumen_ejecutivo || 'Resumen del informe...'}
-                  onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, resumen_ejecutivo: e.target.value })}
-                  className="input-editable"
-                  style={{ width: '100%', minHeight: '100px', fontSize: '13px', lineHeight: '1.8' }}
-                />
-              ) : (
-                <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
-                  {cotizacionEditable.resumen_ejecutivo || 'Resumen del informe...'}
-                </p>
-              )}
-            </div>
-
-            {/* INTRODUCCIÓN */}
-            <div className="seccion" style={{ margin: '35px 0' }}>
-              <h2 style={{
-                fontSize: '20px',
-                color: colores.primario,
-                marginBottom: '20px',
-                paddingBottom: '10px',
-                borderBottom: `3px solid ${colores.primario}`
-              }}>
-                1. INTRODUCCIÓN
-              </h2>
-              {modoEdicion ? (
-                <textarea
-                  value={cotizacionEditable.introduccion || 'Introducción del informe...'}
-                  onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, introduccion: e.target.value })}
-                  className="input-editable"
-                  style={{ width: '100%', minHeight: '150px', fontSize: '12px', lineHeight: '1.8' }}
-                />
-              ) : (
-                <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
-                  {cotizacionEditable.introduccion || 'Introducción del informe...'}
-                </p>
-              )}
-            </div>
-
-            {/* ANÁLISIS TÉCNICO */}
-            <div className="seccion" style={{ margin: '35px 0' }}>
-              <h2 style={{
-                fontSize: '20px',
-                color: colores.primario,
-                marginBottom: '20px',
-                paddingBottom: '10px',
-                borderBottom: `3px solid ${colores.primario}`
-              }}>
-                2. ANÁLISIS TÉCNICO
-              </h2>
-              {modoEdicion ? (
-                <textarea
-                  value={cotizacionEditable.analisis_tecnico || 'Análisis técnico detallado...'}
-                  onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, analisis_tecnico: e.target.value })}
-                  className="input-editable"
-                  style={{ width: '100%', minHeight: '200px', fontSize: '12px', lineHeight: '1.8' }}
-                />
-              ) : (
-                <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
-                  {cotizacionEditable.analisis_tecnico || 'Análisis técnico detallado...'}
-                </p>
-              )}
-            </div>
-
-            {/* CONCLUSIONES */}
-            <div className="conclusiones" style={{ margin: '30px 0' }}>
-              <div style={{
-                padding: '25px',
-                background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`,
-                borderLeft: `6px solid ${colores.primario}`,
-                borderRadius: '4px'
-              }}>
-                <h3 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px' }}>
-                  CONCLUSIONES
-                </h3>
-                {modoEdicion ? (
-                  <textarea
-                    value={cotizacionEditable.conclusiones || 'Conclusiones del informe...'}
-                    onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, conclusiones: e.target.value })}
-                    className="input-editable"
-                    style={{ width: '100%', minHeight: '150px', fontSize: '12px', lineHeight: '1.6' }}
-                  />
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.6' }}>
-                    {cotizacionEditable.conclusiones || 'Conclusiones del informe...'}
-                  </p>
-                )}
-              </div>
-            </div>
-          </>
-        ) : tipoDocumento.includes('proyecto') ? (
-          <>
-            {/* CONTENIDO PARA PROYECTO SIMPLE/COMPLEJO */}
-            <div className="resumen-ejecutivo" style={{
-              padding: '25px',
-              background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`,
-              borderLeft: `6px solid ${colores.primario}`,
-              borderRadius: '4px',
-              margin: '30px 0'
-            }}>
-              <h3 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', textTransform: 'uppercase' }}>
-                Resumen del Proyecto
-              </h3>
-              {modoEdicion ? (
-                <textarea
-                  value={cotizacionEditable.resumen || 'Resumen del proyecto...'}
-                  onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, resumen: e.target.value })}
-                  className="input-editable"
-                  style={{ width: '100%', minHeight: '100px', fontSize: '13px', lineHeight: '1.8' }}
-                />
-              ) : (
-                <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
-                  {cotizacionEditable.resumen || 'Resumen del proyecto...'}
-                </p>
-              )}
-            </div>
-
-            {/* FASES DEL PROYECTO */}
-            <div className="seccion" style={{ margin: '35px 0' }}>
-              <h2 style={{
-                fontSize: '20px',
-                color: colores.primario,
-                marginBottom: '20px',
-                paddingBottom: '10px',
-                borderBottom: `3px solid ${colores.primario}`
-              }}>
-                FASES DEL PROYECTO
-              </h2>
-              <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.8', marginBottom: '20px' }}>
-                El proyecto se desarrollará en las siguientes fases principales:
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                {(cotizacionEditable.fases || [{ descripcion: 'Fase 1', duracion: '1 semana', responsable: 'Por asignar' }]).map((fase, index) => (
-                  <li key={index} style={{
-                    fontSize: '12px',
-                    color: '#374151',
-                    margin: '12px 0',
-                    paddingLeft: '30px',
-                    position: 'relative',
-                    lineHeight: '1.6'
+                {/* INTRODUCCIÓN */}
+                <div className="seccion" style={{ margin: '35px 0' }}>
+                  <h2 style={{
+                    fontSize: '20px',
+                    color: colores.primario,
+                    marginBottom: '20px',
+                    paddingBottom: '10px',
+                    borderBottom: `3px solid ${colores.primario}`
                   }}>
-                    <span style={{
-                      position: 'absolute',
-                      left: '10px',
-                      color: colores.primario,
-                      fontSize: '16px'
-                    }}>●</span>
-                    <strong>Fase {index + 1}:</strong> {fase.descripcion} - Duración: {fase.duracion} - Responsable: {fase.responsable}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                    1. INTRODUCCIÓN
+                  </h2>
+                  {modoEdicion ? (
+                    <textarea
+                      value={cotizacionEditable.introduccion || 'Introducción del informe...'}
+                      onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, introduccion: e.target.value })}
+                      className="input-editable"
+                      style={{ width: '100%', minHeight: '150px', fontSize: '12px', lineHeight: '1.8' }}
+                    />
+                  ) : (
+                    <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
+                      {cotizacionEditable.introduccion || 'Introducción del informe...'}
+                    </p>
+                  )}
+                </div>
 
-            {/* CRONOGRAMA */}
-            <div className="seccion" style={{ margin: '35px 0' }}>
-              <h2 style={{
-                fontSize: '20px',
-                color: colores.primario,
-                marginBottom: '20px',
-                paddingBottom: '10px',
-                borderBottom: `3px solid ${colores.primario}`
-              }}>
-                CRONOGRAMA
-              </h2>
-              <div style={{ padding: '20px', background: '#F9FAFB', borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px' }}>
-                <p style={{ fontSize: '12px', marginBottom: '10px' }}>
-                  <strong>Fecha de Inicio:</strong> {cotizacionEditable.cronograma?.fecha_inicio || '01/01/2025'}
-                </p>
-                <p style={{ fontSize: '12px', marginBottom: '10px' }}>
-                  <strong>Fecha de Fin:</strong> {cotizacionEditable.cronograma?.fecha_fin || '31/12/2025'}
-                </p>
-                <p style={{ fontSize: '12px' }}>
-                  <strong>Duración Total:</strong> {cotizacionEditable.cronograma?.duracion_total || '12 meses'}
-                </p>
-              </div>
+                {/* ANÁLISIS TÉCNICO */}
+                <div className="seccion" style={{ margin: '35px 0' }}>
+                  <h2 style={{
+                    fontSize: '20px',
+                    color: colores.primario,
+                    marginBottom: '20px',
+                    paddingBottom: '10px',
+                    borderBottom: `3px solid ${colores.primario}`
+                  }}>
+                    2. ANÁLISIS TÉCNICO
+                  </h2>
+                  {modoEdicion ? (
+                    <textarea
+                      value={cotizacionEditable.analisis_tecnico || 'Análisis técnico detallado...'}
+                      onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, analisis_tecnico: e.target.value })}
+                      className="input-editable"
+                      style={{ width: '100%', minHeight: '200px', fontSize: '12px', lineHeight: '1.8' }}
+                    />
+                  ) : (
+                    <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
+                      {cotizacionEditable.analisis_tecnico || 'Análisis técnico detallado...'}
+                    </p>
+                  )}
+                </div>
+
+                {/* CONCLUSIONES */}
+                <div className="conclusiones" style={{ margin: '30px 0' }}>
+                  <div style={{
+                    padding: '25px',
+                    background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`,
+                    borderLeft: `6px solid ${colores.primario}`,
+                    borderRadius: '4px'
+                  }}>
+                    <h3 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px' }}>
+                      CONCLUSIONES
+                    </h3>
+                    {modoEdicion ? (
+                      <textarea
+                        value={cotizacionEditable.conclusiones || 'Conclusiones del informe...'}
+                        onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, conclusiones: e.target.value })}
+                        className="input-editable"
+                        style={{ width: '100%', minHeight: '150px', fontSize: '12px', lineHeight: '1.6' }}
+                      />
+                    ) : (
+                      <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.6' }}>
+                        {cotizacionEditable.conclusiones || 'Conclusiones del informe...'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : tipoDocumento.includes('proyecto') ? (
+              <>
+                {/* CONTENIDO PARA PROYECTO SIMPLE/COMPLEJO */}
+                <div className="resumen-ejecutivo" style={{
+                  padding: '25px',
+                  background: `linear-gradient(135deg, ${colores.claro} 0%, ${colores.claroBorde} 100%)`,
+                  borderLeft: `6px solid ${colores.primario}`,
+                  borderRadius: '4px',
+                  margin: '30px 0'
+                }}>
+                  <h3 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', textTransform: 'uppercase' }}>
+                    Resumen del Proyecto
+                  </h3>
+                  {modoEdicion ? (
+                    <textarea
+                      value={cotizacionEditable.resumen || 'Resumen del proyecto...'}
+                      onChange={(e) => setCotizacionEditable({ ...cotizacionEditable, resumen: e.target.value })}
+                      className="input-editable"
+                      style={{ width: '100%', minHeight: '100px', fontSize: '13px', lineHeight: '1.8' }}
+                    />
+                  ) : (
+                    <p style={{ fontSize: '13px', color: '#374151', lineHeight: '1.8', textAlign: 'justify' }}>
+                      {cotizacionEditable.resumen || 'Resumen del proyecto...'}
+                    </p>
+                  )}
+                </div>
+
+                {/* FASES DEL PROYECTO */}
+                <div className="seccion" style={{ margin: '35px 0' }}>
+                  <h2 style={{
+                    fontSize: '20px',
+                    color: colores.primario,
+                    marginBottom: '20px',
+                    paddingBottom: '10px',
+                    borderBottom: `3px solid ${colores.primario}`
+                  }}>
+                    FASES DEL PROYECTO
+                  </h2>
+                  <p style={{ fontSize: '12px', color: '#374151', lineHeight: '1.8', marginBottom: '20px' }}>
+                    El proyecto se desarrollará en las siguientes fases principales:
+                  </p>
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {(cotizacionEditable.fases || [{ descripcion: 'Fase 1', duracion: '1 semana', responsable: 'Por asignar' }]).map((fase, index) => (
+                      <li key={index} style={{
+                        fontSize: '12px',
+                        color: '#374151',
+                        margin: '12px 0',
+                        paddingLeft: '30px',
+                        position: 'relative',
+                        lineHeight: '1.6'
+                      }}>
+                        <span style={{
+                          position: 'absolute',
+                          left: '10px',
+                          color: colores.primario,
+                          fontSize: '16px'
+                        }}>●</span>
+                        <strong>Fase {index + 1}:</strong> {fase.descripcion} - Duración: {fase.duracion} - Responsable: {fase.responsable}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* CRONOGRAMA */}
+                <div className="seccion" style={{ margin: '35px 0' }}>
+                  <h2 style={{
+                    fontSize: '20px',
+                    color: colores.primario,
+                    marginBottom: '20px',
+                    paddingBottom: '10px',
+                    borderBottom: `3px solid ${colores.primario}`
+                  }}>
+                    CRONOGRAMA
+                  </h2>
+                  <div style={{ padding: '20px', background: '#F9FAFB', borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px' }}>
+                    <p style={{ fontSize: '12px', marginBottom: '10px' }}>
+                      <strong>Fecha de Inicio:</strong> {cotizacionEditable.cronograma?.fecha_inicio || '01/01/2025'}
+                    </p>
+                    <p style={{ fontSize: '12px', marginBottom: '10px' }}>
+                      <strong>Fecha de Fin:</strong> {cotizacionEditable.cronograma?.fecha_fin || '31/12/2025'}
+                    </p>
+                    <p style={{ fontSize: '12px' }}>
+                      <strong>Duración Total:</strong> {cotizacionEditable.cronograma?.duracion_total || '12 meses'}
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {/* PIE DE PÁGINA */}
+            <div className="footer">
+              <div className="footer-empresa">TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
+              <div className="footer-contacto">RUC: 20601138787 | Teléfono: 906 315 961</div>
+              <div className="footer-contacto">Email: ingenieria.teslaelectricidad@gmail.com</div>
+              <div className="footer-contacto">Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div>
             </div>
           </>
-        ) : null}
-
-        {/* PIE DE PÁGINA */}
-        <div className="footer">
-          <div className="footer-empresa">TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
-          <div className="footer-contacto">RUC: 20601138787 | Teléfono: 906 315 961</div>
-          <div className="footer-contacto">Email: ingenieria.teslaelectricidad@gmail.com</div>
-          <div className="footer-contacto">Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div>
-        </div>
+        )}
       </div>
     </div>
   );

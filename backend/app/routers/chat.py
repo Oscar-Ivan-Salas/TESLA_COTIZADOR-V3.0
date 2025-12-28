@@ -45,6 +45,7 @@ from app.schemas.cotizacion import (
 )
 from app.services.gemini_service import gemini_service
 from app.services.pili_brain import PILIBrain
+from app.services.pili_integrator import pili_integrator  # ✅ NUEVO: Integrador completo
 from app.models.cotizacion import Cotizacion
 from app.models.item import Item
 from datetime import datetime, timedelta
@@ -2769,6 +2770,7 @@ async def chat_contextualizado(
     cotizacion_id: Optional[int] = Body(None),
     archivos_procesados: Optional[List[Dict]] = Body([]),
     generar_html: Optional[bool] = Body(False),
+    conversation_state: Optional[Dict] = Body(None),  # ✅ NUEVO: Estado de conversación
     db: Session = Depends(get_db)
 ):
     """
@@ -2816,29 +2818,80 @@ async def chat_contextualizado(
 
         prompt_especializado += f"\n\nUSUARIO: {mensaje}\n\nRESPUESTA DE {nombre_pili}:"
 
-        # Enviar a Gemini con contexto especializado, con fallback a PILIBrain
+        # ✅ Inicializar variables
+        botones_sugeridos = []  # Inicializar para evitar UnboundLocalError
+        datos_generados = {}
+        
+        # ✅ USAR PILI INTEGRATOR PARA CONVERSACION INTELIGENTE
         try:
-            respuesta = gemini_service.chat(
-                mensaje=prompt_especializado,
-                contexto=f"Agente: {nombre_pili}. Servicio: {tipo_flujo}. {contexto_adicional}",
-                cotizacion_id=cotizacion_id
+            # Usar PILIIntegrator que maneja conversación brillante para todos los tipos
+            logger.info(f"🤖 Usando PILIIntegrator para {tipo_flujo}")
+            
+            # ✅ NUEVO: Acumular datos de mensajes anteriores del usuario
+            datos_acumulados = {}
+            servicio_detectado = pili_brain.detectar_servicio(mensaje) if pili_brain else "electrico-residencial"
+            
+            for msg in historial:
+                # Solo procesar mensajes del usuario
+                if msg.get('tipo') == 'usuario' or msg.get('role') == 'user':
+                    contenido = msg.get('mensaje', msg.get('content', ''))
+                    if contenido:
+                        # Extraer datos de cada mensaje del usuario
+                        datos_msg = pili_brain.extraer_datos(contenido, servicio_detectado) if pili_brain else {}
+                        datos_acumulados.update(datos_msg)
+            
+            logger.info(f"📊 Datos acumulados del historial: {datos_acumulados}")
+            logger.info(f"📊 Datos acumulados del historial: {datos_acumulados}")
+            
+            # ✅ NUEVO: Detectar si se debe forzar ITSE (ROBUSTECIDO)
+            servicio_forzado = None
+            ctx_safe = (contexto_adicional or "").lower()
+            if "itse" in ctx_safe:
+                servicio_forzado = "itse"
+                logger.info("🔒 Contexto ITSE detectado: Forzando servicio a 'itse'")
+            
+            resultado_pili = await pili_integrator.procesar_solicitud_completa(
+                mensaje=mensaje,
+                tipo_flujo=tipo_flujo,
+                historial=historial,
+                generar_documento=False,  # Solo conversación, no generar archivo aún
+                datos_acumulados=datos_acumulados,  # ✅ NUEVO: Pasar datos acumulados
+                conversation_state=conversation_state,  # ✅ NUEVO: Pasar estado de conversación
+                servicio_forzado=servicio_forzado  # ✅ NUEVO: Forzar servicio ITSE
             )
             
-            # 🚨 DETECTAR MODO DEMO DE GEMINI Y FORZAR FALLBACK A PILIBRAIN
-            if isinstance(respuesta, dict) and "PILI en modo demo" in str(respuesta.get("mensaje", "")):
-                raise Exception("Gemini en modo demo (sin API Key)")
+            if resultado_pili.get("success"):
+                respuesta = {'mensaje': resultado_pili.get('respuesta', '')}
+                
+                # Extraer datos generados según tipo
+                datos_generados = resultado_pili.get('datos_generados', {})
+                
+                # ✅ NUEVO: Actualizar botones desde especialistas locales
+                # Los especialistas locales retornan 'botones', no 'botones_sugeridos'
+                botones_especialista = resultado_pili.get('botones') or resultado_pili.get('botones_sugeridos')
+                if botones_especialista:
+                    logger.info(f"✅ Usando {len(botones_especialista)} botones del especialista local")
+                    botones_sugeridos = botones_especialista
+                
+            else:
+                # Fallback si PILIIntegrator falla
+                logger.warning("⚠️ PILIIntegrator falló, usando respuesta básica")
+                respuesta = {'mensaje': f"Entiendo que necesitas ayuda con {tipo_flujo}. ¿Podrías darme más detalles?"}
                 
         except Exception as e:
-            # 🧠 FALLBACK: Usar PILIBrain cuando Gemini no está disponible
-            logger.warning(f"⚠️ Gemini no disponible, usando PILIBrain local: {e}")
+            # 🧠 FALLBACK FINAL: Usar PILIBrain básico
+            logger.warning(f"⚠️ Error con PILIIntegrator, usando PILIBrain: {e}")
             servicio_detectado = pili_brain.detectar_servicio(mensaje)
             cotizacion_data = pili_brain.generar_cotizacion(mensaje, servicio_detectado, "simple")
             respuesta = {'mensaje': cotizacion_data['conversacion']['mensaje_pili']}
 
-        # Determinar etapa y botones sugeridos
+        # Determinar etapa y botones sugeridos SOLO si no hay botones del especialista
         tiene_cotizacion = cotizacion_id is not None
         etapa_actual = determinar_etapa_conversacion(historial, tiene_cotizacion)
-        botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
+        
+        # ✅ SOLO usar botones genéricos si el especialista NO proporcionó botones
+        if not botones_sugeridos:
+            botones_sugeridos = obtener_botones_para_etapa(tipo_flujo, etapa_actual)
 
         # 🆕 NUEVO: Generar vista previa HTML si se solicita
         html_preview = None
@@ -2899,11 +2952,21 @@ async def chat_contextualizado(
         # 🆕 CRÍTICO: Enviar datos estructurados al frontend para edición
         datos_estructurados = None
         if generar_html and tipo_flujo.startswith("cotizacion"):
-            datos_estructurados = datos_preview
+            # Usar datos de PILIIntegrator si están disponibles
+            if 'datos_generados' in locals() and datos_generados:
+                datos_estructurados = datos_generados
+            else:
+                datos_estructurados = datos_preview
         elif generar_html and tipo_flujo.startswith("proyecto"):
-            datos_estructurados = datos_preview
+            if 'datos_generados' in locals() and datos_generados:
+                datos_estructurados = datos_generados
+            else:
+                datos_estructurados = datos_preview
         elif generar_html and tipo_flujo.startswith("informe"):
-            datos_estructurados = datos_preview
+            if 'datos_generados' in locals() and datos_generados:
+                datos_estructurados = datos_generados
+            else:
+                datos_estructurados = datos_preview
 
         return {
             "success": True,
@@ -2926,7 +2989,8 @@ async def chat_contextualizado(
             "pili_metadata": {
                 "agente_id": tipo_flujo,
                 "version": "3.0",
-                "capabilities": ["chat", "ocr", "json", "html_preview"]
+                "capabilities": ["chat", "ocr", "json", "html_preview"],
+                "modo": "PILIIntegrator"  # ✅ NUEVO: Indicar que usa PILIIntegrator
             }
         }
 
