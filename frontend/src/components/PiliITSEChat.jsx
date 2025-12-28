@@ -10,7 +10,7 @@ import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
  * - Botones interactivos con hover
  * - Conectado con backend Python (/api/chat/chat-contextualizado)
  */
-const PiliITSEChat = ({ onCotizacionGenerada, onBotonesUpdate, onBack, onFinish }) => {
+const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
     const [conversacion, setConversacion] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -98,7 +98,7 @@ const PiliITSEChat = ({ onCotizacionGenerada, onBotonesUpdate, onBack, onFinish 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    tipo_flujo: 'cotizacion-simple',
+                    tipo_flujo: 'itse',
                     mensaje: mensaje,
                     historial: conversacion.map(msg => ({
                         tipo: msg.sender === 'bot' ? 'asistente' : 'usuario',
@@ -117,11 +117,18 @@ const PiliITSEChat = ({ onCotizacionGenerada, onBotonesUpdate, onBack, onFinish 
                 // Actualizar estado de conversación desde el backend
                 if (data.state || data.conversation_state) {
                     setConversationState(data.state || data.conversation_state);
+                    console.log('🔄 Estado de conversación actualizado:', data.state || data.conversation_state);
                 }
 
                 // Agregar respuesta de PILI
                 const botones = data.botones_sugeridos || data.botones || null;
                 addBotMessage(data.respuesta, botones);
+
+                // Si hay datos generados, notificar al padre para vista previa
+                if (data.datos_generados && onDatosGenerados) {
+                    console.log('📊 Datos generados recibidos:', data.datos_generados);
+                    onDatosGenerados(data.datos_generados);
+                }
 
                 // Si hay cotización generada, notificar al padre y habilitar botón
                 if (data.cotizacion_generada) {

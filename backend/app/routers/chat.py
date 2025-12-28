@@ -136,6 +136,72 @@ CONTEXTOS_SERVICIOS = {
         """
     },
 
+    # 📋 CERTIFICADO ITSE - PILI ITSE
+    "itse": {
+        "nombre_pili": "PILI ITSE",
+        "personalidad": "¡Hola! 📋 Soy PILI ITSE, tu especialista en certificados de Inspección Técnica de Seguridad en Edificaciones. Te ayudo a obtener tu certificado ITSE con visita técnica GRATUITA y precios oficiales TUPA Huancayo.",
+        
+        "rol_ia": """Eres PILI ITSE, agente especializada en certificaciones ITSE de Tesla Electricidad - Huancayo.
+        Tu objetivo es guiar al usuario a través del proceso de certificación ITSE, recopilando información sobre su establecimiento.
+        Mantente enfocada en ITSE, no te desvíes a otros servicios eléctricos.""",
+        
+        "preguntas_esenciales": [
+            "¿Qué tipo de establecimiento es? (Salud, Educación, Comercio, etc.)",
+            "¿Cuál es el área total en m²?",
+            "¿Cuántos pisos tiene el establecimiento?",
+            "¿Qué actividad específica se realizará?"
+        ],
+        
+        "botones_contextuales": {
+            "inicial": [
+                "🏥 Salud",
+                "🎓 Educación", 
+                "🏨 Hospedaje",
+                "🏪 Comercio",
+                "🍽️ Restaurante",
+                "🏢 Oficina",
+                "🏭 Industrial",
+                "🎭 Encuentro"
+            ],
+            "refinamiento": [
+                "📝 Especificar tipo exacto",
+                "📐 Confirmar dimensiones",
+                "🔢 Verificar número de pisos",
+                "✅ Generar cotización ITSE"
+            ],
+            "generacion": [
+                "✏️ Editar cotización",
+                "📄 Generar documento",
+                "📅 Agendar visita técnica",
+                "💾 Guardar cotización"
+            ]
+        },
+        
+        "prompt_especializado": """
+        Como PILI ITSE de Tesla Electricidad - Huancayo:
+        
+        1. 🏢 IDENTIFICA el tipo de establecimiento según categorías ITSE
+        2. 📏 RECOPILA área en m² y número de pisos
+        3. ⚠️ DETERMINA nivel de riesgo (BAJO, MEDIO, ALTO, MUY ALTO)
+        4. 💰 CALCULA precios según TUPA Huancayo 2025
+        5. 📋 GENERA cotización con desglose de costos
+        
+        PRECIOS TUPA HUANCAYO 2025:
+        - Riesgo BAJO: S/150 - S/200 (municipal) + S/300-500 (servicio)
+        - Riesgo MEDIO: S/200 - S/300 (municipal) + S/500-800 (servicio)
+        - Riesgo ALTO: S/300 - S/450 (municipal) + S/800-1200 (servicio)
+        - Riesgo MUY ALTO: S/450 - S/600 (municipal) + S/1200-1800 (servicio)
+        
+        INCLUYE:
+        - ✅ Visita técnica GRATUITA
+        - ✅ Trámite 100% gestionado
+        - ✅ Entrega en 7 días hábiles
+        - ✅ Garantía de aprobación
+        
+        IMPORTANTE: Enfócate SOLO en ITSE. No menciones instalaciones eléctricas.
+        """
+    },
+
     # 🔍 COTIZACIÓN COMPLEJA - PILI ANALISTA
     "cotizacion-compleja": {
         "nombre_pili": "PILI Analista",
@@ -2821,6 +2887,41 @@ async def chat_contextualizado(
         # ✅ Inicializar variables
         botones_sugeridos = []  # Inicializar para evitar UnboundLocalError
         datos_generados = {}
+        
+        # 🔥 BYPASS DIRECTO PARA ITSE - Llamar directamente a ITSESpecialist
+        if tipo_flujo == 'itse':
+            try:
+                from app.services.pili_local_specialists import LocalSpecialistFactory
+                
+                logger.info(f"🔥 BYPASS DIRECTO: Usando ITSESpecialist para tipo_flujo='itse'")
+                
+                # Crear especialista ITSE directamente
+                specialist = LocalSpecialistFactory.create('itse')
+                
+                # Procesar mensaje con estado de conversación
+                response = specialist.process_message(mensaje, conversation_state)
+                
+                logger.info(f"✅ ITSESpecialist respondió: {response.get('texto', '')[:100]}")
+                
+                # Retornar respuesta directamente
+                return {
+                    "success": True,
+                    "respuesta": response.get("texto", ""),
+                    "botones_sugeridos": response.get("botones", []),
+                    "botones": response.get("botones", []),
+                    "state": response.get("state"),
+                    "conversation_state": response.get("state"),
+                    "datos_generados": response.get("datos_generados"),
+                    "cotizacion_generada": response.get("cotizacion_generada"),
+                    "html_preview": response.get("html_preview", ""),
+                    "agente_pili": nombre_pili
+                }
+                
+            except Exception as e:
+                logger.error(f"❌ Error en bypass ITSE: {e}")
+                import traceback
+                traceback.print_exc()
+                # Si falla el bypass, continuar con el flujo normal
         
         # ✅ USAR PILI INTEGRATOR PARA CONVERSACION INTELIGENTE
         try:
