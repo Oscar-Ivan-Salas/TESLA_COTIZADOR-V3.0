@@ -31,7 +31,15 @@ except ImportError as e:
     logger.warning(f"Error importando componentes: {e}")
     COMPONENTS_AVAILABLE = False
 
-# Import del generador Word existente
+# Import de los generadores modulares profesionales
+try:
+    from . import generar_documento, tipos_disponibles, GENERADORES
+    GENERADORES_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Generadores modulares no disponibles: {e}")
+    GENERADORES_AVAILABLE = False
+
+# Fallback al generador Word existente (para compatibilidad)
 try:
     from app.services.word_generator import WordGenerator, get_word_generator
     WORD_GENERATOR_AVAILABLE = True
@@ -60,6 +68,9 @@ class DocumentGeneratorPro:
         self.rag_engine = get_rag_engine() if COMPONENTS_AVAILABLE else None
         self.ml_engine = get_ml_engine() if COMPONENTS_AVAILABLE else None
         self.chart_engine = get_chart_engine() if COMPONENTS_AVAILABLE else None
+
+        # Generadores modulares (prioridad) o fallback al WordGenerator antiguo
+        self.generadores_modulares = GENERADORES_AVAILABLE
         self.word_generator = get_word_generator() if WORD_GENERATOR_AVAILABLE else None
 
         # Directorio de salida
@@ -72,7 +83,8 @@ class DocumentGeneratorPro:
             "rag_engine": self.rag_engine is not None and self.rag_engine.is_available(),
             "ml_engine": self.ml_engine is not None and self.ml_engine.is_available(),
             "chart_engine": self.chart_engine is not None and self.chart_engine.is_available(),
-            "word_generator": self.word_generator is not None
+            "generadores_modulares": self.generadores_modulares,
+            "word_generator_fallback": self.word_generator is not None
         }
 
         logger.info("=" * 60)
@@ -198,7 +210,53 @@ class DocumentGeneratorPro:
                 })
 
             # Paso 6: Generar documento Word
-            if self.word_generator:
+            # PRIORIDAD: Usar generadores modulares profesionales
+            if self.generadores_modulares:
+                # Mapear tipo + complejidad a generador específico
+                tipo_generador = self._map_to_generator_type(document_type, complexity)
+
+                # Preparar ruta de salida
+                numero = structured_data.get("numero", self._generate_document_number(document_type))
+                file_path = self.output_dir / f"{numero}.docx"
+
+                # Preparar datos para generador modular
+                datos_documento = self._prepare_data_for_generator(
+                    structured_data,
+                    document_type,
+                    complexity,
+                    charts
+                )
+
+                # Generar documento usando sistema modular
+                try:
+                    doc_path = generar_documento(
+                        tipo_documento=tipo_generador,
+                        datos=datos_documento,
+                        ruta_salida=str(file_path),
+                        opciones=options
+                    )
+
+                    result["document_generated"] = True
+                    result["file_path"] = str(doc_path)
+                    result["file_name"] = Path(doc_path).name
+                    result["generator_type"] = tipo_generador
+                    result["generator_system"] = "modular_professional"
+
+                    result["processing_steps"].append({
+                        "step": "document_generation",
+                        "success": True,
+                        "generator": tipo_generador,
+                        "system": "modular",
+                        "file": Path(doc_path).name
+                    })
+
+                except Exception as e:
+                    logger.error(f"Error con generador modular: {e}")
+                    result["document_generated"] = False
+                    result["error"] = str(e)
+
+            # FALLBACK: Usar WordGenerator antiguo si generadores modulares no disponibles
+            elif self.word_generator:
                 # Preparar datos para WordGenerator
                 datos_json = {
                     "datos_extraidos": structured_data,
@@ -216,12 +274,18 @@ class DocumentGeneratorPro:
                 result["document_generated"] = word_result.get("exito", False)
                 result["file_path"] = word_result.get("ruta_archivo")
                 result["file_name"] = word_result.get("nombre_archivo")
+                result["generator_system"] = "word_generator_legacy"
 
                 result["processing_steps"].append({
                     "step": "document_generation",
                     "success": word_result.get("exito", False),
+                    "generator": "word_generator",
+                    "system": "legacy",
                     "file": word_result.get("nombre_archivo")
                 })
+            else:
+                result["document_generated"] = False
+                result["error"] = "No hay generadores disponibles"
 
             logger.info(f"Documento generado exitosamente: {result.get('file_name')}")
             return result
@@ -233,6 +297,149 @@ class DocumentGeneratorPro:
                 "error": str(e),
                 "timestamp": datetime.now().isoformat()
             }
+
+    def _map_to_generator_type(self, document_type: str, complexity: str) -> str:
+        """
+        Mapea document_type + complexity al tipo específico del generador modular.
+
+        Args:
+            document_type: "cotizacion", "proyecto", "informe"
+            complexity: "simple" o "complejo"
+
+        Returns:
+            Tipo para el generador modular (ej: "cotizacion-simple", "proyecto-pmi")
+        """
+        mapping = {
+            ("cotizacion", "simple"): "cotizacion-simple",
+            ("cotizacion", "complejo"): "cotizacion-compleja",
+            ("proyecto", "simple"): "proyecto-simple",
+            ("proyecto", "complejo"): "proyecto-pmi",
+            ("informe", "simple"): "informe-tecnico",
+            ("informe", "complejo"): "informe-apa"
+        }
+
+        tipo = mapping.get((document_type, complexity))
+        if not tipo:
+            logger.warning(f"Mapeo no encontrado para {document_type}/{complexity}, usando default")
+            return f"{document_type}-simple"
+
+        return tipo
+
+    def _prepare_data_for_generator(
+        self,
+        structured_data: Dict[str, Any],
+        document_type: str,
+        complexity: str,
+        charts: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Prepara los datos estructurados en el formato que esperan los generadores modulares.
+
+        Los generadores modulares esperan estructura específica según tipo:
+        - Cotizaciones: numero, fecha, cliente, proyecto, items[], subtotal, igv, total
+        - Proyectos: nombre, cliente, descripcion, objetivos[], entregables[], cronograma[]
+        - Informes: titulo, autor, fecha, resumen, contenido[], conclusiones[]
+
+        Args:
+            structured_data: Datos estructurados del ML/RAG
+            document_type: Tipo de documento
+            complexity: Complejidad
+            charts: Gráficas generadas
+
+        Returns:
+            Datos en formato esperado por generadores modulares
+        """
+        datos = {}
+
+        # Datos comunes a todos
+        datos["numero"] = structured_data.get("numero", self._generate_document_number(document_type))
+        datos["fecha"] = structured_data.get("fecha", datetime.now().strftime("%d/%m/%Y"))
+        datos["cliente"] = structured_data.get("cliente", "Cliente")
+
+        if document_type == "cotizacion":
+            # Estructura para cotizaciones
+            datos["proyecto"] = structured_data.get("proyecto", f"Proyecto {structured_data.get('servicio', 'Eléctrico')}")
+            datos["descripcion"] = structured_data.get("descripcion", "")
+
+            # Items de cotización
+            items = structured_data.get("items", [])
+            if not items:
+                # Generar items básicos desde structured_data
+                items = [{
+                    "descripcion": structured_data.get("servicio", "Servicio eléctrico"),
+                    "cantidad": structured_data.get("cantidad", 1),
+                    "unidad": "glb",
+                    "precio_unitario": structured_data.get("precio_estimado", 5000.0)
+                }]
+            datos["items"] = items
+
+            # Calcular totales
+            subtotal = sum(item.get("cantidad", 1) * item.get("precio_unitario", 0) for item in items)
+            datos["subtotal"] = subtotal
+            datos["igv"] = subtotal * 0.18
+            datos["total"] = subtotal + datos["igv"]
+
+            # Datos adicionales
+            datos["vigencia"] = structured_data.get("vigencia", "30 días")
+            datos["observaciones"] = structured_data.get("observaciones", "Precios incluyen IGV")
+
+            # Si es compleja, agregar análisis
+            if complexity == "complejo":
+                datos["analisis_riesgos"] = structured_data.get("riesgos", [])
+                datos["cronograma_estimado"] = structured_data.get("cronograma", [])
+                if charts:
+                    datos["graficas"] = charts
+
+        elif document_type == "proyecto":
+            # Estructura para proyectos
+            datos["nombre"] = structured_data.get("nombre", f"Proyecto {structured_data.get('servicio', 'Eléctrico')}")
+            datos["descripcion"] = structured_data.get("descripcion", "")
+            datos["objetivos"] = structured_data.get("objetivos", [
+                "Objetivo principal del proyecto"
+            ])
+            datos["entregables"] = structured_data.get("entregables", [
+                "Entregable 1"
+            ])
+            datos["presupuesto"] = structured_data.get("presupuesto", 0.0)
+
+            # Si es complejo (PMI), agregar datos PMI
+            if complexity == "complejo":
+                datos["stakeholders"] = structured_data.get("stakeholders", [])
+                datos["kpis"] = structured_data.get("kpis", {})
+                datos["matriz_raci"] = structured_data.get("matriz_raci", self._generate_raci_matrix())
+                datos["plan_comunicaciones"] = structured_data.get("plan_comunicaciones", {})
+                if charts:
+                    datos["graficas"] = charts
+
+        elif document_type == "informe":
+            # Estructura para informes
+            datos["titulo"] = structured_data.get("titulo", f"Informe {structured_data.get('servicio', 'Técnico')}")
+            datos["autor"] = structured_data.get("autor", "Tesla Electricidad y Automatización S.A.C.")
+            datos["resumen"] = structured_data.get("resumen", "")
+            datos["introduccion"] = structured_data.get("introduccion", "")
+            datos["metodologia"] = structured_data.get("metodologia", "")
+            datos["resultados"] = structured_data.get("resultados", [])
+            datos["conclusiones"] = structured_data.get("conclusiones", [])
+            datos["recomendaciones"] = structured_data.get("recomendaciones", [])
+
+            # Si es complejo (APA), agregar datos ejecutivos
+            if complexity == "complejo":
+                datos["formato"] = "APA 7ma edición"
+                datos["abstract"] = structured_data.get("abstract", "")
+                datos["referencias"] = structured_data.get("referencias", [])
+                datos["metricas_clave"] = structured_data.get("metricas_clave", {})
+                if charts:
+                    datos["graficas"] = charts
+
+        # Agregar contexto RAG si existe
+        if "contexto_rag" in structured_data:
+            datos["contexto_adicional"] = structured_data["contexto_rag"]
+
+        # Agregar contenido de archivos si existe
+        if "contenido_archivos_subidos" in structured_data:
+            datos["archivos_referencia"] = structured_data["contenido_archivos_subidos"]
+
+        return datos
 
     def _build_structured_data(
         self,
