@@ -682,7 +682,149 @@ KNOWLEDGE_BASE = {
         },
         "normativa": "RNE IS.010 (Instalaciones Sanitarias), IS.020 (Tanques Sépticos)",
         "etapas": ["initial", "tipo_sistema", "area", "banos", "puntos", "quotation"]
+    },
+    
+    # ──────────────────────────────────────────────────────────────────────────
+    # 📋 ITSE - Certificado de Inspección Técnica de Seguridad en Edificaciones
+    # ──────────────────────────────────────────────────────────────────────────
+    "itse": {
+        "categorias": {
+            "SALUD": {
+                "nombre": "Establecimientos de Salud",
+                "tipos": [
+                    "Hospital",
+                    "Clínica",
+                    "Centro de Salud",
+                    "Posta Médica",
+                    "Consultorio Médico",
+                    "Laboratorio Clínico",
+                    "Centro de Diagnóstico"
+                ],
+                "riesgo_base": "ALTO"
+            },
+            "EDUCACION": {
+                "nombre": "Centros Educativos",
+                "tipos": [
+                    "Universidad",
+                    "Instituto",
+                    "Colegio",
+                    "Escuela",
+                    "Centro de Idiomas",
+                    "Academia",
+                    "Guardería/Nido"
+                ],
+                "riesgo_base": "ALTO"
+            },
+            "HOSPEDAJE": {
+                "nombre": "Establecimientos de Hospedaje",
+                "tipos": [
+                    "Hotel 5 Estrellas",
+                    "Hotel 4 Estrellas",
+                    "Hotel 3 Estrellas",
+                    "Hostal",
+                    "Albergue",
+                    "Casa de Huéspedes"
+                ],
+                "riesgo_base": "MEDIO"
+            },
+            "COMERCIO": {
+                "nombre": "Locales Comerciales",
+                "tipos": [
+                    "Centro Comercial",
+                    "Supermercado",
+                    "Tienda por Departamentos",
+                    "Tienda Retail",
+                    "Galería Comercial",
+                    "Mercado",
+                    "Bodega"
+                ],
+                "riesgo_base": "MEDIO"
+            },
+            "RESTAURANTE": {
+                "nombre": "Establecimientos de Alimentación",
+                "tipos": [
+                    "Restaurante",
+                    "Cafetería",
+                    "Fast Food",
+                    "Bar",
+                    "Discoteca",
+                    "Pub",
+                    "Panadería"
+                ],
+                "riesgo_base": "MEDIO"
+            },
+            "OFICINA": {
+                "nombre": "Oficinas Administrativas",
+                "tipos": [
+                    "Edificio de Oficinas",
+                    "Oficina Corporativa",
+                    "Coworking",
+                    "Consultorio Profesional",
+                    "Estudio",
+                    "Agencia"
+                ],
+                "riesgo_base": "BAJO"
+            },
+            "INDUSTRIAL": {
+                "nombre": "Establecimientos Industriales",
+                "tipos": [
+                    "Fábrica",
+                    "Planta Industrial",
+                    "Taller Industrial",
+                    "Almacén Industrial",
+                    "Centro de Distribución",
+                    "Depósito"
+                ],
+                "riesgo_base": "ALTO"
+            },
+            "ENCUENTRO": {
+                "nombre": "Centros de Reunión",
+                "tipos": [
+                    "Auditorio",
+                    "Teatro",
+                    "Cine",
+                    "Centro de Convenciones",
+                    "Sala de Eventos",
+                    "Gimnasio",
+                    "Iglesia/Templo"
+                ],
+                "riesgo_base": "ALTO"
+            }
+        },
+        
+        # 💰 PRECIOS OFICIALES TUPA HUANCAYO 2025
+        "precios_tupa": {
+            "BAJO": {
+                "hasta_100m2": 245.50,
+                "100_500m2": 368.30,
+                "500_1000m2": 491.00,
+                "mas_1000m2": 613.80
+            },
+            "MEDIO": {
+                "hasta_100m2": 368.30,
+                "100_500m2": 491.00,
+                "500_1000m2": 613.80,
+                "mas_1000m2": 736.50
+            },
+            "ALTO": {
+                "hasta_100m2": 491.00,
+                "100_500m2": 613.80,
+                "500_1000m2": 736.50,
+                "mas_1000m2": 859.30
+            },
+            "MUY_ALTO": {
+                "hasta_100m2": 613.80,
+                "100_500m2": 736.50,
+                "500_1000m2": 859.30,
+                "mas_1000m2": 982.00
+            }
+        },
+        
+        "normativa": "Ley N° 28976 - Reglamento de Inspecciones Técnicas de Seguridad en Edificaciones",
+        "etapas": ["initial", "categoria", "tipo_especifico", "area", "pisos", "quotation"]
     }
+
+
 }
 
 
@@ -1065,6 +1207,25 @@ class ITSESpecialist(LocalSpecialist):
         stage = self.conversation_state["stage"]
         data = self.conversation_state["data"]
         
+        # 🔥 CRÍTICO: Detectar selección de categoría PRIMERO (antes de verificar stage)
+        message_upper = message.upper().strip()
+        if message_upper in self.kb["categorias"].keys():
+            # Usuario seleccionó una categoría válida
+            data["categoria"] = message_upper
+            self.conversation_state["stage"] = "tipo_especifico"
+            tipos = self.kb["categorias"][message_upper]["tipos"]
+            
+            return {
+                "texto": f"""Perfecto, sector **{self.kb["categorias"][message_upper]["nombre"]}**. 
+
+¿Qué tipo específico es tu establecimiento?""",
+                "botones": [{"text": t, "value": t} for t in tipos],
+                "stage": "tipo_especifico",
+                "state": self.conversation_state,
+                "progreso": "2/5"
+            }
+        
+        # Si no es una categoría, procesar según el stage actual
         if stage == "initial":
             return {
                 "texto": """¡Hola! 👋 Soy **PILI**, especialista en certificados ITSE de **Tesla Electricidad**.
@@ -3715,3 +3876,5 @@ def process_with_local_specialist(
             "stage": "error",
             "state": conversation_state or {}
         }
+
+

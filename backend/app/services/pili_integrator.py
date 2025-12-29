@@ -56,12 +56,15 @@ except ImportError:
     logger.warning("Especialistas locales no disponibles")
 
 # ✅ NUEVO: Import de nueva arquitectura modular
-try:
-    from app.services.pili.specialist import UniversalSpecialist
-    NUEVA_ARQUITECTURA_DISPONIBLE = True
-except ImportError:
-    NUEVA_ARQUITECTURA_DISPONIBLE = False
-    logger.warning("Nueva arquitectura modular no disponible")
+# DESACTIVADO: Arquitectura experimental movida a _backup
+# try:
+#     from app.services.pili.specialist import UniversalSpecialist
+#     NUEVA_ARQUITECTURA_DISPONIBLE = True
+# except ImportError:
+#     NUEVA_ARQUITECTURA_DISPONIBLE = False
+#     logger.warning("Nueva arquitectura modular no disponible")
+
+NUEVA_ARQUITECTURA_DISPONIBLE = False  # Arquitectura experimental en _backup
 
 # Lista de servicios migrados a nueva arquitectura
 SERVICIOS_MIGRADOS = [
