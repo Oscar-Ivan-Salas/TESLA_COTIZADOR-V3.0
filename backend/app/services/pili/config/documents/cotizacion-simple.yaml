@@ -1,0 +1,64 @@
+# ═══════════════════════════════════════════════════════════════
+# 📄 CONFIGURACIÓN: COTIZACIÓN SIMPLE
+# ═══════════════════════════════════════════════════════════════
+
+document:
+  type: "cotizacion-simple"
+  name: "Cotización Simple"
+  description: "Cotización rápida para servicios eléctricos estándar"
+  agent: "cotizadora"
+  tiempo_estimado: "5-15 minutos"
+  
+  flujo_conversacional:
+    etapas:
+      - id: "servicio"
+        type: "buttons"
+        message_template: "seleccionar_servicio"
+        data_source: "kb.servicios"
+        next: "area"
+        progress: "1/4"
+      
+      - id: "area"
+        type: "input_number"
+        message_template: "solicitar_area"
+        next: "datos_cliente"
+        progress: "2/4"
+        validacion:
+          min: 10
+          max: 10000
+          type: "float"
+          mensaje_error: "Por favor ingresa un área válida entre 10 y 10,000 m²"
+      
+      - id: "datos_cliente"
+        type: "input_text"
+        message_template: "solicitar_nombre_cliente"
+        next: "generar"
+        progress: "3/4"
+        validacion:
+          min_length: 2
+          max_length: 100
+      
+      - id: "generar"
+        type: "generate_quote"
+        calculator: "calculate_simple_quote"
+        template: "cotizacion_simple"
+        progress: "4/4"
+  
+  estructura_documento:
+    secciones:
+      - "encabezado"
+      - "datos_cliente"
+      - "items"
+      - "totales"
+      - "observaciones"
+    
+    campos_requeridos:
+      - "numero"
+      - "fecha"
+      - "cliente"
+      - "servicio"
+      - "area_m2"
+      - "items"
+      - "subtotal"
+      - "igv"
+      - "total"

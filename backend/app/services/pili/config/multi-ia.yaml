@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════
+# 🌐 CONFIGURACIÓN MULTI-IA
+# ═══════════════════════════════════════════════════════════════
+
+multi_ia:
+  enabled: true
+  fallback_mode: "pili_brain"
+  
+  providers:
+    gemini:
+      enabled: true
+      priority: 1
+      api_key_env: "GEMINI_API_KEY"
+      model: "gemini-1.5-pro"
+      max_tokens: 8000
+      temperature: 0.7
+      use_for:
+        - "cotizacion-simple"
+        - "cotizacion-compleja"
+        - "proyecto-simple"
+        - "proyecto-complejo-pmi"
+        - "informe-tecnico"
+        - "informe-ejecutivo-apa"
+    
+    claude:
+      enabled: false
+      priority: 2
+      api_key_env: "ANTHROPIC_API_KEY"
+      model: "claude-3-opus-20240229"
+      max_tokens: 4000
+      temperature: 0.7
+    
+    gpt4:
+      enabled: false
+      priority: 3
+      api_key_env: "OPENAI_API_KEY"
+      model: "gpt-4-turbo-preview"
+      max_tokens: 4000
+      temperature: 0.7
+  
+  fallback:
+    pili_brain:
+      enabled: true
+      description: "Fallback offline cuando no hay conexión a IA"
+    
+    retry_strategy:
+      max_retries: 3
+      retry_delay: 2
+      backoff_multiplier: 2

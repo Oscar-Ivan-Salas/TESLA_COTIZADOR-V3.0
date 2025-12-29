@@ -2891,7 +2891,8 @@ async def chat_contextualizado(
         # 🔥 BYPASS DIRECTO PARA ITSE - Llamar directamente a ITSESpecialist
         if tipo_flujo == 'itse':
             try:
-                from app.services.pili_local_specialists import LocalSpecialistFactory
+                # ✅ NUEVO: Usar arquitectura modular con adapter
+                from app.services.pili.adapters.legacy_adapter import LocalSpecialistFactory
                 
                 logger.info(f"🔥 BYPASS DIRECTO: Usando ITSESpecialist para tipo_flujo='itse'")
                 

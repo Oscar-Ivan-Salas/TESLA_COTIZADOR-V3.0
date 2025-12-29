@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════
+# 📄 CONFIGURACIÓN: INFORME EJECUTIVO APA
+# ═══════════════════════════════════════════════════════════════
+
+document:
+  type: "informe-ejecutivo-apa"
+  name: "Informe Ejecutivo APA"
+  description: "Informes ejecutivos formato APA 7ma edición"
+  agent: "analista_senior"
+  tiempo_estimado: "30-60 minutos"
+  
+  flujo_conversacional:
+    etapas:
+      - id: "titulo"
+        type: "input_text"
+        message_template: "solicitar_titulo"
+        next: "resumen_ejecutivo"
+        progress: "1/7"
+      
+      - id: "resumen_ejecutivo"
+        type: "input_text"
+        message_template: "solicitar_resumen_ejecutivo"
+        next: "antecedentes"
+        progress: "2/7"
+      
+      - id: "antecedentes"
+        type: "input_text"
+        message_template: "solicitar_antecedentes"
+        next: "analisis"
+        progress: "3/7"
+      
+      - id: "analisis"
+        type: "input_text"
+        message_template: "solicitar_analisis"
+        next: "metricas"
+        progress: "4/7"
+      
+      - id: "metricas"
+        type: "input_text"
+        message_template: "solicitar_metricas"
+        next: "conclusiones"
+        progress: "5/7"
+      
+      - id: "conclusiones"
+        type: "input_text"
+        message_template: "solicitar_conclusiones"
+        next: "generar"
+        progress: "6/7"
+      
+      - id: "generar"
+        type: "generate_report"
+        calculator: "calculate_executive_report"
+        template: "informe_ejecutivo_apa"
+        progress: "7/7"
+        opciones:
+          formato_apa: true
+          incluir_graficas: true
+          incluir_referencias: true

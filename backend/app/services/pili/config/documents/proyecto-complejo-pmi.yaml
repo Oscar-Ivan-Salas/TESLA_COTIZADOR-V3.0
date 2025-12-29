@@ -1,0 +1,64 @@
+# ═══════════════════════════════════════════════════════════════
+# 📄 CONFIGURACIÓN: PROYECTO COMPLEJO PMI
+# ═══════════════════════════════════════════════════════════════
+
+document:
+  type: "proyecto-complejo-pmi"
+  name: "Proyecto Complejo PMI"
+  description: "Gestión de proyectos con metodología PMI"
+  agent: "project_manager"
+  tiempo_estimado: "30-60 minutos"
+  
+  flujo_conversacional:
+    etapas:
+      - id: "nombre_proyecto"
+        type: "input_text"
+        message_template: "solicitar_nombre_proyecto"
+        next: "stakeholders"
+        progress: "1/8"
+      
+      - id: "stakeholders"
+        type: "input_text"
+        message_template: "solicitar_stakeholders"
+        next: "alcance"
+        progress: "2/8"
+      
+      - id: "alcance"
+        type: "input_text"
+        message_template: "solicitar_alcance_detallado"
+        next: "wbs"
+        progress: "3/8"
+      
+      - id: "wbs"
+        type: "input_text"
+        message_template: "solicitar_wbs"
+        next: "cronograma"
+        progress: "4/8"
+      
+      - id: "cronograma"
+        type: "input_number"
+        message_template: "solicitar_duracion"
+        next: "presupuesto"
+        progress: "5/8"
+      
+      - id: "presupuesto"
+        type: "input_number"
+        message_template: "solicitar_presupuesto"
+        next: "riesgos"
+        progress: "6/8"
+      
+      - id: "riesgos"
+        type: "input_text"
+        message_template: "solicitar_riesgos"
+        next: "generar"
+        progress: "7/8"
+      
+      - id: "generar"
+        type: "generate_project"
+        calculator: "calculate_pmi_project"
+        template: "proyecto_complejo_pmi"
+        progress: "8/8"
+        opciones:
+          incluir_gantt: true
+          incluir_kpis: true
+          incluir_matriz_raci: true

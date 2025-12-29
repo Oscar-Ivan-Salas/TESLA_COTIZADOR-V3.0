@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════
+# 📄 CONFIGURACIÓN: PROYECTO SIMPLE
+# ═══════════════════════════════════════════════════════════════
+
+document:
+  type: "proyecto-simple"
+  name: "Proyecto Simple"
+  description: "Gestión de proyectos eléctricos básicos"
+  agent: "coordinadora"
+  tiempo_estimado: "20-40 minutos"
+  
+  flujo_conversacional:
+    etapas:
+      - id: "nombre_proyecto"
+        type: "input_text"
+        message_template: "solicitar_nombre_proyecto"
+        next: "alcance"
+        progress: "1/5"
+      
+      - id: "alcance"
+        type: "input_text"
+        message_template: "solicitar_alcance"
+        next: "duracion"
+        progress: "2/5"
+        validacion:
+          min_length: 50
+          max_length: 500
+      
+      - id: "duracion"
+        type: "input_number"
+        message_template: "solicitar_duracion"
+        next: "presupuesto"
+        progress: "3/5"
+        validacion:
+          min: 1
+          max: 365
+          type: "int"
+      
+      - id: "presupuesto"
+        type: "input_number"
+        message_template: "solicitar_presupuesto"
+        next: "generar"
+        progress: "4/5"
+      
+      - id: "generar"
+        type: "generate_project"
+        calculator: "calculate_simple_project"
+        template: "proyecto_simple"
+        progress: "5/5"

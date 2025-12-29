@@ -1,0 +1,42 @@
+# ═══════════════════════════════════════════════════════════════
+# 📄 CONFIGURACIÓN: INFORME TÉCNICO
+# ═══════════════════════════════════════════════════════════════
+
+document:
+  type: "informe-tecnico"
+  name: "Informe Técnico"
+  description: "Informes técnicos eléctricos"
+  agent: "reportera"
+  tiempo_estimado: "20-40 minutos"
+  
+  flujo_conversacional:
+    etapas:
+      - id: "titulo"
+        type: "input_text"
+        message_template: "solicitar_titulo"
+        next: "antecedentes"
+        progress: "1/5"
+      
+      - id: "antecedentes"
+        type: "input_text"
+        message_template: "solicitar_antecedentes"
+        next: "metodologia"
+        progress: "2/5"
+      
+      - id: "metodologia"
+        type: "input_text"
+        message_template: "solicitar_metodologia"
+        next: "resultados"
+        progress: "3/5"
+      
+      - id: "resultados"
+        type: "input_text"
+        message_template: "solicitar_resultados"
+        next: "generar"
+        progress: "4/5"
+      
+      - id: "generar"
+        type: "generate_report"
+        calculator: "calculate_technical_report"
+        template: "informe_tecnico"
+        progress: "5/5"

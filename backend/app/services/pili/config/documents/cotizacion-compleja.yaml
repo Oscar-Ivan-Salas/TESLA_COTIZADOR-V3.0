@@ -1,0 +1,56 @@
+# ═══════════════════════════════════════════════════════════════
+# 📄 CONFIGURACIÓN: COTIZACIÓN COMPLEJA
+# ═══════════════════════════════════════════════════════════════
+
+document:
+  type: "cotizacion-compleja"
+  name: "Cotización Compleja"
+  description: "Cotización detallada con análisis técnico y OCR"
+  agent: "analista"
+  tiempo_estimado: "15-30 minutos"
+  
+  flujo_conversacional:
+    etapas:
+      - id: "servicio"
+        type: "buttons"
+        message_template: "seleccionar_servicio"
+        data_source: "kb.servicios"
+        next: "area"
+        progress: "1/6"
+      
+      - id: "area"
+        type: "input_number"
+        message_template: "solicitar_area"
+        next: "archivos"
+        progress: "2/6"
+        validacion:
+          min: 10
+          max: 10000
+          type: "float"
+      
+      - id: "archivos"
+        type: "upload_files"
+        message_template: "solicitar_archivos"
+        next: "analisis"
+        progress: "3/6"
+        opciones:
+          formatos: ["pdf", "jpg", "png", "docx"]
+          max_size_mb: 10
+      
+      - id: "analisis"
+        type: "process_ocr"
+        message_template: "procesando_archivos"
+        next: "datos_cliente"
+        progress: "4/6"
+      
+      - id: "datos_cliente"
+        type: "input_text"
+        message_template: "solicitar_nombre_cliente"
+        next: "generar"
+        progress: "5/6"
+      
+      - id: "generar"
+        type: "generate_quote"
+        calculator: "calculate_complex_quote"
+        template: "cotizacion_compleja"
+        progress: "6/6"
