@@ -1,0 +1,178 @@
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import { FileText } from 'lucide-react';
+
+// ✅ IMPORTAR COMPONENTES EDITABLE
+import EDITABLE_COTIZACION_COMPLEJA from './EDITABLE_COTIZACION_COMPLEJA';
+import EDITABLE_COTIZACION_SIMPLE from './EDITABLE_COTIZACION_SIMPLE';
+import EDITABLE_PROYECTO_SIMPLE from './EDITABLE_PROYECTO_SIMPLE';
+import EDITABLE_PROYECTO_COMPLEJO from './EDITABLE_PROYECTO_COMPLEJO';
+import EDITABLE_INFORME_TECNICO from './EDITABLE_INFORME_TECNICO';
+import EDITABLE_INFORME_EJECUTIVO from './EDITABLE_INFORME_EJECUTIVO';
+
+console.log('🚀 VistaPreviaProfesional.jsx CARGADO - Versión Limpia con SOLO Componentes EDITABLE');
+
+/**
+ * VistaPreviaProfesional - Componente que renderiza SOLO componentes EDITABLE
+ * SIN HTML inline - 100% componentes reutilizables
+ */
+const VistaPreviaProfesional = forwardRef((props, ref) => {
+  const {
+    cotizacion,
+    proyecto,
+    informe,
+    onGenerarDocumento,
+    tipoDocumento = 'cotizacion',
+    htmlPreview = '',
+    esquemaColores = 'azul-tesla',
+    logoBase64 = null,
+    fuenteDocumento = 'Calibri',
+    ocultarIGV = false,
+    ocultarPreciosUnitarios = false,
+    ocultarTotalesPorItem = false
+  } = props;
+
+  console.log('🎬 VistaPreviaProfesional RENDERIZANDO');
+  console.log('📦 Props:', { tipoDocumento, esquemaColores, tieneCotizacion: !!cotizacion });
+
+  // Estado editable de la cotización/proyecto/informe
+  const [datosEditables, setDatosEditables] = useState(cotizacion || proyecto || informe || {});
+  const documentoRef = useRef(null);
+
+  // Callback para recibir cambios del componente EDITABLE
+  const handleDatosChange = (nuevosDatos) => {
+    console.log('📝 Datos actualizados desde componente EDITABLE:', nuevosDatos);
+    setDatosEditables(nuevosDatos);
+  };
+
+  // Exponer métodos al componente padre
+  useImperativeHandle(ref, () => ({
+    getEditedHTML: () => {
+      return documentoRef.current ? documentoRef.current.innerHTML : '';
+    },
+    getEditedData: () => datosEditables
+  }));
+
+  // ✅ RENDERIZAR COMPONENTE EDITABLE SEGÚN TIPO DE DOCUMENTO
+  const renderComponenteEditable = () => {
+    console.log('🎨 Renderizando componente para tipo:', tipoDocumento);
+
+    // COTIZACIÓN COMPLEJA
+    if (tipoDocumento === 'cotizacion-compleja' || tipoDocumento === 'cotizacion') {
+      console.log('✅ Renderizando EDITABLE_COTIZACION_COMPLEJA');
+      return (
+        <EDITABLE_COTIZACION_COMPLEJA
+          datos={datosEditables}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+          ocultarIGV={ocultarIGV}
+          ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+          ocultarTotalesPorItem={ocultarTotalesPorItem}
+        />
+      );
+    }
+
+    // COTIZACIÓN SIMPLE
+    if (tipoDocumento === 'cotizacion-simple') {
+      console.log('✅ Renderizando EDITABLE_COTIZACION_SIMPLE');
+      return (
+        <EDITABLE_COTIZACION_SIMPLE
+          datos={datosEditables}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+          ocultarIGV={ocultarIGV}
+          ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+          ocultarTotalesPorItem={ocultarTotalesPorItem}
+        />
+      );
+    }
+
+    // PROYECTO SIMPLE
+    if (tipoDocumento === 'proyecto-simple') {
+      console.log('✅ Renderizando EDITABLE_PROYECTO_SIMPLE');
+      return (
+        <EDITABLE_PROYECTO_SIMPLE
+          datos={datosEditables}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+        />
+      );
+    }
+
+    // PROYECTO COMPLEJO
+    if (tipoDocumento === 'proyecto-complejo') {
+      console.log('✅ Renderizando EDITABLE_PROYECTO_COMPLEJO');
+      return (
+        <EDITABLE_PROYECTO_COMPLEJO
+          datos={datosEditables}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+        />
+      );
+    }
+
+
+    // INFORME TÉCNICO (también responde a informe-simple)
+    if (tipoDocumento === 'informe-tecnico' || tipoDocumento === 'informe-simple') {
+      console.log('✅ Renderizando EDITABLE_INFORME_TECNICO');
+      return (
+        <EDITABLE_INFORME_TECNICO
+          datos={datosEditables}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+        />
+      );
+    }
+
+    // INFORME EJECUTIVO
+    if (tipoDocumento === 'informe-ejecutivo') {
+      console.log('✅ Renderizando EDITABLE_INFORME_EJECUTIVO');
+      return (
+        <EDITABLE_INFORME_EJECUTIVO
+          datos={datosEditables}
+          esquemaColores={esquemaColores}
+          logoBase64={logoBase64}
+          fuenteDocumento={fuenteDocumento}
+          onDatosChange={handleDatosChange}
+        />
+      );
+    }
+
+    // Tipo desconocido
+    console.log('❌ Tipo de documento desconocido:', tipoDocumento);
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', background: '#FEF2F2', borderRadius: '8px', border: '2px dashed #DC2626' }}>
+        <FileText size={48} style={{ color: '#DC2626', margin: '0 auto 20px' }} />
+        <h3 style={{ color: '#DC2626', marginBottom: '10px' }}>Tipo de Documento Desconocido</h3>
+        <p style={{ color: '#7F1D1D' }}>Tipo: {tipoDocumento}</p>
+      </div>
+    );
+  };
+
+  return (
+    <div className="vista-previa-container" style={{ width: '100%', height: '100%' }}>
+      {/* DOCUMENTO PROFESIONAL */}
+      <div className="cotizacion-profesional" ref={documentoRef} style={{
+        background: 'white',
+        minHeight: '100vh',
+        padding: '0'
+      }}>
+        {/* ✅ RENDERIZAR SOLO COMPONENTE EDITABLE - SIN HTML INLINE */}
+        {renderComponenteEditable()}
+      </div>
+    </div>
+  );
+});
+
+VistaPreviaProfesional.displayName = 'VistaPreviaProfesional';
+
+export default VistaPreviaProfesional;

@@ -1,0 +1,36 @@
+{
+  "fecha": "2025-11-25 11:30:22",
+  "pruebas": [
+    {
+      "nombre": "Backend Status",
+      "estado": "✅ PASS",
+      "detalles": {
+        "message": "Tesla Cotizador API v3.0",
+        "status": "online",
+        "version": "3.0.0",
+        "routers_avanzados": false,
+        "gemini_disponible": false,
+        "modo": "BÁSICO/DEMO",
+        "endpoints_disponibles": {
+          "chat": "/api/chat/",
+          "cotizaciones": "/api/cotizaciones/",
+          "proyectos": "/api/proyectos/",
+          "informes": "/api/informes/",
+          "documentos": "/api/upload",
+          "system": null,
+          "docs": "/docs"
+        }
+      }
+    },
+    {
+      "nombre": "Endpoint Profesional",
+      "estado": "❌ FAIL",
+      "error": "Código 404",
+      "respuesta": "{\"detail\":\"Not Found\"}"
+    },
+    {
+      "nombre": "Frontend Status",
+      "estado": "✅ PASS"
+    }
+  ]
+}

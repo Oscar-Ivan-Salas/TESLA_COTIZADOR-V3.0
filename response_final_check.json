@@ -1,0 +1,1 @@
+﻿{"message":"Tesla Cotizador API v3.0","status":"online","version":"3.0.0","routers_avanzados":false,"gemini_disponible":"","modo":"BÃSICO/DEMO","endpoints_disponibles":{"chat":"/api/chat/","cotizaciones":"/api/cotizaciones/","proyectos":"/api/proyectos/","informes":"/api/informes/","documentos":"/api/upload","system":null,"docs":"/docs"}}

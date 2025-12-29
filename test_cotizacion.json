@@ -1,0 +1,27 @@
+{
+    "cliente": "Cliente Demo Tesla",
+    "proyecto": "Instalación Eléctrica Residencial",
+    "fecha": "2025-11-25",
+    "items": [
+        {
+            "descripcion": "Punto de luz empotrado LED 18W",
+            "cantidad": 15,
+            "precioUnitario": 25.0
+        },
+        {
+            "descripcion": "Tomacorriente doble con tierra",
+            "cantidad": 12,
+            "precioUnitario": 35.0
+        },
+        {
+            "descripcion": "Interruptor simple",
+            "cantidad": 8,
+            "precioUnitario": 18.0
+        },
+        {
+            "descripcion": "Cable THW 2.5mm² (metro)",
+            "cantidad": 100,
+            "precioUnitario": 3.5
+        }
+    ]
+}

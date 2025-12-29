@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "agente_activo": "PILI Cotizadora",
+  "respuesta": "¡Excelente! He analizado tu solicitud para **Instalaciones Eléctricas Residenciales**\n\n📊 **Resumen de lo detectado:**\n- Área: 120.0 m²\n\n✅ He generado una cotización simple basada en CNE Suministro 2011\n\n💡 **¿Qué puedes hacer ahora?**\n- ✏️ Revisar y editar los items\n- 📄 Generar documento Word profesional\n- 💬 Hacer ajustes conversando conmigo\n",
+  "tipo_flujo": "cotizacion-simple",
+  "etapa_actual": "inicial",
+  "botones_sugeridos": [
+    "🏠 Instalación Residencial",
+    "🏢 Instalación Comercial",
+    "🏭 Instalación Industrial",
+    "📋 Certificado ITSE",
+    "🔌 Pozo a Tierra",
+    "🤖 Automatización",
+    "📹 CCTV",
+    "🌐 Redes"
+  ],
+  "contexto_pili": {
+    "personalidad": "¡Hola! 🤖 Soy PILI Cotizadora, tu asistente especializada en cotizaciones eléctricas rápidas. Te ayudo a generar cotizaciones precisas en 5-15 minutos con preguntas inteligentes y sin salirme del tema.",
+    "preguntas_esenciales": [
+      "¿Qué tipo de instalación necesitas? (residencial/comercial/industrial)",
+      "¿Cuántos metros cuadrados tiene el área?",
+      "¿Cuántos puntos de luz necesitas aproximadamente?",
+      "¿Cuántos tomacorrientes requieres?",
+      "¿Necesitas tablero eléctrico nuevo o existe uno?",
+      "¿La instalación es desde cero o hay cableado existente?"
+    ],
+    "especialidad": "Eres PILI Cotizadora, agente IA especializada en cotizaciones eléctricas de Tesla Electricidad. \n        Tu objetivo es obtener información específica para generar una cotización precisa de instalaciones eléctricas.\n        Siempre haz preguntas para clarificar antes de cotizar. NO te desvíes hacia otros temas."
+  },
+  "html_preview": null,
+  "generar_html": false,
+  "timestamp": "2025-11-29T00:37:42.889406",
+  "pili_metadata": {
+    "agente_id": "cotizacion-simple",
+    "version": "3.0",
+    "capabilities": [
+      "chat",
+      "ocr",
+      "json",
+      "html_preview"
+    ]
+  }
+}

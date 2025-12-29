@@ -1,20 +1,24 @@
+// @ts-nocheck
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react';
+import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
+import ChatIA from './components/ChatIA';
+import PiliITSEChat from './components/PiliITSEChat';
+import VistaPreviaProfesional from './components/VistaPreviaProfesional';
 
 const CotizadorTesla30 = () => {
   // ============================================
   // ESTADOS PRINCIPALES
   // ============================================
-  
+
   const [pantallaActual, setPantallaActual] = useState('inicio');
   const [tipoFlujo, setTipoFlujo] = useState(null);
-  
+
   // Estados de menús expandibles
   const [menuCotizaciones, setMenuCotizaciones] = useState(false);
   const [menuProyectos, setMenuProyectos] = useState(false);
   const [menuInformes, setMenuInformes] = useState(false);
-  
+
   // Estados del flujo general
   const [paso, setPaso] = useState(1);
   const [archivos, setArchivos] = useState([]);
@@ -29,40 +33,67 @@ const CotizadorTesla30 = () => {
   const [descargando, setDescargando] = useState(null);
   const [logoBase64, setLogoBase64] = useState('');
   const [botonesContextuales, setBotonesContextuales] = useState([]);
-  
+
   // Estados para vista previa HTML editable
   const [htmlPreview, setHtmlPreview] = useState('');
   const [mostrarPreview, setMostrarPreview] = useState(false);
-  const [modoEdicion, setModoEdicion] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(true);  // ✅ TRUE por defecto para mostrar tabla editable
   const [datosEditables, setDatosEditables] = useState(null);
   const [ocultarIGV, setOcultarIGV] = useState(false);
   const [ocultarPreciosUnitarios, setOcultarPreciosUnitarios] = useState(false);
-  
+  const [ocultarTotalesPorItem, setOcultarTotalesPorItem] = useState(false);
+
+  // ✅ Estados para personalización de documentos (NEW)
+  const [esquemaColores, setEsquemaColores] = useState('azul-tesla'); // azul-tesla, rojo-energia, verde-ecologico, personalizado
+  const [fuenteDocumento, setFuenteDocumento] = useState('Calibri'); // Calibri, Arial, Times New Roman
+  const [tamañoFuente, setTamañoFuente] = useState(11); // 10, 11, 12
+  const [mostrarLogo, setMostrarLogo] = useState(true);
+  const [logoUrl, setLogoUrl] = useState(null); // URL del logo subido
+  const [posicionLogo, setPosicionLogo] = useState('center'); // left, center, right
+  const [mostrarPanelPersonalizacion, setMostrarPanelPersonalizacion] = useState(false);
+
   // Estados específicos para cada tipo
   const [cotizacion, setCotizacion] = useState(null);
   const [proyecto, setProyecto] = useState(null);
   const [informe, setInforme] = useState(null);
-  
+
   // Estados específicos para proyectos
   const [nombreProyecto, setNombreProyecto] = useState('');
   const [clienteProyecto, setClienteProyecto] = useState('');
   const [presupuestoEstimado, setPresupuestoEstimado] = useState('');
   const [duracionMeses, setDuracionMeses] = useState('');
-  
+
   // Estados específicos para informes
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState('');
   const [formatoInforme, setFormatoInforme] = useState('word');
   const [incluirGraficos, setIncluirGraficos] = useState(true);
-  
+
+  // ✅ Estados universales de cliente (para todos los 6 tipos de documentos)
+  const [datosCliente, setDatosCliente] = useState({
+    nombre: '',
+    ruc: '',
+    direccion: '',
+    telefono: '',
+    email: ''
+  });
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState(null);
+  const [listaClientes, setListaClientes] = useState([]);
+  const [guardandoCliente, setGuardandoCliente] = useState(false);
+
+  // ✅ NUEVO: Estados para progreso de chat conversacional
+  const [datosRecopilados, setDatosRecopilados] = useState([]);
+  const [datosFaltantes, setDatosFaltantes] = useState([]);
+  const [progresoChat, setProgresoChat] = useState('0/0');
+
   // Referencias
   const chatContainerRef = useRef(null);
   const fileInputLogoRef = useRef(null);
   const previewRef = useRef(null);
-  
+
   // ============================================
   // DATOS DE CONFIGURACIÓN
   // ============================================
-  
+
   const [datosEmpresa] = useState({
     nombre: 'TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.',
     ruc: '20601138787',
@@ -80,7 +111,9 @@ const CotizadorTesla30 = () => {
     { id: 'domotica', nombre: '🏠 Domótica', icon: '🏠', descripcion: 'Automatización inteligente' },
     { id: 'cctv', nombre: '📹 CCTV', icon: '📹', descripcion: 'Videovigilancia profesional' },
     { id: 'redes', nombre: '🌐 Redes', icon: '🌐', descripcion: 'Cableado estructurado' },
-    { id: 'automatizacion-industrial', nombre: '⚙️ Automatización Industrial', icon: '⚙️', descripcion: 'PLCs y control de procesos' }
+    { id: 'automatizacion-industrial', nombre: '⚙️ Automatización Industrial', icon: '⚙️', descripcion: 'PLCs y control de procesos' },
+    { id: 'expedientes', nombre: '📄 Expedientes Técnicos', icon: '📄', descripcion: 'Documentación técnica profesional' },
+    { id: 'saneamiento', nombre: '💧 Saneamiento', icon: '💧', descripcion: 'Sistemas de agua y desagüe' }
   ];
 
   const industrias = [
@@ -124,7 +157,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES PRINCIPALES
   // ============================================
-  
+
   const volverAlInicio = () => {
     setPantallaActual('inicio');
     setTipoFlujo(null);
@@ -164,9 +197,147 @@ const CotizadorTesla30 = () => {
   };
 
   // ============================================
+  // ✅ FUNCIONES DE GESTIÓN DE CLIENTES
+  // ============================================
+
+  // Cargar lista de clientes desde la BD
+  const cargarListaClientes = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/clientes/');
+      if (response.ok) {
+        const clientes = await response.json();
+        setListaClientes(clientes);
+      }
+    } catch (error) {
+      console.error('Error cargando clientes:', error);
+    }
+  };
+
+  // Cargar datos de un cliente específico (auto-relleno)
+  const cargarDatosCliente = async (e) => {
+    const clienteId = e.target.value;
+
+    if (!clienteId) {
+      // Nuevo cliente - limpiar formulario
+      setClienteSeleccionadoId(null);
+      setDatosCliente({
+        nombre: '',
+        ruc: '',
+        direccion: '',
+        telefono: '',
+        email: ''
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/clientes/${clienteId}`);
+      if (response.ok) {
+        const cliente = await response.json();
+        setClienteSeleccionadoId(cliente.id);
+        setDatosCliente({
+          nombre: cliente.nombre || '',
+          ruc: cliente.ruc || '',
+          direccion: cliente.direccion || '',
+          telefono: cliente.telefono || '',
+          email: cliente.email || ''
+        });
+        setExito('✅ Cliente cargado');
+      }
+    } catch (error) {
+      console.error('Error cargando cliente:', error);
+      setError('Error al cargar cliente');
+    }
+  };
+
+  // Guardar cliente en la BD
+  const guardarCliente = async () => {
+    // Validación básica
+    if (!datosCliente.nombre || !datosCliente.ruc) {
+      setError('Nombre y RUC son obligatorios');
+      return;
+    }
+
+    if (datosCliente.ruc.length !== 11) {
+      setError('El RUC debe tener 11 dígitos');
+      return;
+    }
+
+    setGuardandoCliente(true);
+
+    try {
+      const url = clienteSeleccionadoId
+        ? `http://localhost:8000/api/clientes/${clienteSeleccionadoId}`
+        : 'http://localhost:8000/api/clientes/';
+
+      const method = clienteSeleccionadoId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosCliente)
+      });
+
+      if (response.ok) {
+        const clienteGuardado = await response.json();
+        setClienteSeleccionadoId(clienteGuardado.id);
+        await cargarListaClientes(); // Recargar lista
+        setExito(clienteSeleccionadoId ? '✅ Cliente actualizado' : '✅ Cliente guardado');
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Error del backend:', errorData);
+        console.error('📋 Datos enviados:', datosCliente);
+        throw new Error(JSON.stringify(errorData.detail || errorData) || 'Error al guardar');
+      }
+    } catch (error) {
+      console.error('Error guardando cliente:', error);
+      setError(error.message || 'Error al guardar cliente');
+    } finally {
+      setGuardandoCliente(false);
+    }
+  };
+
+  // Manejar cambios en el formulario de cliente
+  const handleClienteChange = (e) => {
+    const { name, value } = e.target;
+    setDatosCliente(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // ✅ NUEVO: Sincronizar datosCliente con datosEditables automáticamente
+  useEffect(() => {
+    // Solo sincronizar si hay datos de cliente y datosEditables existe
+    if (datosCliente && (datosCliente.nombre || datosCliente.ruc)) {
+      setDatosEditables(prev => {
+        // Si no hay datosEditables aún, no hacer nada
+        if (!prev) return prev;
+
+        // Actualizar solo la sección de cliente
+        return {
+          ...prev,
+          cliente: {
+            nombre: datosCliente.nombre || '',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          }
+        };
+      });
+    }
+  }, [datosCliente]); // Se ejecuta cada vez que datosCliente cambia
+
+  // ✅ NUEVO: Cargar lista de clientes al iniciar
+  useEffect(() => {
+    cargarListaClientes();
+  }, []); // Solo una vez al montar el componente
+
+  // ============================================
   // FUNCIONES DEL CHAT + VISTA PREVIA
   // ============================================
-  
+
   const obtenerBotonesContextuales = async () => {
     try {
       const etapa = conversacion.length === 0 ? 'inicial' : 'refinamiento';
@@ -192,14 +363,14 @@ const CotizadorTesla30 = () => {
     try {
       // Preparar contexto según el tipo de flujo
       let contextoPrincipal = `Servicio: ${servicioSeleccionado}, Industria: ${industriaSeleccionada}, Contexto: ${contextoUsuario}`;
-      
+
       if (tipoFlujo.includes('proyecto')) {
         contextoPrincipal += `, Nombre: ${nombreProyecto}, Cliente: ${clienteProyecto}, Presupuesto: ${presupuestoEstimado}, Duración: ${duracionMeses} meses`;
       } else if (tipoFlujo.includes('informe')) {
         contextoPrincipal += `, Proyecto: ${proyectoSeleccionado}, Formato: ${formatoInforme}`;
       }
 
-      const response = await fetch('http://localhost:8000/api/chat/mensaje', {
+      const response = await fetch('http://localhost:8000/api/chat/chat-contextualizado', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,33 +378,101 @@ const CotizadorTesla30 = () => {
           mensaje: inputChat,
           historial: nuevaConversacion,
           contexto_adicional: contextoPrincipal,
+          datos_cliente: datosCliente,  // ¡NUEVO! Enviar datos del cliente
           archivos_procesados: archivos.map(a => ({ nombre: a.nombre, contenido: a.contenidoTexto })),
           generar_html: true // Importante: pedimos HTML preview
         })
       });
 
       const data = await response.json();
-      
+
+
       if (data.success) {
         const mensajeIA = { tipo: 'asistente', mensaje: data.respuesta };
         setConversacion(prev => [...prev, mensajeIA]);
 
-        // ACTUALIZAR VISTA PREVIA HTML
-        if (data.html_preview) {
+        // Manejar datos según el tipo de flujo
+        let datosParaHTML = null;
+
+        if (tipoFlujo.includes('cotizacion') && data.cotizacion_generada) {
+          setCotizacion(data.cotizacion_generada);
+          setDatosEditables(data.cotizacion_generada);
+          datosParaHTML = data.cotizacion_generada;
+        } else if (tipoFlujo.includes('cotizacion') && data.estructura_generada) {
+          setCotizacion(data.estructura_generada);
+          setDatosEditables(data.estructura_generada);
+          datosParaHTML = data.estructura_generada;
+        } else if (tipoFlujo.includes('proyecto') && data.proyecto_generado) {
+          setProyecto(data.proyecto_generado);
+          setDatosEditables(data.proyecto_generado);
+          datosParaHTML = data.proyecto_generado;
+        } else if (tipoFlujo.includes('informe') && data.informe_generado) {
+          setInforme(data.informe_generado);
+          setDatosEditables(data.informe_generado);
+          datosParaHTML = data.informe_generado;
+        }
+
+        // GENERAR HTML USANDO PLANTILLAS PROFESIONALES
+        if (datosParaHTML) {
+          try {
+            const htmlGenerado = await obtenerHTMLSegunTipo(datosParaHTML);
+            setHtmlPreview(htmlGenerado);
+            setMostrarPreview(true);
+          } catch (error) {
+            console.error('Error generando HTML:', error);
+            // Fallback al HTML del backend si existe
+            if (data.html_preview) {
+              setHtmlPreview(data.html_preview);
+              setMostrarPreview(true);
+            }
+          }
+        } else if (data.html_preview) {
+          // Fallback si no hay datos estructurados
           setHtmlPreview(data.html_preview);
           setMostrarPreview(true);
         }
 
-        // Manejar datos según el tipo de flujo
-        if (tipoFlujo.includes('cotizacion') && data.cotizacion_generada) {
-          setCotizacion(data.cotizacion_generada);
-          setDatosEditables(data.cotizacion_generada);
-        } else if (tipoFlujo.includes('proyecto') && data.proyecto_generado) {
-          setProyecto(data.proyecto_generado);
-          setDatosEditables(data.proyecto_generado);
-        } else if (tipoFlujo.includes('informe') && data.informe_generado) {
-          setInforme(data.informe_generado);
-          setDatosEditables(data.informe_generado);
+        // ✅ NUEVO: Actualizar progreso de chat conversacional
+        if (data.datos_recopilados) {
+          setDatosRecopilados(data.datos_recopilados);
+        }
+        if (data.datos_faltantes) {
+          setDatosFaltantes(data.datos_faltantes);
+        }
+        if (data.progreso) {
+          setProgresoChat(data.progreso);
+        }
+
+        // ✅ NUEVO: Auto-rellenado en tiempo real con datos parciales de PILI
+        if (data.datos_generados) {
+          console.log('📊 Datos generados por PILI:', data.datos_generados);
+
+          // Actualizar datosEditables con los nuevos datos
+          setDatosEditables(prev => {
+            const nuevosDatos = {
+              ...prev,
+              ...data.datos_generados,
+              // Mantener cliente que ya teníamos del Punto 1
+              cliente: prev?.cliente || datosCliente
+            };
+
+            console.log('✅ datosEditables actualizados:', nuevosDatos);
+            return nuevosDatos;
+          });
+
+          // Actualizar el estado específico según el tipo
+          if (tipoFlujo.includes('cotizacion')) {
+            setCotizacion(prev => ({ ...prev, ...data.datos_generados }));
+          } else if (tipoFlujo.includes('proyecto')) {
+            setProyecto(prev => ({ ...prev, ...data.datos_generados }));
+          } else if (tipoFlujo.includes('informe')) {
+            setInforme(prev => ({ ...prev, ...data.datos_generados }));
+          }
+
+          // Mostrar vista previa si no está visible
+          if (!mostrarPreview) {
+            setMostrarPreview(true);
+          }
         }
 
         // Actualizar botones contextuales
@@ -241,7 +480,8 @@ const CotizadorTesla30 = () => {
           setBotonesContextuales(data.botones_contextuales);
         }
       } else {
-        throw new Error(data.error || 'Error en la respuesta');
+        const mensajeError = { tipo: 'asistente', mensaje: data.respuesta || 'Error en la respuesta' };
+        setConversacion(prev => [...prev, mensajeError]);
       }
     } catch (error) {
       console.error('Error en chat:', error);
@@ -261,23 +501,179 @@ const CotizadorTesla30 = () => {
   };
 
   // ============================================
+  // FUNCIÓN DE GENERACIÓN DE DOCUMENTOS
+  // ============================================
+
+  const handleGenerarDocumento = async (formato) => {
+    try {
+      console.log(`📄 Generando ${formato.toUpperCase()}...`);
+
+      // Determinar tipo de documento
+      const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
+        tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
+
+      // Obtener datos actuales (USAR DATOS EDITADOS SI EXISTEN)
+      const datosOriginales = tipoDocumento === 'cotizacion' ? cotizacion :
+        tipoDocumento === 'proyecto' ? proyecto : informe;
+
+      // CRÍTICO: Usar datosEditables si existen (tienen los cambios del usuario)
+      const entidad = datosEditables || datosOriginales;
+
+      // Extraer HTML editado de la vista previa
+      const previewElement = previewRef.current;
+      const htmlEditado = previewElement ? previewElement.innerHTML : htmlPreview;
+
+      // Preparar datos para enviar según tipo de documento
+      let datosParaEnviar;
+
+      if (tipoDocumento === 'informe') {
+        // Estructura para INFORMES
+        datosParaEnviar = {
+          tipo_documento: tipoDocumento,
+          titulo: entidad.titulo || "Informe Técnico",
+          codigo: entidad.codigo || `INF-${Date.now()}`,
+          cliente: entidad.cliente || { nombre: "[Cliente]" },
+          fecha: entidad.fecha || new Date().toLocaleDateString('es-PE'),
+          resumen: entidad.resumen || entidad.resumen_ejecutivo || "",
+          introduccion: entidad.introduccion || "",
+          analisis_tecnico: entidad.analisis_tecnico || "",
+          resultados: entidad.resultados || "",
+          conclusiones: entidad.conclusiones || "",
+          recomendaciones: entidad.recomendaciones || [],
+          normativa: entidad.normativa || "CNE Suministro 2011"
+        };
+      } else if (tipoDocumento === 'proyecto') {
+        // Estructura para PROYECTOS
+        datosParaEnviar = {
+          tipo_documento: tipoDocumento,
+          nombre: entidad.nombre || entidad.nombre_proyecto || "[Proyecto]",
+          codigo: entidad.codigo || entidad.codigo_proyecto || `PROY-${Date.now()}`,
+          cliente: entidad.cliente || { nombre: "[Cliente]" },
+          presupuesto: entidad.presupuesto || 0,
+          duracion_total: entidad.duracion_total || entidad.duracion || 30,
+          fecha_inicio: entidad.fecha_inicio || new Date().toLocaleDateString('es-PE'),
+          fecha_fin: entidad.fecha_fin || "",
+          alcance: entidad.alcance || entidad.alcance_proyecto || "",
+          fases: entidad.fases || [],
+          normativa: entidad.normativa || "CNE Suministro 2011"
+        };
+      } else {
+        // Estructura para COTIZACIONES (default)
+        const itemsActuales = entidad.items || [];
+        const subtotalCalculado = itemsActuales.reduce((sum, item) =>
+          sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
+        );
+        const igvCalculado = subtotalCalculado * 0.18;
+        const totalCalculado = subtotalCalculado + igvCalculado;
+
+        datosParaEnviar = {
+          tipo_documento: tipoDocumento,
+          numero: entidad.numero || `COT-${Date.now()}`,
+          cliente: entidad.cliente || { nombre: "[Cliente]" },
+          proyecto: entidad.proyecto || "[Proyecto]",
+          descripcion: entidad.descripcion || "",
+          items: itemsActuales,
+          subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+          igv: parseFloat(igvCalculado.toFixed(2)),
+          total: parseFloat(totalCalculado.toFixed(2)),
+          fecha: new Date().toLocaleDateString('es-PE'),
+          vigencia: "30 días"
+        };
+      }
+
+      console.log('📦 DEBUG - Datos completos a enviar:');
+      console.log('  - Cliente:', datosParaEnviar.cliente);
+      console.log('  - Proyecto:', datosParaEnviar.proyecto);
+      console.log('  - Items:', datosParaEnviar.items);
+      console.log('  - Subtotal:', datosParaEnviar.subtotal);
+      console.log('  - IGV:', datosParaEnviar.igv);
+      console.log('  - Total:', datosParaEnviar.total);
+      console.log('  - datosCliente originales:', datosCliente);
+
+      console.log('📦 Datos a enviar:', datosParaEnviar);
+
+      // Llamar al endpoint de generación directa
+      const response = await fetch(
+        `http://localhost:8000/api/generar-documento-directo?formato=${formato}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            datos: datosParaEnviar,
+            html_editado: htmlEditado,
+            tipo_plantilla: tipoFlujo  // ej: "cotizacion-simple"
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
+
+      // DEBUG: Verificar Content-Type
+      const contentType = response.headers.get('Content-Type');
+      console.log('🔍 Content-Type recibido:', contentType);
+
+      // Si es JSON, es un error del backend
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        throw new Error(`Backend devolvió error: ${JSON.stringify(errorData)}`);
+      }
+
+      // Descargar archivo
+      const blob = await response.blob();
+      console.log('💾 Blob recibido:', blob.size, 'bytes, tipo:', blob.type);
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${tipoDocumento}_${Date.now()}.${formato === 'word' ? 'docx' : 'pdf'}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log(`✅ ${formato.toUpperCase()} descargado exitosamente`);
+      alert(`✅ Documento ${formato.toUpperCase()} generado y descargado exitosamente`);
+
+    } catch (error) {
+      console.error('❌ Error al generar documento:', error);
+      alert(`❌ Error al generar el documento: ${error.message}`);
+    }
+  };
+
+  // ============================================
   // FUNCIONES DE EDICIÓN HTML
   // ============================================
-  
+
   const actualizarItem = (index, campo, valor) => {
     if (!datosEditables?.items) return;
-    
+
     const nuevosItems = [...datosEditables.items];
-    nuevosItems[index][campo] = parseFloat(valor) || 0;
-    
-    // Recalcular total del item
-    if (campo === 'cantidad' || campo === 'precioUnitario') {
-      nuevosItems[index].total = nuevosItems[index].cantidad * nuevosItems[index].precioUnitario;
+
+    // Normalizar nombre de campo (precioUnitario -> precio_unitario)
+    const campoNormalizado = campo === 'precioUnitario' ? 'precio_unitario' : campo;
+
+    // Actualizar el campo
+    if (campoNormalizado === 'descripcion') {
+      nuevosItems[index][campoNormalizado] = valor;
+    } else {
+      nuevosItems[index][campoNormalizado] = parseFloat(valor) || 0;
     }
-    
+
+    // Recalcular total del item
+    if (campoNormalizado === 'cantidad' || campoNormalizado === 'precio_unitario') {
+      const cantidad = nuevosItems[index].cantidad || 0;
+      const precioUnitario = nuevosItems[index].precio_unitario || 0;
+      nuevosItems[index].total = cantidad * precioUnitario;
+    }
+
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
-    
+
+    console.log(`✏️ Item ${index} editado - ${campoNormalizado}:`, valor, '| Item completo:', nuevosItems[index]);
+
     // Actualizar estado específico
     if (tipoFlujo.includes('cotizacion')) {
       setCotizacion(nuevosDatos);
@@ -286,14 +682,14 @@ const CotizadorTesla30 = () => {
     } else if (tipoFlujo.includes('informe')) {
       setInforme(nuevosDatos);
     }
-    
+
     // Regenerar HTML
-    regenerarHTML();
+    actualizarVistaPrevia();
   };
 
   const agregarItem = () => {
     if (!datosEditables) return;
-    
+
     const nuevoItem = {
       descripcion: 'Nuevo item',
       cantidad: 1,
@@ -301,165 +697,182 @@ const CotizadorTesla30 = () => {
       total: 0,
       capitulo: 'GENERAL'
     };
-    
+
     const nuevosItems = [...(datosEditables.items || []), nuevoItem];
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
-    
+
     if (tipoFlujo.includes('cotizacion')) {
       setCotizacion(nuevosDatos);
     }
-    
-    regenerarHTML();
+
+    actualizarVistaPrevia();
   };
 
   const eliminarItem = (index) => {
     if (!datosEditables?.items) return;
-    
+
     const nuevosItems = datosEditables.items.filter((_, i) => i !== index);
     const nuevosDatos = { ...datosEditables, items: nuevosItems };
     setDatosEditables(nuevosDatos);
-    
+
     if (tipoFlujo.includes('cotizacion')) {
       setCotizacion(nuevosDatos);
     }
-    
-    regenerarHTML();
+
+    actualizarVistaPrevia();
   };
 
-  const regenerarHTML = () => {
+  const actualizarVistaPrevia = async () => {
     if (!datosEditables) return;
-    
+
     // Generar HTML actualizado basado en los datos editables
-    let htmlActualizado = generarHTMLPreview(datosEditables);
+    let htmlActualizado = await obtenerHTMLSegunTipo(datosEditables);
     setHtmlPreview(htmlActualizado);
   };
 
-  const generarHTMLPreview = (datos) => {
+  const obtenerHTMLSegunTipo = async (datos) => {
     if (tipoFlujo.includes('cotizacion')) {
-      return generarHTMLCotizacion(datos);
+      return await generarHTMLCotizacion(datos);
     } else if (tipoFlujo.includes('proyecto')) {
-      return generarHTMLProyecto(datos);
+      return await generarHTMLProyecto(datos);
     } else if (tipoFlujo.includes('informe')) {
-      return generarHTMLInforme(datos);
+      return await generarHTMLInforme(datos);
     }
     return '';
   };
 
-  const generarHTMLCotizacion = (datos) => {
-    const totales = calcularTotales(datos?.items || []);
-    
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
-        <div style="border-bottom: 3px solid #8B0000; padding-bottom: 20px; margin-bottom: 20px;">
-          <h1 style="color: #8B0000; margin: 0; font-size: 28px;">COTIZACIÓN</h1>
-          <p style="color: #D4AF37; font-weight: bold; margin: 5px 0;">Tesla Electricidad y Automatización S.A.C.</p>
-          <p style="color: #666; margin: 0;">RUC: 20601138787</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #8B0000; border-bottom: 2px solid #D4AF37; padding-bottom: 10px;">DETALLES DE LA COTIZACIÓN</h2>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            <thead>
-              <tr style="background: #8B0000; color: white;">
-                <th style="padding: 12px; text-align: left; border: 1px solid #8B0000;">DESCRIPCIÓN</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #8B0000; width: 80px;">CANT.</th>
-                ${!ocultarPreciosUnitarios ? '<th style="padding: 12px; text-align: center; border: 1px solid #8B0000; width: 100px;">P. UNIT.</th>' : ''}
-                <th style="padding: 12px; text-align: center; border: 1px solid #8B0000; width: 100px;">TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(datos?.items || []).map((item, index) => `
-                <tr style="border-bottom: 1px solid #ddd;">
-                  <td style="padding: 10px; border: 1px solid #ddd;">${item.descripcion}</td>
-                  <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${item.cantidad}</td>
-                  ${!ocultarPreciosUnitarios ? `<td style="padding: 10px; text-align: center; border: 1px solid #ddd;">S/ ${item.precioUnitario?.toFixed(2) || '0.00'}</td>` : ''}
-                  <td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-weight: bold;">S/ ${((item.cantidad || 0) * (item.precioUnitario || 0)).toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        
-        <div style="margin-top: 30px; text-align: right;">
-          <div style="display: inline-block; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 2px solid #D4AF37;">
-            <div style="margin-bottom: 10px;">
-              <span style="font-weight: bold;">Subtotal:</span>
-              <span style="margin-left: 20px; font-size: 18px;">S/ ${totales.subtotal}</span>
-            </div>
-            ${!ocultarIGV ? `
-              <div style="margin-bottom: 10px;">
-                <span style="font-weight: bold;">IGV (18%):</span>
-                <span style="margin-left: 20px; font-size: 18px;">S/ ${totales.igv}</span>
-              </div>
-            ` : ''}
-            <div style="border-top: 2px solid #8B0000; padding-top: 10px; margin-top: 15px;">
-              <span style="font-weight: bold; font-size: 20px; color: #8B0000;">TOTAL:</span>
-              <span style="margin-left: 20px; font-size: 24px; font-weight: bold; color: #8B0000;">S/ ${ocultarIGV ? totales.subtotal : totales.total}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #D4AF37; color: #666; font-size: 14px;">
-          <p><strong>Condiciones:</strong> Precios ${ocultarIGV ? 'no incluyen' : 'incluyen'} IGV. Válido por 30 días.</p>
-          <p><strong>Contacto:</strong> ${datosEmpresa.telefono} | ${datosEmpresa.email}</p>
-        </div>
-      </div>
-    `;
+  const generarHTMLCotizacion = async (datos) => {
+    try {
+      // 1. Cargar plantilla profesional desde API
+      const response = await fetch('/api/templates/cotizacion-simple');
+      const { html } = await response.json();
+
+      // 2. Calcular totales
+      const totales = calcularTotales(datos?.items || []);
+
+      // 3. Reemplazar variables básicas
+      let htmlFinal = html
+        .replace(/\{\{CLIENTE_NOMBRE\}\}/g, datos.cliente || 'Cliente')
+        .replace(/\{\{NUMERO_COTIZACION\}\}/g, datos.numero || `COT-${new Date().getTime()}`)
+        .replace(/\{\{FECHA_COTIZACION\}\}/g, new Date().toLocaleDateString('es-PE'))
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, datos.proyecto || 'Proyecto')
+        .replace(/\{\{SUBTOTAL\}\}/g, totales.subtotal)
+        .replace(/\{\{IGV\}\}/g, totales.igv)
+        .replace(/\{\{TOTAL\}\}/g, totales.total)
+        .replace(/\{\{VIGENCIA\}\}/g, '30 días')
+        .replace(/\{\{SERVICIO_NOMBRE\}\}/g, datos.servicio || 'Instalaciones Eléctricas')
+        .replace(/\{\{NORMATIVA_APLICABLE\}\}/g, 'CNE - Código Nacional de Electricidad');
+
+      // 4. Aplicar colores personalizados según esquema actual
+      const ESQUEMAS_COLORES = {
+        'azul': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF' },
+        'rojo': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEE2E2' },
+        'verde': { primario: '#065F46', secundario: '#047857', acento: '#10B981', claro: '#D1FAE5' },
+        'dorado': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FEF3C7' },
+      };
+
+      const colores = ESQUEMAS_COLORES[esquemaColores] || ESQUEMAS_COLORES.azul;
+      htmlFinal = htmlFinal
+        .replace(/#0052A3/g, colores.primario)
+        .replace(/#1E40AF/g, colores.secundario)
+        .replace(/#3B82F6/g, colores.acento)
+        .replace(/#EFF6FF/g, colores.claro)
+        .replace(/#DBEAFE/g, colores.claro);
+
+      return htmlFinal;
+    } catch (error) {
+      console.error('Error cargando plantilla:', error);
+      // Fallback al HTML básico si falla
+      const totales = calcularTotales(datos?.items || []);
+      return `<div style="padding: 20px;"><h1>Cotización</h1><p>Total: S/ ${totales.total}</p></div>`;
+    }
   };
 
-  const generarHTMLProyecto = (datos) => {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
-        <div style="border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 20px;">
-          <h1 style="color: #2563eb; margin: 0; font-size: 28px;">PROYECTO</h1>
-          <p style="color: #D4AF37; font-weight: bold; margin: 5px 0;">Tesla Electricidad y Automatización S.A.C.</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #2563eb; margin-bottom: 15px;">${nombreProyecto || 'Nuevo Proyecto'}</h2>
-          <p><strong>Cliente:</strong> ${clienteProyecto}</p>
-          <p><strong>Presupuesto:</strong> S/ ${presupuestoEstimado}</p>
-          <p><strong>Duración:</strong> ${duracionMeses} meses</p>
-        </div>
-        
-        <div style="margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb;">
-          <h3 style="color: #2563eb; margin-top: 0;">Descripción del Proyecto</h3>
-          <p>${contextoUsuario}</p>
-        </div>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D4AF37; color: #666; font-size: 14px;">
-          <p><strong>Contacto:</strong> ${datosEmpresa.telefono} | ${datosEmpresa.email}</p>
-        </div>
-      </div>
-    `;
+  const generarHTMLProyecto = async (datos) => {
+    try {
+      // 1. Cargar plantilla profesional
+      const response = await fetch('/api/templates/proyecto-simple');
+      const { html } = await response.json();
+
+      // 2. Reemplazar variables
+      let htmlFinal = html
+        .replace(/\{\{NOMBRE_PROYECTO\}\}/g, nombreProyecto || 'Nuevo Proyecto')
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, nombreProyecto || 'Nuevo Proyecto')
+        .replace(/\{\{CLIENTE\}\}/g, clienteProyecto || 'Cliente')
+        .replace(/\{\{CLIENTE_NOMBRE\}\}/g, clienteProyecto || 'Cliente')
+        .replace(/\{\{PRESUPUESTO\}\}/g, presupuestoEstimado || '0.00')
+        .replace(/\{\{TOTAL\}\}/g, presupuestoEstimado || '0.00')
+        .replace(/\{\{DURACION_TOTAL\}\}/g, `${duracionMeses} meses`)
+        .replace(/\{\{FECHA\}\}/g, new Date().toLocaleDateString('es-PE'))
+        .replace(/\{\{DESCRIPCION_PROYECTO\}\}/g, contextoUsuario || 'Descripción del proyecto');
+
+      // 3. Aplicar colores personalizados
+      const ESQUEMAS_COLORES = {
+        'azul': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF' },
+        'rojo': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEE2E2' },
+        'verde': { primario: '#065F46', secundario: '#047857', acento: '#10B981', claro: '#D1FAE5' },
+        'dorado': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FEF3C7' },
+      };
+
+      const colores = ESQUEMAS_COLORES[esquemaColores] || ESQUEMAS_COLORES.azul;
+      htmlFinal = htmlFinal
+        .replace(/#0052A3/g, colores.primario)
+        .replace(/#1E40AF/g, colores.secundario)
+        .replace(/#3B82F6/g, colores.acento)
+        .replace(/#EFF6FF/g, colores.claro)
+        .replace(/#DBEAFE/g, colores.claro);
+
+      return htmlFinal;
+    } catch (error) {
+      console.error('Error cargando plantilla proyecto:', error);
+      return `<div style="padding: 20px;"><h1>Proyecto</h1><p>${nombreProyecto}</p></div>`;
+    }
   };
 
-  const generarHTMLInforme = (datos) => {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: white; color: #333;">
-        <div style="border-bottom: 3px solid #16a34a; padding-bottom: 20px; margin-bottom: 20px;">
-          <h1 style="color: #16a34a; margin: 0; font-size: 28px;">INFORME ${tipoFlujo.includes('ejecutivo') ? 'EJECUTIVO' : 'SIMPLE'}</h1>
-          <p style="color: #D4AF37; font-weight: bold; margin: 5px 0;">Tesla Electricidad y Automatización S.A.C.</p>
-        </div>
-        
-        <div style="margin-bottom: 30px;">
-          <p><strong>Proyecto:</strong> ${proyectosMock.find(p => p.id === proyectoSeleccionado)?.nombre || 'General'}</p>
-          <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
-          <p><strong>Formato:</strong> ${formatoInforme.toUpperCase()}</p>
-        </div>
-        
-        <div style="margin-bottom: 30px; background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #16a34a;">
-          <h3 style="color: #16a34a; margin-top: 0;">Contenido del Informe</h3>
-          <p>${contextoUsuario}</p>
-        </div>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #D4AF37; color: #666; font-size: 14px;">
-          <p><strong>Contacto:</strong> ${datosEmpresa.telefono} | ${datosEmpresa.email}</p>
-        </div>
-      </div>
-    `;
+
+  const generarHTMLInforme = async (datos) => {
+    try {
+      // 1. Determinar tipo de informe
+      const tipoInforme = tipoFlujo.includes('ejecutivo') ? 'informe-ejecutivo' : 'informe-tecnico';
+
+      // 2. Cargar plantilla profesional
+      const response = await fetch(`/api/templates/${tipoInforme}`);
+      const { html } = await response.json();
+
+      // 3. Reemplazar variables
+      const proyectoNombre = proyectosMock.find(p => p.id === proyectoSeleccionado)?.nombre || 'General';
+      let htmlFinal = html
+        .replace(/\{\{TITULO_INFORME\}\}/g, proyectoNombre)
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, proyectoNombre)
+        .replace(/\{\{FECHA\}\}/g, new Date().toLocaleDateString('es-PE'))
+        .replace(/\{\{FORMATO\}\}/g, formatoInforme.toUpperCase())
+        .replace(/\{\{RESUMEN_EJECUTIVO\}\}/g, contextoUsuario || 'Contenido del informe')
+        .replace(/\{\{DESCRIPCION_PROYECTO\}\}/g, contextoUsuario || 'Contenido del informe');
+
+      // 4. Aplicar colores personalizados
+      const ESQUEMAS_COLORES = {
+        'azul': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF' },
+        'rojo': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEE2E2' },
+        'verde': { primario: '#065F46', secundario: '#047857', acento: '#10B981', claro: '#D1FAE5' },
+        'dorado': { primario: '#D4AF37', secundario: '#B8860B', acento: '#FFD700', claro: '#FEF3C7' },
+      };
+
+      const colores = ESQUEMAS_COLORES[esquemaColores] || ESQUEMAS_COLORES.azul;
+      htmlFinal = htmlFinal
+        .replace(/#0052A3/g, colores.primario)
+        .replace(/#1E40AF/g, colores.secundario)
+        .replace(/#3B82F6/g, colores.acento)
+        .replace(/#EFF6FF/g, colores.claro)
+        .replace(/#DBEAFE/g, colores.claro);
+
+      return htmlFinal;
+    } catch (error) {
+      console.error('Error cargando plantilla informe:', error);
+      return `<div style="padding: 20px;"><h1>Informe</h1><p>${tipoFlujo}</p></div>`;
+    }
   };
+
 
   const calcularTotales = (items = []) => {
     const subtotal = items.reduce((sum, item) => sum + ((item.cantidad || 0) * (item.precioUnitario || 0)), 0);
@@ -473,7 +886,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES DE ARCHIVOS
   // ============================================
-  
+
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
     files.forEach(file => {
@@ -481,7 +894,7 @@ const CotizadorTesla30 = () => {
         setError(`El archivo ${file.name} es demasiado grande (máx 10MB)`);
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const archivo = {
@@ -491,12 +904,12 @@ const CotizadorTesla30 = () => {
           contenido: e.target.result,
           contenidoTexto: file.type.includes('text') ? e.target.result : null
         };
-        
+
         setArchivos(prev => [...prev, archivo]);
         setExito(`Archivo ${file.name} procesado correctamente`);
         setTimeout(() => setExito(''), 3000);
       };
-      
+
       if (file.type.includes('text')) {
         reader.readAsText(file);
       } else {
@@ -512,7 +925,7 @@ const CotizadorTesla30 = () => {
         setError('El logo debe ser menor a 2MB');
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setLogoBase64(e.target.result);
@@ -526,14 +939,14 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES DE DESCARGA
   // ============================================
-  
+
   const handleDescargar = async (formato) => {
-    const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' : 
-                          tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
-    
-    const entidad = tipoDocumento === 'cotizacion' ? cotizacion : 
-                    tipoDocumento === 'proyecto' ? proyecto : informe;
-    
+    const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
+      tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
+
+    const entidad = tipoDocumento === 'cotizacion' ? cotizacion :
+      tipoDocumento === 'proyecto' ? proyecto : informe;
+
     if (!entidad && !datosEditables) {
       setError(`No hay ${tipoDocumento} para descargar`);
       return;
@@ -544,107 +957,182 @@ const CotizadorTesla30 = () => {
     setExito('');
 
     try {
-      // Determinar entidad según tipo de documento
-      const entidadActual = tipoDocumento === 'cotizacion' ? cotizacion :
-                           tipoDocumento === 'proyecto' ? proyecto : informe;
+      console.log(`📄 Generando ${formato.toUpperCase()} con V2 (sin HTML parsing)...`);
+      setExito(`Generando ${formato.toUpperCase()}...`);
 
-      // Usar datos editables si existen, sino usar entidad del tipo correcto
-      const datosFinales = datosEditables || entidadActual;
-      let entidadId = datosFinales?.id;
+      // Usar datos editables si existen
+      const datosFinales = datosEditables || entidad;
+      const itemsActuales = datosFinales?.items || [];
 
-      // Si no tiene ID, guardar primero
-      if (!entidadId) {
-        console.log(`📝 Guardando ${tipoDocumento} en el backend...`);
-        
-        let datosParaBackend = {};
-        
-        if (tipoDocumento === 'cotizacion') {
-          const totales = calcularTotales(datosFinales?.items || []);
-          datosParaBackend = {
-            cliente: clienteProyecto || 'Cliente',
-            proyecto: nombreProyecto || 'Proyecto',
-            descripcion: contextoUsuario || '',
-            items: datosFinales?.items || [],
-            subtotal: parseFloat(totales.subtotal),
-            igv: parseFloat(totales.igv),
-            total: parseFloat(ocultarIGV ? totales.subtotal : totales.total),
-            observaciones: '',
-            vigencia: '30 días',
-            estado: 'borrador',
-            html_preview: htmlPreview
-          };
-        } else if (tipoDocumento === 'proyecto') {
-          datosParaBackend = {
-            nombre: nombreProyecto || 'Proyecto',
-            cliente: clienteProyecto || 'Cliente',
-            tipo: servicioSeleccionado || 'general',
-            presupuesto_estimado: parseFloat(presupuestoEstimado) || 0,
-            duracion_meses: parseInt(duracionMeses) || 1,
-            descripcion: contextoUsuario || '',
-            estado: 'planificacion',
-            html_preview: htmlPreview
-          };
-        } else if (tipoDocumento === 'informe') {
-          datosParaBackend = {
-            proyecto_id: proyectoSeleccionado || 'general',
-            tipo: tipoFlujo.includes('ejecutivo') ? 'ejecutivo' : 'simple',
-            formato: formatoInforme || 'word',
-            incluir_graficos: incluirGraficos,
-            contenido: contextoUsuario || '',
-            estado: 'borrador',
-            html_preview: htmlPreview
-          };
-        }
+      // 🐛 DEBUG: Ver qué datos tenemos
+      console.log('🔍 DEBUG COMPLETO handleDescargar:');
+      console.log('  datosEditables:', datosEditables);
+      console.log('  datosEditables?.items:', datosEditables?.items);
+      console.log('  entidad:', entidad);
+      console.log('  datosFinales:', datosFinales);
+      console.log('  itemsActuales:', itemsActuales);
 
-        // Agregar logo si existe
-        if (logoBase64) {
-          datosParaBackend.logo_base64 = logoBase64;
-        }
+      // Recalcular totales
+      const subtotalCalculado = itemsActuales.reduce((sum, item) =>
+        sum + (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)), 0
+      );
+      const igvCalculado = subtotalCalculado * 0.18;
+      const totalCalculado = subtotalCalculado + igvCalculado;
 
-        const response = await fetch(`http://localhost:8000/api/${tipoDocumento === 'cotizacion' ? 'cotizaciones' : tipoDocumento === 'proyecto' ? 'proyectos' : 'informes'}/`, {
+      // ✅ V2: Preparar datos JSON limpios (SIN HTML)
+      // Determinar tipo de documento
+      const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
+        tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
+
+      let datosLimpios;
+
+      if (tipoDocumento === 'informe') {
+        // Estructura para INFORMES
+        datosLimpios = {
+          tipo_documento: tipoFlujo,
+          titulo: datosFinales?.titulo || "Informe Técnico",
+          codigo: datosFinales?.codigo || `INF-${Date.now()}`,
+          cliente: {
+            nombre: datosCliente.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          },
+          fecha: new Date().toLocaleDateString('es-PE'),
+          resumen: datosFinales?.resumen || datosFinales?.resumen_ejecutivo || "",
+          introduccion: datosFinales?.introduccion || "",
+          analisis_tecnico: datosFinales?.analisis_tecnico || "",
+          resultados: datosFinales?.resultados || "",
+          conclusiones: datosFinales?.conclusiones || "",
+          recomendaciones: datosFinales?.recomendaciones || [],
+          normativa: datosFinales?.normativa || "CNE Suministro 2011",
+          personalizacion: {
+            esquema_colores: esquemaColores,
+            fuente: fuenteDocumento,
+            tamano_fuente: tamañoFuente,
+            mostrar_logo: mostrarLogo,
+            posicion_logo: posicionLogo,
+            logo_base64: logoBase64 || null
+          }
+        };
+      } else if (tipoDocumento === 'proyecto') {
+        // Estructura para PROYECTOS
+        datosLimpios = {
+          tipo_documento: tipoFlujo,
+          nombre: datosFinales?.nombre || datosFinales?.nombre_proyecto || "[Proyecto]",
+          codigo: datosFinales?.codigo || datosFinales?.codigo_proyecto || `PROY-${Date.now()}`,
+          cliente: {
+            nombre: datosCliente.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          },
+          presupuesto: datosFinales?.presupuesto || 0,
+          duracion_total: datosFinales?.duracion_total || datosFinales?.duracion || 30,
+          fecha_inicio: datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
+          fecha_fin: datosFinales?.fecha_fin || "",
+          alcance: datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
+          fases: datosFinales?.fases || [],
+          normativa: datosFinales?.normativa || "CNE Suministro 2011",
+          personalizacion: {
+            esquema_colores: esquemaColores,
+            fuente: fuenteDocumento,
+            tamano_fuente: tamañoFuente,
+            mostrar_logo: mostrarLogo,
+            posicion_logo: posicionLogo,
+            logo_base64: logoBase64 || null
+          }
+        };
+      } else {
+        // Estructura para COTIZACIONES (default)
+        datosLimpios = {
+          tipo_documento: tipoFlujo,
+          numero: datosFinales?.numero || `COT-${Date.now()}`,
+          fecha: new Date().toLocaleDateString('es-PE'),
+          vigencia: '30 días',
+          cliente: {
+            nombre: datosCliente.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
+          },
+          proyecto: nombreProyecto || '[Proyecto]',
+          descripcion: contextoUsuario || '',
+          items: itemsActuales.map(item => ({
+            descripcion: item.descripcion || '',
+            cantidad: parseFloat(item.cantidad || 0),
+            unidad: item.unidad || 'und',
+            precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0)
+          })),
+          subtotal: parseFloat(subtotalCalculado.toFixed(2)),
+          igv: parseFloat(igvCalculado.toFixed(2)),
+          total: parseFloat(totalCalculado.toFixed(2)),
+          observaciones: datosFinales?.observaciones || 'Precios incluyen IGV',
+          personalizacion: {
+            esquema_colores: esquemaColores,
+            fuente: fuenteDocumento,
+            tamano_fuente: tamañoFuente,
+            mostrar_logo: mostrarLogo,
+            posicion_logo: posicionLogo,
+            logo_base64: logoBase64 || null,
+            ocultar_igv: ocultarIGV,
+            ocultar_precios_unitarios: ocultarPreciosUnitarios
+          }
+        };
+      }
+
+
+      console.log('📦 Datos limpios V2 a enviar:', datosLimpios);
+      console.log('  - Tipo:', datosLimpios.tipo_documento);
+      console.log('  - Cliente:', datosLimpios.cliente.nombre);
+      if (tipoDocumento === 'cotizacion') {
+        console.log('  - Items:', datosLimpios.items.length);
+        console.log('  - Items detalle:', datosLimpios.items);
+        console.log('  - Total:', datosLimpios.total);
+      } else if (tipoDocumento === 'informe') {
+        console.log('  - Código:', datosLimpios.codigo);
+        console.log('  - Título:', datosLimpios.titulo);
+      } else if (tipoDocumento === 'proyecto') {
+        console.log('  - Código:', datosLimpios.codigo);
+        console.log('  - Presupuesto:', datosLimpios.presupuesto);
+      }
+      console.log('  - Personalización:', datosLimpios.personalizacion);
+
+      // ✅ V2: Llamar endpoint limpio (SIN HTML)
+      const response = await fetch(
+        `http://localhost:8000/api/generar-documento-v2?formato=${formato}&guardar_bd=false`,
+        {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datosParaBackend)
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Error al guardar: ${errorText}`);
+          body: JSON.stringify(datosLimpios)  // Solo JSON, sin HTML
         }
+      );
 
-        const entidadGuardada = await response.json();
-        entidadId = entidadGuardada.id;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
       }
 
-      // Generar documento
-      console.log(`📄 Generando ${formato.toUpperCase()}`);
-      setExito(`Generando ${formato.toUpperCase()}...`);
-      
-      const endpoint = tipoDocumento === 'cotizacion' ? 'cotizaciones' : 
-                      tipoDocumento === 'proyecto' ? 'proyectos' : 'informes';
-      
-      const docResponse = await fetch(`http://localhost:8000/api/${endpoint}/${entidadId}/generar-${formato}`, {
-        method: 'POST'
-      });
-
-      if (!docResponse.ok) {
-        throw new Error(`Error al generar ${formato}`);
-      }
-
-      const blob = await docResponse.blob();
+      // Descargar archivo
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${tipoDocumento}_${entidadId}.${formato === 'word' ? 'docx' : 'pdf'}`;
+      link.download = `cotizacion_${datosLimpios.numero}.${formato === 'word' ? 'docx' : 'pdf'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
+      console.log(`✅ ${formato.toUpperCase()} V2 descargado exitosamente`);
       setExito(`✅ ${formato.toUpperCase()} descargado exitosamente`);
       setTimeout(() => setExito(''), 4000);
+
     } catch (error) {
-      console.error('Error al descargar:', error);
+      console.error('❌ Error al descargar V2:', error);
       setError(`Error al generar el documento: ${error.message}`);
     } finally {
       setDescargando(null);
@@ -654,12 +1142,12 @@ const CotizadorTesla30 = () => {
   // ============================================
   // COMPONENTE ALERTA
   // ============================================
-  
+
   const Alerta = ({ tipo, mensaje, onClose }) => {
     if (!mensaje) return null;
     const estilos = tipo === 'error' ? 'bg-red-900 border-red-600' : 'bg-green-900 border-green-600';
     const Icono = tipo === 'error' ? AlertCircle : CheckCircle;
-    
+
     return (
       <div className={`${estilos} border-2 text-white px-4 py-3 rounded-lg mb-4 flex items-center justify-between backdrop-blur-sm bg-opacity-90`}>
         <div className="flex items-center gap-2">
@@ -674,7 +1162,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // HOOKS
   // ============================================
-  
+
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -687,10 +1175,15 @@ const CotizadorTesla30 = () => {
     }
   }, [conversacion, tipoFlujo, paso]);
 
+  // ✅ Cargar lista de clientes al montar el componente
+  useEffect(() => {
+    cargarListaClientes();
+  }, []);
+
   // ============================================
   // RENDERIZADO - PANTALLA INICIO
   // ============================================
-  
+
   if (pantallaActual === 'inicio') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-red-950 to-black text-white p-6">
@@ -722,7 +1215,7 @@ const CotizadorTesla30 = () => {
 
           {/* MENÚS EXPANDIBLES */}
           <div className="space-y-4">
-            
+
             {/* MENÚ 1: COTIZACIONES */}
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-yellow-700 shadow-xl backdrop-blur-md bg-opacity-90 overflow-hidden">
               <button
@@ -739,7 +1232,7 @@ const CotizadorTesla30 = () => {
                 </div>
                 {menuCotizaciones ? <ChevronUp className="w-6 h-6 text-yellow-400" /> : <ChevronDown className="w-6 h-6 text-yellow-400" />}
               </button>
-              
+
               {menuCotizaciones && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
@@ -785,7 +1278,7 @@ const CotizadorTesla30 = () => {
                 </div>
                 {menuProyectos ? <ChevronUp className="w-6 h-6 text-blue-400" /> : <ChevronDown className="w-6 h-6 text-blue-400" />}
               </button>
-              
+
               {menuProyectos && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
@@ -831,7 +1324,7 @@ const CotizadorTesla30 = () => {
                 </div>
                 {menuInformes ? <ChevronUp className="w-6 h-6 text-green-400" /> : <ChevronDown className="w-6 h-6 text-green-400" />}
               </button>
-              
+
               {menuInformes && (
                 <div className="px-6 pb-6 space-y-3 animate-fadeIn">
                   <button
@@ -869,7 +1362,7 @@ const CotizadorTesla30 = () => {
   // ============================================
   // PANTALLA: FLUJO DE PASOS MEJORADO
   // ============================================
-  
+
   if (pantallaActual === 'flujo-pasos') {
     const esCotizacion = tipoFlujo.includes('cotizacion');
     const esProyecto = tipoFlujo.includes('proyecto');
@@ -905,20 +1398,19 @@ const CotizadorTesla30 = () => {
                   <p className="text-gray-300 text-sm">{config.desc}</p>
                 </div>
               </div>
-              
+
               {/* INDICADOR DE PASOS COMPACTO */}
               <div className="flex items-center gap-4">
                 {[1, 2, 3].map(num => (
                   <div key={num} className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      paso >= num ? 'bg-yellow-600 text-black' : 'border border-gray-600 text-gray-600'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${paso >= num ? 'bg-yellow-600 text-black' : 'border border-gray-600 text-gray-600'
+                      }`}>
                       {num}
                     </div>
                     {num < 3 && <div className={`w-8 h-1 ${paso > num ? 'bg-yellow-600' : 'bg-gray-600'}`} />}
                   </div>
                 ))}
-                
+
                 <button onClick={volverAlInicio} className="ml-6 px-4 py-2 bg-red-800 hover:bg-red-700 text-yellow-400 rounded-lg font-semibold flex items-center gap-2 transition-all">
                   <Home className="w-4 h-4" />
                   Inicio
@@ -938,40 +1430,169 @@ const CotizadorTesla30 = () => {
             {/* PASO 1: CONFIGURACIÓN */}
             {paso === 1 && (
               <div className="max-w-5xl mx-auto space-y-6">
-                
+
                 {/* LOGO UNIVERSAL (TODOS LOS SERVICIOS) */}
-                <div className="bg-gradient-to-br from-purple-900 to-purple-800 rounded-2xl p-6 border-2 border-purple-500 shadow-xl">
-                  <h2 className="text-2xl font-bold mb-4 text-purple-200 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
                     🎨 Logo Empresa (Aparecerá en el documento final)
                   </h2>
-                  
+
                   <div className="flex gap-4 items-center">
                     <div className="flex-1">
-                      <input 
+                      <input
                         ref={fileInputLogoRef}
-                        type="file" 
-                        onChange={cargarLogo} 
-                        className="hidden" 
+                        type="file"
+                        onChange={cargarLogo}
+                        className="hidden"
                         accept="image/*"
                       />
                       <button
                         onClick={() => fileInputLogoRef.current?.click()}
-                        className="w-full bg-gradient-to-r from-purple-700 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-xl border-2 border-purple-400 transition-all duration-300 hover:scale-105">
+                        className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 text-black px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105">
                         <Upload className="w-5 h-5" />
                         {logoBase64 ? 'Cambiar Logo' : 'Subir Logo'}
                       </button>
-                      <p className="text-xs text-purple-200 mt-2 text-center">
+                      <p className="text-xs text-gray-400 mt-2 text-center">
                         PNG, JPG, WebP - Máx 2MB • Se integrará automáticamente en Word
                       </p>
                     </div>
-                    
+
                     {logoBase64 && (
-                      <div className="bg-white rounded-xl p-3 border-2 border-purple-400 shadow-lg">
+                      <div className="bg-white rounded-xl p-3 border-2 border-yellow-400 shadow-lg">
                         <img src={logoBase64} alt="Logo" className="w-24 h-24 object-contain" />
                         <p className="text-xs text-gray-600 mt-2 text-center font-semibold">✅ Cargado</p>
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* ✅ FORMULARIO UNIVERSAL DE CLIENTE (TODOS LOS 6 TIPOS DE DOCUMENTOS) */}
+                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-yellow-600 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-6 text-yellow-400 flex items-center gap-3">
+                    <Users className="w-7 h-7" />
+                    Datos del Cliente
+                  </h2>
+
+                  {/* Selector de cliente existente o nuevo */}
+                  <div className="mb-6">
+                    <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                      <Building2 className="w-5 h-5" />
+                      Seleccionar Cliente
+                    </label>
+                    <select
+                      value={clienteSeleccionadoId || ''}
+                      onChange={cargarDatosCliente}
+                      className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                    >
+                      <option value="">+ Nuevo Cliente</option>
+                      {listaClientes.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.nombre} - RUC: {c.ruc}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Selecciona un cliente existente o crea uno nuevo
+                    </p>
+                  </div>
+
+                  {/* Campos del formulario */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2">
+                        Nombre/Razón Social *
+                      </label>
+                      <input
+                        type="text"
+                        name="nombre"
+                        value={datosCliente.nombre}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="Ej: Constructora ABC S.A.C."
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2">
+                        RUC *
+                      </label>
+                      <input
+                        type="text"
+                        name="ruc"
+                        value={datosCliente.ruc}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="11 dígitos"
+                        maxLength={11}
+                        required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        Dirección
+                      </label>
+                      <input
+                        type="text"
+                        name="direccion"
+                        value={datosCliente.direccion}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="Ej: Av. Principal 123, Lima"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Teléfono
+                      </label>
+                      <input
+                        type="tel"
+                        name="telefono"
+                        value={datosCliente.telefono}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="Ej: 987654321"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={datosCliente.email}
+                        onChange={handleClienteChange}
+                        className="w-full px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white"
+                        placeholder="cliente@empresa.com"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Botón guardar cliente */}
+                  <button
+                    onClick={guardarCliente}
+                    disabled={guardandoCliente || !datosCliente.nombre || !datosCliente.ruc}
+                    className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 disabled:from-gray-800 disabled:to-gray-700 disabled:cursor-not-allowed text-black px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105"
+                  >
+                    {guardandoCliente ? (
+                      <>
+                        <Loader className="w-5 h-5 animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        {clienteSeleccionadoId ? 'Actualizar Cliente' : 'Guardar Cliente'}
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 {/* CONFIGURACIÓN ESPECÍFICA POR TIPO */}
@@ -981,7 +1602,7 @@ const CotizadorTesla30 = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Nombre del Proyecto *</label>
-                        <input 
+                        <input
                           type="text"
                           value={nombreProyecto}
                           onChange={(e) => setNombreProyecto(e.target.value)}
@@ -991,7 +1612,7 @@ const CotizadorTesla30 = () => {
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Cliente *</label>
-                        <input 
+                        <input
                           type="text"
                           value={clienteProyecto}
                           onChange={(e) => setClienteProyecto(e.target.value)}
@@ -1001,7 +1622,7 @@ const CotizadorTesla30 = () => {
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
-                        <input 
+                        <input
                           type="number"
                           value={presupuestoEstimado}
                           onChange={(e) => setPresupuestoEstimado(e.target.value)}
@@ -1011,7 +1632,7 @@ const CotizadorTesla30 = () => {
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
-                        <input 
+                        <input
                           type="number"
                           value={duracionMeses}
                           onChange={(e) => setDuracionMeses(e.target.value)}
@@ -1026,11 +1647,11 @@ const CotizadorTesla30 = () => {
                 {esInforme && (
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-green-700 shadow-xl">
                     <h2 className="text-2xl font-bold mb-4 text-green-400">📄 Configuración del Informe</h2>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-green-400 font-semibold mb-2">Proyecto Base *</label>
-                        <select 
+                        <select
                           value={proyectoSeleccionado}
                           onChange={(e) => setProyectoSeleccionado(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-950 border border-green-700 rounded-xl focus:ring-2 focus:ring-green-500 focus:outline-none text-white">
@@ -1041,10 +1662,10 @@ const CotizadorTesla30 = () => {
                           <option value="general">📋 Informe General</option>
                         </select>
                       </div>
-                      
+
                       <div>
                         <label className="block text-green-400 font-semibold mb-2">Formato de Salida</label>
-                        <select 
+                        <select
                           value={formatoInforme}
                           onChange={(e) => setFormatoInforme(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-950 border border-green-700 rounded-xl focus:ring-2 focus:ring-green-500 focus:outline-none text-white">
@@ -1064,11 +1685,10 @@ const CotizadorTesla30 = () => {
                       <button
                         key={servicio.id}
                         onClick={() => setServicioSeleccionado(servicio.id)}
-                        className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
-                          servicioSeleccionado === servicio.id
-                            ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl scale-105'
-                            : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
-                        }`}>
+                        className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${servicioSeleccionado === servicio.id
+                          ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl scale-105'
+                          : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
+                          }`}>
                         <div className="text-2xl mb-2">{servicio.icon}</div>
                         <div className="text-sm font-semibold">{servicio.nombre.split(' ').slice(1).join(' ')}</div>
                       </button>
@@ -1083,11 +1703,10 @@ const CotizadorTesla30 = () => {
                       <button
                         key={industria.id}
                         onClick={() => setIndustriaSeleccionada(industria.id)}
-                        className={`p-3 rounded-xl border-2 transition-all duration-300 ${
-                          industriaSeleccionada === industria.id
-                            ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl'
-                            : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
-                        }`}>
+                        className={`p-3 rounded-xl border-2 transition-all duration-300 ${industriaSeleccionada === industria.id
+                          ? 'border-yellow-500 bg-gradient-to-br from-red-900 to-red-800 text-white shadow-xl'
+                          : 'border-gray-700 bg-gray-900 hover:border-yellow-600 hover:bg-gray-800'
+                          }`}>
                         <div className="text-sm font-semibold">{industria.nombre}</div>
                       </button>
                     ))}
@@ -1097,7 +1716,7 @@ const CotizadorTesla30 = () => {
                 {/* DESCRIPCIÓN */}
                 <div className={`bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-${colores.border} shadow-xl`}>
                   <h2 className={`text-2xl font-bold mb-4 text-${colores.primary}-400`}>📝 Descripción Detallada</h2>
-                  
+
                   {esCotizacion && servicioSeleccionado && basePreciosUniversal[servicioSeleccionado] && (
                     <div className="mb-4 p-4 bg-blue-950 bg-opacity-50 border border-blue-700 rounded-xl">
                       <p className="text-sm font-semibold text-blue-300 mb-2">
@@ -1110,15 +1729,15 @@ const CotizadorTesla30 = () => {
                       </div>
                     </div>
                   )}
-                  
-                  <textarea 
-                    value={contextoUsuario} 
+
+                  <textarea
+                    value={contextoUsuario}
                     onChange={(e) => setContextoUsuario(e.target.value)}
                     className="w-full h-32 px-4 py-3 bg-gray-950 border border-yellow-700 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:outline-none resize-none mb-4 text-white placeholder-gray-500"
                     placeholder={
                       esCotizacion ? "Describe el proyecto a cotizar detalladamente..." :
-                      esProyecto ? "Describe los objetivos y alcance del proyecto..." :
-                      "Describe el propósito y contenido del informe..."
+                        esProyecto ? "Describe los objetivos y alcance del proyecto..." :
+                          "Describe el propósito y contenido del informe..."
                     }
                   />
 
@@ -1142,8 +1761,8 @@ const CotizadorTesla30 = () => {
                               <FileText className="w-5 h-5 text-yellow-500" />
                               <span className="text-sm font-semibold">{archivo.nombre}</span>
                             </div>
-                            <button 
-                              onClick={() => setArchivos(prev => prev.filter((_, i) => i !== index))} 
+                            <button
+                              onClick={() => setArchivos(prev => prev.filter((_, i) => i !== index))}
                               className="text-red-400 hover:text-red-300">
                               <X className="w-5 h-5" />
                             </button>
@@ -1155,11 +1774,11 @@ const CotizadorTesla30 = () => {
                 </div>
 
                 {/* BOTÓN CONTINUAR */}
-                <button 
-                  onClick={() => setPaso(2)} 
-                  disabled={!servicioSeleccionado || !industriaSeleccionada || !contextoUsuario.trim() || 
-                           (esProyecto && (!nombreProyecto || !clienteProyecto)) ||
-                           (esInforme && !proyectoSeleccionado)}
+                <button
+                  onClick={() => setPaso(2)}
+                  disabled={!servicioSeleccionado || !industriaSeleccionada || !contextoUsuario.trim() ||
+                    (esProyecto && (!nombreProyecto || !clienteProyecto)) ||
+                    (esInforme && !proyectoSeleccionado)}
                   className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 disabled:from-gray-800 disabled:to-gray-700 disabled:cursor-not-allowed py-4 rounded-xl font-bold text-lg text-black shadow-2xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3">
                   <MessageSquare className="w-6 h-6" />
                   Comenzar Chat con Vista Previa
@@ -1171,115 +1790,177 @@ const CotizadorTesla30 = () => {
             {paso === 2 && (
               <div className="max-w-full mx-auto h-[calc(100vh-200px)]">
                 <div className="grid grid-cols-12 h-full gap-4">
-                  
+
+
                   {/* CHAT (IZQUIERDA) */}
-                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
-                    <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
-                      <h3 className="text-xl font-bold text-black flex items-center gap-2">
-                        <div className="bg-white p-1 rounded-full">
-                          <PiliAvatar size={24} showCrown={true} />
-                        </div>
-                        👑 PILI - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
-                      </h3>
+                  {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6">
+                      <PiliITSEChat
+                        onCotizacionGenerada={(cot) => {
+                          setCotizacion(cot);
+                          setDatosEditables(cot);
+                          setMostrarPreview(true);
+                        }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
                     </div>
-                    
-                    {/* CONVERSACIÓN */}
-                    <div ref={chatContainerRef} className="flex-grow bg-gray-100 p-4 overflow-y-auto">
-                      {conversacion.length === 0 ? (
-                        <div className="text-center text-gray-600 mt-8">
-                          <div className="inline-block bg-yellow-600 p-3 rounded-full mb-3">
-                            <PiliAvatar size={32} showCrown={true} />
+                  ) : (
+                    <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
+                      <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
+                        <h3 className="text-xl font-bold text-black flex items-center gap-2">
+                          <div className="bg-white p-1 rounded-full">
+                            <PiliAvatar size={24} showCrown={true} />
                           </div>
-                          <p className="font-semibold text-lg">¡Hola! Soy 👑 PILI - Tu Asistente IA</p>
-                          <p className="text-xs text-gray-500 mb-2">Procesadora Inteligente de Licitaciones Industriales v3.0</p>
-                          <p className="text-sm mt-1">
-                            {esCotizacion && "Empezemos con tu cotización..."}
-                            {esProyecto && "Vamos a planificar tu proyecto..."}
-                            {esInforme && "Generemos tu informe profesional..."}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {conversacion.map((mensaje, index) => (
-                            <div key={index} className={`flex ${mensaje.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-[85%] p-3 rounded-2xl ${
-                                mensaje.tipo === 'usuario' 
-                                  ? 'bg-yellow-600 text-black' 
-                                  : 'bg-white border-2 border-gray-300 text-gray-800'
-                              }`}>
-                                <p className="text-sm">{mensaje.mensaje}</p>
-                              </div>
+                          👑 PILI - {servicios.find(s => s.id === servicioSeleccionado)?.nombre}
+                        </h3>
+                      </div>
+
+                      {/* CONVERSACIÓN */}
+                      <div ref={chatContainerRef} className="flex-grow bg-gray-100 p-4 overflow-y-auto">
+                        {conversacion.length === 0 ? (
+                          <div className="text-center text-gray-600 mt-8">
+                            <div className="inline-block bg-yellow-600 p-3 rounded-full mb-3">
+                              <PiliAvatar size={32} showCrown={true} />
                             </div>
-                          ))}
-                          
-                          {analizando && (
-                            <div className="flex justify-start">
-                              <div className="bg-white border-2 border-gray-300 p-3 rounded-2xl">
-                                <div className="flex items-center gap-2 text-gray-600">
-                                  <div className="bg-yellow-600 p-1 rounded-full animate-pulse">
-                                    <PiliAvatar size={16} showCrown={true} />
-                                  </div>
-                                  <Loader className="w-4 h-4 animate-spin text-yellow-600" />
-                                  <span className="text-sm font-medium">PILI está pensando... 🤔</span>
+                            <p className="font-semibold text-lg">¡Hola! Soy 👑 PILI - Tu Asistente IA</p>
+                            <p className="text-xs text-gray-500 mb-2">Procesadora Inteligente de Licitaciones Industriales v3.0</p>
+                            <p className="text-sm mt-1">
+                              {esCotizacion && "Empezemos con tu cotización..."}
+                              {esProyecto && "Vamos a planificar tu proyecto..."}
+                              {esInforme && "Generemos tu informe profesional..."}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {conversacion.map((mensaje, index) => (
+                              <div key={index} className={`flex ${mensaje.tipo === 'usuario' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[85%] p-3 rounded-2xl ${mensaje.tipo === 'usuario'
+                                  ? 'bg-yellow-600 text-black'
+                                  : 'bg-white border-2 border-gray-300 text-gray-800'
+                                  }`}>
+                                  <p className="text-sm">{mensaje.mensaje}</p>
                                 </div>
                               </div>
+                            ))}
+
+                            {analizando && (
+                              <div className="flex justify-start">
+                                <div className="bg-white border-2 border-gray-300 p-3 rounded-2xl">
+                                  <div className="flex items-center gap-2 text-gray-600">
+                                    <div className="bg-yellow-600 p-1 rounded-full animate-pulse">
+                                      <PiliAvatar size={16} showCrown={true} />
+                                    </div>
+                                    <Loader className="w-4 h-4 animate-spin text-yellow-600" />
+                                    <span className="text-sm font-medium">PILI está pensando... 🤔</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ✅ NUEVO: Indicador de Progreso de Datos */}
+                      {(datosRecopilados.length > 0 || datosFaltantes.length > 0) && (
+                        <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                          <div className="bg-white rounded-lg p-3 shadow-sm">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4 text-blue-600" />
+                                Progreso de Datos
+                              </span>
+                              <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                                {progresoChat}
+                              </span>
                             </div>
-                          )}
+
+                            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${(datosRecopilados.length / (datosRecopilados.length + datosFaltantes.length)) * 100}%`
+                                }}
+                              />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {datosRecopilados.map(campo => (
+                                <span
+                                  key={campo}
+                                  className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1"
+                                >
+                                  <CheckCircle className="w-3 h-3" />
+                                  {campo.replace('_', ' ')}
+                                </span>
+                              ))}
+                              {datosFaltantes.map(campo => (
+                                <span
+                                  key={campo}
+                                  className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs flex items-center gap-1"
+                                >
+                                  <Clock className="w-3 h-3" />
+                                  {campo.replace('_', ' ')}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       )}
-                    </div>
 
-                    {/* BOTONES CONTEXTUALES */}
-                    {botonesContextuales.length > 0 && (
-                      <div className="px-4 py-2 bg-gray-50 border-t">
-                        <div className="flex flex-wrap gap-2">
-                          {botonesContextuales.map((boton, index) => (
-                            <button
-                              key={index}
-                              onClick={() => enviarRespuestaRapida(boton)}
-                              className="px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-lg text-xs border border-yellow-300 transition-all">
-                              {boton}
-                            </button>
-                          ))}
+                      {/* BOTONES CONTEXTUALES */}
+                      {botonesContextuales.length > 0 && (
+                        <div className="px-4 py-2 bg-gray-50 border-t">
+                          <div className="flex flex-wrap gap-2">
+                            {botonesContextuales.map((boton, index) => (
+                              <button
+                                key={index}
+                                onClick={() => enviarRespuestaRapida(boton)}
+                                className="px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-gray-800 rounded-lg text-xs border border-yellow-300 transition-all">
+                                {boton}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* INPUT CHAT */}
+                      <div className="p-4 bg-white border-t rounded-b-2xl">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={inputChat}
+                            onChange={(e) => setInputChat(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && !analizando && handleEnviarMensajeChat()}
+                            placeholder="Escribe aquí..."
+                            className="flex-grow p-2 border-2 border-gray-300 rounded-xl focus:border-yellow-500 focus:outline-none text-gray-800"
+                            disabled={analizando}
+                          />
+                          <button
+                            onClick={handleEnviarMensajeChat}
+                            disabled={analizando || !inputChat.trim()}
+                            className="p-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-400 text-black rounded-xl transition-all">
+                            <Send className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        <div className="flex justify-between items-center mt-3">
+                          <button
+                            onClick={() => setPaso(1)}
+                            className="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm">
+                            ← Configuración
+                          </button>
+                          <button
+                            onClick={() => setPaso(3)}
+                            disabled={!mostrarPreview}
+                            className="px-4 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white font-bold rounded-lg text-sm">
+                            Finalizar →
+                          </button>
                         </div>
                       </div>
-                    )}
-                    
-                    {/* INPUT CHAT */}
-                    <div className="p-4 bg-white border-t rounded-b-2xl">
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={inputChat}
-                          onChange={(e) => setInputChat(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && !analizando && handleEnviarMensajeChat()}
-                          placeholder="Escribe aquí..."
-                          className="flex-grow p-2 border-2 border-gray-300 rounded-xl focus:border-yellow-500 focus:outline-none text-gray-800"
-                          disabled={analizando}
-                        />
-                        <button 
-                          onClick={handleEnviarMensajeChat} 
-                          disabled={analizando || !inputChat.trim()}
-                          className="p-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-400 text-black rounded-xl transition-all">
-                          <Send className="w-5 h-5" />
-                        </button>
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-3">
-                        <button 
-                          onClick={() => setPaso(1)} 
-                          className="px-3 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm">
-                          ← Configuración
-                        </button>
-                        <button 
-                          onClick={() => setPaso(3)} 
-                          disabled={!mostrarPreview}
-                          className="px-4 py-1 bg-green-600 hover:bg-green-500 disabled:bg-gray-400 text-white font-bold rounded-lg text-sm">
-                          Finalizar →
-                        </button>
-                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* VISTA PREVIA (DERECHA) */}
                   <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
@@ -1288,7 +1969,7 @@ const CotizadorTesla30 = () => {
                         <Eye className="w-6 h-6 text-white" />
                         <h3 className="text-xl font-bold text-white">Vista Previa</h3>
                       </div>
-                      
+
                       {mostrarPreview && (
                         <div className="flex items-center gap-2">
                           <button
@@ -1297,7 +1978,7 @@ const CotizadorTesla30 = () => {
                             <Edit className="w-4 h-4" />
                             {modoEdicion ? 'Ver' : 'Editar'}
                           </button>
-                          
+
                           {esCotizacion && (
                             <div className="flex gap-2">
                               <button
@@ -1315,85 +1996,37 @@ const CotizadorTesla30 = () => {
                         </div>
                       )}
                     </div>
-                    
-                    <div className="flex-grow p-4 overflow-y-auto">
+
+                    <div className="flex-grow p-4 overflow-y-auto bg-white">
                       {!mostrarPreview ? (
                         <div className="text-center text-gray-500 mt-20">
                           <Eye className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                           <p className="text-lg">Vista Previa</p>
                           <p className="text-sm">Aparecerá cuando la IA genere contenido</p>
                         </div>
-                      ) : modoEdicion && esCotizacion && datosEditables?.items ? (
-                        /* MODO EDICIÓN PARA COTIZACIONES */
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-gray-800">Editor de Cotización</h3>
-                            <button
-                              onClick={agregarItem}
-                              className="px-3 py-1 bg-green-600 text-white rounded-lg flex items-center gap-1 text-sm">
-                              <Plus className="w-4 h-4" />
-                              Agregar
-                            </button>
-                          </div>
-                          
-                          {datosEditables.items.map((item, index) => (
-                            <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                              <div className="grid grid-cols-12 gap-2 items-center">
-                                <div className="col-span-5">
-                                  <input
-                                    type="text"
-                                    value={item.descripcion}
-                                    onChange={(e) => actualizarItem(index, 'descripcion', e.target.value)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <input
-                                    type="number"
-                                    value={item.cantidad}
-                                    onChange={(e) => actualizarItem(index, 'cantidad', e.target.value)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm text-center"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    value={item.precioUnitario}
-                                    onChange={(e) => actualizarItem(index, 'precioUnitario', e.target.value)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm text-center"
-                                  />
-                                </div>
-                                <div className="col-span-2">
-                                  <span className="text-sm font-bold">S/ {((item.cantidad || 0) * (item.precioUnitario || 0)).toFixed(2)}</span>
-                                </div>
-                                <div className="col-span-1">
-                                  <button
-                                    onClick={() => eliminarItem(index)}
-                                    className="text-red-500 hover:text-red-700">
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                            <div className="text-right">
-                              <div className="text-lg font-bold text-green-600">
-                                TOTAL: S/ {calcularTotales(datosEditables.items || [])[ocultarIGV ? 'subtotal' : 'total']}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        /* VISTA PREVIA HTML */
-                        <div 
-                          ref={previewRef}
-                          className="w-full h-full"
-                          dangerouslySetInnerHTML={{ __html: htmlPreview }}
-                        />
-                      )}
+                      ) : (() => {
+                        // DEBUG: Ver qué datos tenemos
+                        console.log('🔍 DEBUG - cotizacion:', cotizacion);
+                        console.log('🔍 DEBUG - cotizacion?.items:', cotizacion?.items);
+                        console.log('🔍 DEBUG - datosEditables:', datosEditables);
+                        console.log('🔍 DEBUG - datosEditables?.items:', datosEditables?.items);
+
+                        // ✅ RENDERIZAR VistaPreviaProfesional en Paso 2
+                        return (
+                          <VistaPreviaProfesional
+                            cotizacion={cotizacion || proyecto || informe || datosEditables}
+                            onGenerarDocumento={handleDescargar}
+                            tipoDocumento={tipoFlujo}
+                            htmlPreview={htmlPreview}
+                            esquemaColores={esquemaColores}
+                            logoBase64={logoBase64}
+                            fuenteDocumento={fuenteDocumento}
+                            ocultarIGV={ocultarIGV}
+                            ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+                            ocultarTotalesPorItem={ocultarTotalesPorItem}
+                          />
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -1408,7 +2041,7 @@ const CotizadorTesla30 = () => {
                     <CheckCircle className="w-8 h-8 text-green-600" />
                     Documento Listo para Generar
                   </h2>
-                  
+
                   <div className="bg-green-50 p-6 rounded-xl mb-6">
                     <h3 className="text-lg font-bold text-green-800 mb-3">✅ Lo que se incluirá:</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
@@ -1425,22 +2058,205 @@ const CotizadorTesla30 = () => {
                     </div>
                   </div>
 
-                  {/* VISTA PREVIA FINAL */}
-                  <div className="border-2 border-gray-200 rounded-xl p-4 mb-6 max-h-60 overflow-y-auto">
-                    <div dangerouslySetInnerHTML={{ __html: htmlPreview }} />
+                  {/* ✅ VISTA PREVIA PROFESIONAL A PANTALLA COMPLETA */}
+                  <VistaPreviaProfesional
+                    cotizacion={cotizacion || proyecto || informe || {}}
+                    onGenerarDocumento={handleDescargar}
+                    tipoDocumento={tipoFlujo}
+                    htmlPreview={htmlPreview}
+                    esquemaColores={esquemaColores}
+                    logoBase64={logoBase64}
+                    fuenteDocumento={fuenteDocumento}
+                    ocultarIGV={ocultarIGV}
+                    ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+                    ocultarTotalesPorItem={ocultarTotalesPorItem}
+                  />
+
+
+                  {/* ✅ PANEL DE PERSONALIZACIÓN */}
+                  <div className="mb-6 border-2 border-blue-500 rounded-xl overflow-hidden">
+                    {/* Header del Panel */}
+                    <button
+                      onClick={() => setMostrarPanelPersonalizacion(!mostrarPanelPersonalizacion)}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-4 flex items-center justify-between hover:from-blue-700 hover:to-blue-600 transition-all">
+                      <div className="flex items-center gap-3">
+                        <Settings className="w-6 h-6 text-white" />
+                        <h3 className="text-lg font-bold text-white">Personalización del Documento</h3>
+                      </div>
+                      {mostrarPanelPersonalizacion ? (
+                        <ChevronUp className="w-5 h-5 text-white" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-white" />
+                      )}
+                    </button>
+
+                    {/* Contenido del Panel (Colapsable) */}
+                    {mostrarPanelPersonalizacion && (
+                      <div className="bg-gray-900 p-6 space-y-6">
+                        {/* Sección: Esquema de Colores */}
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-3 flex items-center gap-2">
+                            <PieChart className="w-5 h-5" />
+                            Esquema de Colores
+                          </label>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <button
+                              onClick={() => setEsquemaColores('azul-tesla')}
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'azul-tesla'
+                                ? 'border-blue-500 bg-blue-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-blue-600'
+                                }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                                <span className="font-semibold">Azul Tesla</span>
+                              </div>
+                              <span className="text-xs">Corporativo</span>
+                            </button>
+                            <button
+                              onClick={() => setEsquemaColores('rojo-energia')}
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'rojo-energia'
+                                ? 'border-red-500 bg-red-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-red-600'
+                                }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                                <span className="font-semibold">Rojo Energía</span>
+                              </div>
+                              <span className="text-xs">Vibrante</span>
+                            </button>
+                            <button
+                              onClick={() => setEsquemaColores('verde-ecologico')}
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'verde-ecologico'
+                                ? 'border-green-500 bg-green-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-green-600'
+                                }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                <span className="font-semibold">Verde Eco</span>
+                              </div>
+                              <span className="text-xs">Sostenible</span>
+                            </button>
+                            <button
+                              onClick={() => setEsquemaColores('personalizado')}
+                              className={`p-3 rounded-lg border-2 transition-all ${esquemaColores === 'personalizado'
+                                ? 'border-purple-500 bg-purple-900 text-white'
+                                : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-purple-600'
+                                }`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-4 h-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                                <span className="font-semibold">Personalizado</span>
+                              </div>
+                              <span className="text-xs">A medida</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Sección: Fuente */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-blue-400 font-semibold mb-3">Fuente del Documento</label>
+                            <select
+                              value={fuenteDocumento}
+                              onChange={(e) => setFuenteDocumento(e.target.value)}
+                              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition-colors">
+                              <option value="Calibri">Calibri (Recomendada)</option>
+                              <option value="Arial">Arial</option>
+                              <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-blue-400 font-semibold mb-3">Tamaño de Fuente</label>
+                            <select
+                              value={tamañoFuente}
+                              onChange={(e) => setTamañoFuente(Number(e.target.value))}
+                              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 transition-colors">
+                              <option value={10}>10 pt (Pequeña)</option>
+                              <option value={11}>11 pt (Normal)</option>
+                              <option value={12}>12 pt (Grande)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Sección: Logo */}
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-3 flex items-center gap-2">
+                            <Upload className="w-5 h-5" />
+                            Logo de la Empresa
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => setMostrarLogo(!mostrarLogo)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${mostrarLogo
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
+                              {mostrarLogo ? '✓ Mostrar Logo' : '✕ Ocultar Logo'}
+                            </button>
+                            <input
+                              ref={fileInputLogoRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={cargarLogo}
+                              className="hidden"
+                            />
+                            <button
+                              onClick={() => fileInputLogoRef.current?.click()}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition-all flex items-center gap-2">
+                              <Upload className="w-4 h-4" />
+                              {logoBase64 ? 'Cambiar Logo' : 'Subir Logo'}
+                            </button>
+                            {logoBase64 && (
+                              <span className="text-green-400 text-sm">✓ Logo cargado</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Sección: Opciones de Visualización */}
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-3">Opciones de Visualización</label>
+                          <div className="flex flex-wrap gap-4">
+                            <button
+                              onClick={() => setOcultarIGV(!ocultarIGV)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${ocultarIGV
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
+                              {ocultarIGV ? '✓ IGV Oculto' : 'Mostrar IGV'}
+                            </button>
+                            <button
+                              onClick={() => setOcultarPreciosUnitarios(!ocultarPreciosUnitarios)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${ocultarPreciosUnitarios
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
+                              {ocultarPreciosUnitarios ? '✓ P. Unit. Ocultos' : 'Mostrar P. Unitarios'}
+                            </button>
+                            <button
+                              onClick={() => setOcultarTotalesPorItem(!ocultarTotalesPorItem)}
+                              className={`px-4 py-2 rounded-lg font-semibold transition-all ${ocultarTotalesPorItem
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}>
+                              {ocultarTotalesPorItem ? '✓ Totales Ocultos' : 'Mostrar Totales por Ítem'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* BOTONES DE ACCIÓN */}
                   <div className="flex gap-4">
-                    <button 
-                      onClick={() => setPaso(2)} 
+                    <button
+                      onClick={() => setPaso(2)}
                       className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-xl transition-all">
                       ← Volver al Chat
                     </button>
-                    
+
                     <div className="flex-1 flex gap-4">
-                      <button 
-                        onClick={() => handleDescargar('pdf')} 
+                      <button
+                        onClick={() => handleDescargar('pdf')}
                         disabled={descargando === 'pdf'}
                         className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 disabled:from-gray-600 disabled:to-gray-500 text-white py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
                         {descargando === 'pdf' ? (
@@ -1455,9 +2271,9 @@ const CotizadorTesla30 = () => {
                           </>
                         )}
                       </button>
-                      
-                      <button 
-                        onClick={() => handleDescargar('word')} 
+
+                      <button
+                        onClick={() => handleDescargar('word')}
                         disabled={descargando === 'word'}
                         className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-gray-600 disabled:to-gray-500 text-white py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
                         {descargando === 'word' ? (
@@ -1468,7 +2284,7 @@ const CotizadorTesla30 = () => {
                         ) : (
                           <>
                             <Download className="w-5 h-5" />
-                            Descargar Word + Logo
+                            Descargar Word
                           </>
                         )}
                       </button>
@@ -1479,7 +2295,7 @@ const CotizadorTesla30 = () => {
             )}
           </div>
         </div>
-      </div>
+      </div >
     );
   }
 
@@ -1488,8 +2304,8 @@ const CotizadorTesla30 = () => {
       <div className="max-w-5xl mx-auto text-center">
         <h1 className="text-4xl font-bold text-yellow-400 mb-4">Sistema Tesla v3.0</h1>
         <p className="text-gray-300 mb-6">Sistema profesional completamente funcional</p>
-        <button 
-          onClick={volverAlInicio} 
+        <button
+          onClick={volverAlInicio}
           className="px-6 py-3 bg-yellow-600 text-black rounded-lg font-bold hover:bg-yellow-500 transition-all">
           Ir al Inicio
         </button>

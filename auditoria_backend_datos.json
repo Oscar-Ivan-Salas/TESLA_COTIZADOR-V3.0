@@ -1,0 +1,2281 @@
+{
+  "total_archivos": 76,
+  "total_lineas": 28079,
+  "duplicaciones": {
+    "__init__.py": [
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\core\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 28,
+        "lineas": 1,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\models\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 284,
+        "lineas": 14,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\routers\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 626,
+        "lineas": 21,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\schemas\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 782,
+        "lineas": 41,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 879,
+        "lineas": 23,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 791,
+        "lineas": 27,
+        "nivel": 2
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\charts\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 89,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\generators\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 105,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\ml\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 72,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\processors\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 96,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\rag\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 73,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\templates\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 21,
+        "lineas": 1,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\templates\\documentos\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 117,
+        "lineas": 4,
+        "nivel": 2
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\utils\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 880,
+        "lineas": 41,
+        "nivel": 1
+      }
+    ],
+    "config.py": [
+      {
+        "nombre": "config copy.py",
+        "ruta": "app\\core\\config copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 6806,
+        "lineas": 222,
+        "nivel": 1
+      },
+      {
+        "nombre": "config.py",
+        "ruta": "app\\core\\config.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 11394,
+        "lineas": 302,
+        "nivel": 1
+      }
+    ],
+    "database.py": [
+      {
+        "nombre": "database copy.py",
+        "ruta": "app\\core\\database copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 3871,
+        "lineas": 133,
+        "nivel": 1
+      },
+      {
+        "nombre": "database.py",
+        "ruta": "app\\core\\database.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2403,
+        "lineas": 83,
+        "nivel": 1
+      },
+      {
+        "nombre": "database.py.backup",
+        "ruta": "app\\core\\database.py.backup",
+        "tipo": "archivo",
+        "extension": ".backup",
+        "tamaño_bytes": 3188,
+        "lineas": 0,
+        "nivel": 1
+      }
+    ],
+    "main.py": [
+      {
+        "nombre": "main copy.py",
+        "ruta": "app\\main copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8768,
+        "lineas": 302,
+        "nivel": 0
+      },
+      {
+        "nombre": "main.py",
+        "ruta": "app\\main.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 30844,
+        "lineas": 651,
+        "nivel": 0
+      }
+    ],
+    "cotizacion.py": [
+      {
+        "nombre": "cotizacion.py",
+        "ruta": "app\\models\\cotizacion.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 3637,
+        "lineas": 97,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizacion copy.py",
+        "ruta": "app\\schemas\\cotizacion copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 6431,
+        "lineas": 153,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizacion.py",
+        "ruta": "app\\schemas\\cotizacion.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8223,
+        "lineas": 193,
+        "nivel": 1
+      }
+    ],
+    "documento.py": [
+      {
+        "nombre": "documento.py",
+        "ruta": "app\\models\\documento.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2890,
+        "lineas": 78,
+        "nivel": 1
+      },
+      {
+        "nombre": "documento.py",
+        "ruta": "app\\schemas\\documento.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 1655,
+        "lineas": 48,
+        "nivel": 1
+      }
+    ],
+    "proyecto.py": [
+      {
+        "nombre": "proyecto.py",
+        "ruta": "app\\models\\proyecto.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2542,
+        "lineas": 76,
+        "nivel": 1
+      },
+      {
+        "nombre": "proyecto.py",
+        "ruta": "app\\schemas\\proyecto.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 1879,
+        "lineas": 47,
+        "nivel": 1
+      }
+    ],
+    "chat.py": [
+      {
+        "nombre": "chat copy.py",
+        "ruta": "app\\routers\\chat copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 22509,
+        "lineas": 663,
+        "nivel": 1
+      },
+      {
+        "nombre": "chat.py",
+        "ruta": "app\\routers\\chat.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 88513,
+        "lineas": 2015,
+        "nivel": 1
+      }
+    ],
+    "cotizaciones.py": [
+      {
+        "nombre": "cotizaciones copy.py",
+        "ruta": "app\\routers\\cotizaciones copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 12051,
+        "lineas": 376,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizaciones.py",
+        "ruta": "app\\routers\\cotizaciones.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 11937,
+        "lineas": 374,
+        "nivel": 1
+      }
+    ],
+    "file_processor.py": [
+      {
+        "nombre": "file_processor copy.py",
+        "ruta": "app\\services\\file_processor copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8657,
+        "lineas": 247,
+        "nivel": 1
+      },
+      {
+        "nombre": "file_processor.py",
+        "ruta": "app\\services\\file_processor.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 30213,
+        "lineas": 757,
+        "nivel": 1
+      }
+    ],
+    "gemini_service.py": [
+      {
+        "nombre": "gemini_service copy.py",
+        "ruta": "app\\services\\gemini_service copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 9620,
+        "lineas": 307,
+        "nivel": 1
+      },
+      {
+        "nombre": "gemini_service.py",
+        "ruta": "app\\services\\gemini_service.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 37252,
+        "lineas": 963,
+        "nivel": 1
+      }
+    ],
+    "template_processor.py": [
+      {
+        "nombre": "template_processor copy.py",
+        "ruta": "app\\services\\template_processor copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 22374,
+        "lineas": 549,
+        "nivel": 1
+      },
+      {
+        "nombre": "template_processor.py",
+        "ruta": "app\\services\\template_processor.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 34880,
+        "lineas": 786,
+        "nivel": 1
+      }
+    ],
+    "word_generator.py": [
+      {
+        "nombre": "word_generator copy.py",
+        "ruta": "app\\services\\word_generator copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 27497,
+        "lineas": 674,
+        "nivel": 1
+      },
+      {
+        "nombre": "word_generator.py",
+        "ruta": "app\\services\\word_generator.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 37544,
+        "lineas": 946,
+        "nivel": 1
+      }
+    ]
+  },
+  "estructura": [
+    {
+      "nombre": "core",
+      "ruta": "app\\core",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\core\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 28,
+          "lineas": 1,
+          "nivel": 1
+        },
+        {
+          "nombre": "config copy 2.py",
+          "ruta": "app\\core\\config copy 2.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 10984,
+          "lineas": 335,
+          "nivel": 1
+        },
+        {
+          "nombre": "config copy 3.py",
+          "ruta": "app\\core\\config copy 3.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 10015,
+          "lineas": 305,
+          "nivel": 1
+        },
+        {
+          "nombre": "config copy 4.py",
+          "ruta": "app\\core\\config copy 4.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 8583,
+          "lineas": 246,
+          "nivel": 1
+        },
+        {
+          "nombre": "config copy.py",
+          "ruta": "app\\core\\config copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 6806,
+          "lineas": 222,
+          "nivel": 1
+        },
+        {
+          "nombre": "config.py",
+          "ruta": "app\\core\\config.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 11394,
+          "lineas": 302,
+          "nivel": 1
+        },
+        {
+          "nombre": "cotizaciones_router.py",
+          "ruta": "app\\core\\cotizaciones_router.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 10637,
+          "lineas": 355,
+          "nivel": 1
+        },
+        {
+          "nombre": "database copy.py",
+          "ruta": "app\\core\\database copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 3871,
+          "lineas": 133,
+          "nivel": 1
+        },
+        {
+          "nombre": "database.py",
+          "ruta": "app\\core\\database.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 2403,
+          "lineas": 83,
+          "nivel": 1
+        },
+        {
+          "nombre": "database.py.backup",
+          "ruta": "app\\core\\database.py.backup",
+          "tipo": "archivo",
+          "extension": ".backup",
+          "tamaño_bytes": 3188,
+          "lineas": 0,
+          "nivel": 1
+        }
+      ]
+    },
+    {
+      "nombre": "logs",
+      "ruta": "app\\logs",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "app.log",
+          "ruta": "app\\logs\\app.log",
+          "tipo": "archivo",
+          "extension": ".log",
+          "tamaño_bytes": 242938,
+          "lineas": 0,
+          "nivel": 1
+        },
+        {
+          "nombre": "tesla.log",
+          "ruta": "app\\logs\\tesla.log",
+          "tipo": "archivo",
+          "extension": ".log",
+          "tamaño_bytes": 9338,
+          "lineas": 0,
+          "nivel": 1
+        }
+      ]
+    },
+    {
+      "nombre": "main copy 2.py",
+      "ruta": "app\\main copy 2.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 9599,
+      "lineas": 316,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 3.py",
+      "ruta": "app\\main copy 3.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 9129,
+      "lineas": 301,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 4.py",
+      "ruta": "app\\main copy 4.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 24593,
+      "lineas": 568,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 5.py",
+      "ruta": "app\\main copy 5.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 31584,
+      "lineas": 731,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 6.py",
+      "ruta": "app\\main copy 6.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 29703,
+      "lineas": 672,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy.py",
+      "ruta": "app\\main copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 8768,
+      "lineas": 302,
+      "nivel": 0
+    },
+    {
+      "nombre": "main.py",
+      "ruta": "app\\main.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 30844,
+      "lineas": 651,
+      "nivel": 0
+    },
+    {
+      "nombre": "main002.py",
+      "ruta": "app\\main002.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 10436,
+      "lineas": 363,
+      "nivel": 0
+    },
+    {
+      "nombre": "models",
+      "ruta": "app\\models",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\models\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 284,
+          "lineas": 14,
+          "nivel": 1
+        },
+        {
+          "nombre": "cotizacion.py",
+          "ruta": "app\\models\\cotizacion.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 3637,
+          "lineas": 97,
+          "nivel": 1
+        },
+        {
+          "nombre": "documento.py",
+          "ruta": "app\\models\\documento.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 2890,
+          "lineas": 78,
+          "nivel": 1
+        },
+        {
+          "nombre": "item.py",
+          "ruta": "app\\models\\item.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 1678,
+          "lineas": 47,
+          "nivel": 1
+        },
+        {
+          "nombre": "proyecto.py",
+          "ruta": "app\\models\\proyecto.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 2542,
+          "lineas": 76,
+          "nivel": 1
+        }
+      ]
+    },
+    {
+      "nombre": "routers",
+      "ruta": "app\\routers",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\routers\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 626,
+          "lineas": 21,
+          "nivel": 1
+        },
+        {
+          "nombre": "auth.py",
+          "ruta": "app\\routers\\auth.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 639,
+          "lineas": 19,
+          "nivel": 1
+        },
+        {
+          "nombre": "chat copy 2.py",
+          "ruta": "app\\routers\\chat copy 2.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 50771,
+          "lineas": 1346,
+          "nivel": 1
+        },
+        {
+          "nombre": "chat copy.py",
+          "ruta": "app\\routers\\chat copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 22509,
+          "lineas": 663,
+          "nivel": 1
+        },
+        {
+          "nombre": "chat.py",
+          "ruta": "app\\routers\\chat.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 88513,
+          "lineas": 2015,
+          "nivel": 1
+        },
+        {
+          "nombre": "cotizaciones copy.py",
+          "ruta": "app\\routers\\cotizaciones copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 12051,
+          "lineas": 376,
+          "nivel": 1
+        },
+        {
+          "nombre": "cotizaciones.py",
+          "ruta": "app\\routers\\cotizaciones.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 11937,
+          "lineas": 374,
+          "nivel": 1
+        },
+        {
+          "nombre": "documentos.py",
+          "ruta": "app\\routers\\documentos.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 23874,
+          "lineas": 674,
+          "nivel": 1
+        },
+        {
+          "nombre": "generar_directo.py",
+          "ruta": "app\\routers\\generar_directo.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 3179,
+          "lineas": 89,
+          "nivel": 1
+        },
+        {
+          "nombre": "informes.py",
+          "ruta": "app\\routers\\informes.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 2424,
+          "lineas": 77,
+          "nivel": 1
+        },
+        {
+          "nombre": "proyectos.py",
+          "ruta": "app\\routers\\proyectos.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 26386,
+          "lineas": 720,
+          "nivel": 1
+        },
+        {
+          "nombre": "system.py",
+          "ruta": "app\\routers\\system.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 3120,
+          "lineas": 71,
+          "nivel": 1
+        }
+      ]
+    },
+    {
+      "nombre": "schemas",
+      "ruta": "app\\schemas",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\schemas\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 782,
+          "lineas": 41,
+          "nivel": 1
+        },
+        {
+          "nombre": "cotizacion copy.py",
+          "ruta": "app\\schemas\\cotizacion copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 6431,
+          "lineas": 153,
+          "nivel": 1
+        },
+        {
+          "nombre": "cotizacion.py",
+          "ruta": "app\\schemas\\cotizacion.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 8223,
+          "lineas": 193,
+          "nivel": 1
+        },
+        {
+          "nombre": "documento.py",
+          "ruta": "app\\schemas\\documento.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 1655,
+          "lineas": 48,
+          "nivel": 1
+        },
+        {
+          "nombre": "proyecto.py",
+          "ruta": "app\\schemas\\proyecto.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 1879,
+          "lineas": 47,
+          "nivel": 1
+        }
+      ]
+    },
+    {
+      "nombre": "services",
+      "ruta": "app\\services",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\services\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 879,
+          "lineas": 23,
+          "nivel": 1
+        },
+        {
+          "nombre": "file_processor copy.py",
+          "ruta": "app\\services\\file_processor copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 8657,
+          "lineas": 247,
+          "nivel": 1
+        },
+        {
+          "nombre": "file_processor.py",
+          "ruta": "app\\services\\file_processor.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 30213,
+          "lineas": 757,
+          "nivel": 1
+        },
+        {
+          "nombre": "gemini_service copy.py",
+          "ruta": "app\\services\\gemini_service copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 9620,
+          "lineas": 307,
+          "nivel": 1
+        },
+        {
+          "nombre": "gemini_service.py",
+          "ruta": "app\\services\\gemini_service.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 37252,
+          "lineas": 963,
+          "nivel": 1
+        },
+        {
+          "nombre": "multi_ia_service.py",
+          "ruta": "app\\services\\multi_ia_service.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 14044,
+          "lineas": 372,
+          "nivel": 1
+        },
+        {
+          "nombre": "pdf_generator.py",
+          "ruta": "app\\services\\pdf_generator.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 29464,
+          "lineas": 712,
+          "nivel": 1
+        },
+        {
+          "nombre": "pili_brain.py",
+          "ruta": "app\\services\\pili_brain.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 64887,
+          "lineas": 1614,
+          "nivel": 1
+        },
+        {
+          "nombre": "pili_integrator.py",
+          "ruta": "app\\services\\pili_integrator.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 30819,
+          "lineas": 803,
+          "nivel": 1
+        },
+        {
+          "nombre": "pili_orchestrator.py",
+          "ruta": "app\\services\\pili_orchestrator.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 20179,
+          "lineas": 489,
+          "nivel": 1
+        },
+        {
+          "nombre": "professional",
+          "ruta": "app\\services\\professional",
+          "tipo": "directorio",
+          "nivel": 1,
+          "contenido": [
+            {
+              "nombre": "__init__.py",
+              "ruta": "app\\services\\professional\\__init__.py",
+              "tipo": "archivo",
+              "extension": ".py",
+              "tamaño_bytes": 791,
+              "lineas": 27,
+              "nivel": 2
+            },
+            {
+              "nombre": "charts",
+              "ruta": "app\\services\\professional\\charts",
+              "tipo": "directorio",
+              "nivel": 2,
+              "contenido": [
+                {
+                  "nombre": "__init__.py",
+                  "ruta": "app\\services\\professional\\charts\\__init__.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 89,
+                  "lineas": 2,
+                  "nivel": 3
+                },
+                {
+                  "nombre": "chart_engine.py",
+                  "ruta": "app\\services\\professional\\charts\\chart_engine.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 22104,
+                  "lineas": 690,
+                  "nivel": 3
+                }
+              ]
+            },
+            {
+              "nombre": "generators",
+              "ruta": "app\\services\\professional\\generators",
+              "tipo": "directorio",
+              "nivel": 2,
+              "contenido": [
+                {
+                  "nombre": "__init__.py",
+                  "ruta": "app\\services\\professional\\generators\\__init__.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 105,
+                  "lineas": 2,
+                  "nivel": 3
+                },
+                {
+                  "nombre": "document_generator_pro.py",
+                  "ruta": "app\\services\\professional\\generators\\document_generator_pro.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 16455,
+                  "lineas": 421,
+                  "nivel": 3
+                }
+              ]
+            },
+            {
+              "nombre": "ml",
+              "ruta": "app\\services\\professional\\ml",
+              "tipo": "directorio",
+              "nivel": 2,
+              "contenido": [
+                {
+                  "nombre": "__init__.py",
+                  "ruta": "app\\services\\professional\\ml\\__init__.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 72,
+                  "lineas": 2,
+                  "nivel": 3
+                },
+                {
+                  "nombre": "ml_engine.py",
+                  "ruta": "app\\services\\professional\\ml\\ml_engine.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 19633,
+                  "lineas": 574,
+                  "nivel": 3
+                }
+              ]
+            },
+            {
+              "nombre": "processors",
+              "ruta": "app\\services\\professional\\processors",
+              "tipo": "directorio",
+              "nivel": 2,
+              "contenido": [
+                {
+                  "nombre": "__init__.py",
+                  "ruta": "app\\services\\professional\\processors\\__init__.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 96,
+                  "lineas": 2,
+                  "nivel": 3
+                },
+                {
+                  "nombre": "file_processor_pro.py",
+                  "ruta": "app\\services\\professional\\processors\\file_processor_pro.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 16780,
+                  "lineas": 544,
+                  "nivel": 3
+                }
+              ]
+            },
+            {
+              "nombre": "rag",
+              "ruta": "app\\services\\professional\\rag",
+              "tipo": "directorio",
+              "nivel": 2,
+              "contenido": [
+                {
+                  "nombre": "__init__.py",
+                  "ruta": "app\\services\\professional\\rag\\__init__.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 73,
+                  "lineas": 2,
+                  "nivel": 3
+                },
+                {
+                  "nombre": "rag_engine.py",
+                  "ruta": "app\\services\\professional\\rag\\rag_engine.py",
+                  "tipo": "archivo",
+                  "extension": ".py",
+                  "tamaño_bytes": 14776,
+                  "lineas": 445,
+                  "nivel": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nombre": "rag_service.py",
+          "ruta": "app\\services\\rag_service.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 7624,
+          "lineas": 214,
+          "nivel": 1
+        },
+        {
+          "nombre": "report_generator.py",
+          "ruta": "app\\services\\report_generator.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 29084,
+          "lineas": 692,
+          "nivel": 1
+        },
+        {
+          "nombre": "template_processor copy.py",
+          "ruta": "app\\services\\template_processor copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 22374,
+          "lineas": 549,
+          "nivel": 1
+        },
+        {
+          "nombre": "template_processor.py",
+          "ruta": "app\\services\\template_processor.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 34880,
+          "lineas": 786,
+          "nivel": 1
+        },
+        {
+          "nombre": "word_generator copy.py",
+          "ruta": "app\\services\\word_generator copy.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 27497,
+          "lineas": 674,
+          "nivel": 1
+        },
+        {
+          "nombre": "word_generator.py",
+          "ruta": "app\\services\\word_generator.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 37544,
+          "lineas": 946,
+          "nivel": 1
+        }
+      ]
+    },
+    {
+      "nombre": "templates",
+      "ruta": "app\\templates",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\templates\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 21,
+          "lineas": 1,
+          "nivel": 1
+        },
+        {
+          "nombre": "documentos",
+          "ruta": "app\\templates\\documentos",
+          "tipo": "directorio",
+          "nivel": 1,
+          "contenido": [
+            {
+              "nombre": "__init__.py",
+              "ruta": "app\\templates\\documentos\\__init__.py",
+              "tipo": "archivo",
+              "extension": ".py",
+              "tamaño_bytes": 117,
+              "lineas": 4,
+              "nivel": 2
+            },
+            {
+              "nombre": "plantillas_modelo.py",
+              "ruta": "app\\templates\\documentos\\plantillas_modelo.py",
+              "tipo": "archivo",
+              "extension": ".py",
+              "tamaño_bytes": 43554,
+              "lineas": 1267,
+              "nivel": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "utils",
+      "ruta": "app\\utils",
+      "tipo": "directorio",
+      "nivel": 0,
+      "contenido": [
+        {
+          "nombre": "__init__.py",
+          "ruta": "app\\utils\\__init__.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 880,
+          "lineas": 41,
+          "nivel": 1
+        },
+        {
+          "nombre": "contextos_servicios.py",
+          "ruta": "app\\utils\\contextos_servicios.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 0,
+          "lineas": 0,
+          "nivel": 1
+        },
+        {
+          "nombre": "helpers.py",
+          "ruta": "app\\utils\\helpers.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 11327,
+          "lineas": 445,
+          "nivel": 1
+        },
+        {
+          "nombre": "ocr.py",
+          "ruta": "app\\utils\\ocr.py",
+          "tipo": "archivo",
+          "extension": ".py",
+          "tamaño_bytes": 11068,
+          "lineas": 337,
+          "nivel": 1
+        }
+      ]
+    }
+  ],
+  "archivos_por_tipo": {
+    ".py": [
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\core\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 28,
+        "lineas": 1,
+        "nivel": 1
+      },
+      {
+        "nombre": "config copy 2.py",
+        "ruta": "app\\core\\config copy 2.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 10984,
+        "lineas": 335,
+        "nivel": 1
+      },
+      {
+        "nombre": "config copy 3.py",
+        "ruta": "app\\core\\config copy 3.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 10015,
+        "lineas": 305,
+        "nivel": 1
+      },
+      {
+        "nombre": "config copy 4.py",
+        "ruta": "app\\core\\config copy 4.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8583,
+        "lineas": 246,
+        "nivel": 1
+      },
+      {
+        "nombre": "config copy.py",
+        "ruta": "app\\core\\config copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 6806,
+        "lineas": 222,
+        "nivel": 1
+      },
+      {
+        "nombre": "config.py",
+        "ruta": "app\\core\\config.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 11394,
+        "lineas": 302,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizaciones_router.py",
+        "ruta": "app\\core\\cotizaciones_router.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 10637,
+        "lineas": 355,
+        "nivel": 1
+      },
+      {
+        "nombre": "database copy.py",
+        "ruta": "app\\core\\database copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 3871,
+        "lineas": 133,
+        "nivel": 1
+      },
+      {
+        "nombre": "database.py",
+        "ruta": "app\\core\\database.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2403,
+        "lineas": 83,
+        "nivel": 1
+      },
+      {
+        "nombre": "main copy 2.py",
+        "ruta": "app\\main copy 2.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 9599,
+        "lineas": 316,
+        "nivel": 0
+      },
+      {
+        "nombre": "main copy 3.py",
+        "ruta": "app\\main copy 3.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 9129,
+        "lineas": 301,
+        "nivel": 0
+      },
+      {
+        "nombre": "main copy 4.py",
+        "ruta": "app\\main copy 4.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 24593,
+        "lineas": 568,
+        "nivel": 0
+      },
+      {
+        "nombre": "main copy 5.py",
+        "ruta": "app\\main copy 5.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 31584,
+        "lineas": 731,
+        "nivel": 0
+      },
+      {
+        "nombre": "main copy 6.py",
+        "ruta": "app\\main copy 6.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 29703,
+        "lineas": 672,
+        "nivel": 0
+      },
+      {
+        "nombre": "main copy.py",
+        "ruta": "app\\main copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8768,
+        "lineas": 302,
+        "nivel": 0
+      },
+      {
+        "nombre": "main.py",
+        "ruta": "app\\main.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 30844,
+        "lineas": 651,
+        "nivel": 0
+      },
+      {
+        "nombre": "main002.py",
+        "ruta": "app\\main002.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 10436,
+        "lineas": 363,
+        "nivel": 0
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\models\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 284,
+        "lineas": 14,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizacion.py",
+        "ruta": "app\\models\\cotizacion.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 3637,
+        "lineas": 97,
+        "nivel": 1
+      },
+      {
+        "nombre": "documento.py",
+        "ruta": "app\\models\\documento.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2890,
+        "lineas": 78,
+        "nivel": 1
+      },
+      {
+        "nombre": "item.py",
+        "ruta": "app\\models\\item.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 1678,
+        "lineas": 47,
+        "nivel": 1
+      },
+      {
+        "nombre": "proyecto.py",
+        "ruta": "app\\models\\proyecto.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2542,
+        "lineas": 76,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\routers\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 626,
+        "lineas": 21,
+        "nivel": 1
+      },
+      {
+        "nombre": "auth.py",
+        "ruta": "app\\routers\\auth.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 639,
+        "lineas": 19,
+        "nivel": 1
+      },
+      {
+        "nombre": "chat copy 2.py",
+        "ruta": "app\\routers\\chat copy 2.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 50771,
+        "lineas": 1346,
+        "nivel": 1
+      },
+      {
+        "nombre": "chat copy.py",
+        "ruta": "app\\routers\\chat copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 22509,
+        "lineas": 663,
+        "nivel": 1
+      },
+      {
+        "nombre": "chat.py",
+        "ruta": "app\\routers\\chat.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 88513,
+        "lineas": 2015,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizaciones copy.py",
+        "ruta": "app\\routers\\cotizaciones copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 12051,
+        "lineas": 376,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizaciones.py",
+        "ruta": "app\\routers\\cotizaciones.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 11937,
+        "lineas": 374,
+        "nivel": 1
+      },
+      {
+        "nombre": "documentos.py",
+        "ruta": "app\\routers\\documentos.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 23874,
+        "lineas": 674,
+        "nivel": 1
+      },
+      {
+        "nombre": "generar_directo.py",
+        "ruta": "app\\routers\\generar_directo.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 3179,
+        "lineas": 89,
+        "nivel": 1
+      },
+      {
+        "nombre": "informes.py",
+        "ruta": "app\\routers\\informes.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 2424,
+        "lineas": 77,
+        "nivel": 1
+      },
+      {
+        "nombre": "proyectos.py",
+        "ruta": "app\\routers\\proyectos.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 26386,
+        "lineas": 720,
+        "nivel": 1
+      },
+      {
+        "nombre": "system.py",
+        "ruta": "app\\routers\\system.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 3120,
+        "lineas": 71,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\schemas\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 782,
+        "lineas": 41,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizacion copy.py",
+        "ruta": "app\\schemas\\cotizacion copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 6431,
+        "lineas": 153,
+        "nivel": 1
+      },
+      {
+        "nombre": "cotizacion.py",
+        "ruta": "app\\schemas\\cotizacion.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8223,
+        "lineas": 193,
+        "nivel": 1
+      },
+      {
+        "nombre": "documento.py",
+        "ruta": "app\\schemas\\documento.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 1655,
+        "lineas": 48,
+        "nivel": 1
+      },
+      {
+        "nombre": "proyecto.py",
+        "ruta": "app\\schemas\\proyecto.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 1879,
+        "lineas": 47,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 879,
+        "lineas": 23,
+        "nivel": 1
+      },
+      {
+        "nombre": "file_processor copy.py",
+        "ruta": "app\\services\\file_processor copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 8657,
+        "lineas": 247,
+        "nivel": 1
+      },
+      {
+        "nombre": "file_processor.py",
+        "ruta": "app\\services\\file_processor.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 30213,
+        "lineas": 757,
+        "nivel": 1
+      },
+      {
+        "nombre": "gemini_service copy.py",
+        "ruta": "app\\services\\gemini_service copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 9620,
+        "lineas": 307,
+        "nivel": 1
+      },
+      {
+        "nombre": "gemini_service.py",
+        "ruta": "app\\services\\gemini_service.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 37252,
+        "lineas": 963,
+        "nivel": 1
+      },
+      {
+        "nombre": "multi_ia_service.py",
+        "ruta": "app\\services\\multi_ia_service.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 14044,
+        "lineas": 372,
+        "nivel": 1
+      },
+      {
+        "nombre": "pdf_generator.py",
+        "ruta": "app\\services\\pdf_generator.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 29464,
+        "lineas": 712,
+        "nivel": 1
+      },
+      {
+        "nombre": "pili_brain.py",
+        "ruta": "app\\services\\pili_brain.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 64887,
+        "lineas": 1614,
+        "nivel": 1
+      },
+      {
+        "nombre": "pili_integrator.py",
+        "ruta": "app\\services\\pili_integrator.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 30819,
+        "lineas": 803,
+        "nivel": 1
+      },
+      {
+        "nombre": "pili_orchestrator.py",
+        "ruta": "app\\services\\pili_orchestrator.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 20179,
+        "lineas": 489,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 791,
+        "lineas": 27,
+        "nivel": 2
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\charts\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 89,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "chart_engine.py",
+        "ruta": "app\\services\\professional\\charts\\chart_engine.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 22104,
+        "lineas": 690,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\generators\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 105,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "document_generator_pro.py",
+        "ruta": "app\\services\\professional\\generators\\document_generator_pro.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 16455,
+        "lineas": 421,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\ml\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 72,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "ml_engine.py",
+        "ruta": "app\\services\\professional\\ml\\ml_engine.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 19633,
+        "lineas": 574,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\processors\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 96,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "file_processor_pro.py",
+        "ruta": "app\\services\\professional\\processors\\file_processor_pro.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 16780,
+        "lineas": 544,
+        "nivel": 3
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\services\\professional\\rag\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 73,
+        "lineas": 2,
+        "nivel": 3
+      },
+      {
+        "nombre": "rag_engine.py",
+        "ruta": "app\\services\\professional\\rag\\rag_engine.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 14776,
+        "lineas": 445,
+        "nivel": 3
+      },
+      {
+        "nombre": "rag_service.py",
+        "ruta": "app\\services\\rag_service.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 7624,
+        "lineas": 214,
+        "nivel": 1
+      },
+      {
+        "nombre": "report_generator.py",
+        "ruta": "app\\services\\report_generator.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 29084,
+        "lineas": 692,
+        "nivel": 1
+      },
+      {
+        "nombre": "template_processor copy.py",
+        "ruta": "app\\services\\template_processor copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 22374,
+        "lineas": 549,
+        "nivel": 1
+      },
+      {
+        "nombre": "template_processor.py",
+        "ruta": "app\\services\\template_processor.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 34880,
+        "lineas": 786,
+        "nivel": 1
+      },
+      {
+        "nombre": "word_generator copy.py",
+        "ruta": "app\\services\\word_generator copy.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 27497,
+        "lineas": 674,
+        "nivel": 1
+      },
+      {
+        "nombre": "word_generator.py",
+        "ruta": "app\\services\\word_generator.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 37544,
+        "lineas": 946,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\templates\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 21,
+        "lineas": 1,
+        "nivel": 1
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\templates\\documentos\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 117,
+        "lineas": 4,
+        "nivel": 2
+      },
+      {
+        "nombre": "plantillas_modelo.py",
+        "ruta": "app\\templates\\documentos\\plantillas_modelo.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 43554,
+        "lineas": 1267,
+        "nivel": 2
+      },
+      {
+        "nombre": "__init__.py",
+        "ruta": "app\\utils\\__init__.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 880,
+        "lineas": 41,
+        "nivel": 1
+      },
+      {
+        "nombre": "contextos_servicios.py",
+        "ruta": "app\\utils\\contextos_servicios.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 0,
+        "lineas": 0,
+        "nivel": 1
+      },
+      {
+        "nombre": "helpers.py",
+        "ruta": "app\\utils\\helpers.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 11327,
+        "lineas": 445,
+        "nivel": 1
+      },
+      {
+        "nombre": "ocr.py",
+        "ruta": "app\\utils\\ocr.py",
+        "tipo": "archivo",
+        "extension": ".py",
+        "tamaño_bytes": 11068,
+        "lineas": 337,
+        "nivel": 1
+      }
+    ],
+    ".backup": [
+      {
+        "nombre": "database.py.backup",
+        "ruta": "app\\core\\database.py.backup",
+        "tipo": "archivo",
+        "extension": ".backup",
+        "tamaño_bytes": 3188,
+        "lineas": 0,
+        "nivel": 1
+      }
+    ],
+    ".log": [
+      {
+        "nombre": "app.log",
+        "ruta": "app\\logs\\app.log",
+        "tipo": "archivo",
+        "extension": ".log",
+        "tamaño_bytes": 242938,
+        "lineas": 0,
+        "nivel": 1
+      },
+      {
+        "nombre": "tesla.log",
+        "ruta": "app\\logs\\tesla.log",
+        "tipo": "archivo",
+        "extension": ".log",
+        "tamaño_bytes": 9338,
+        "lineas": 0,
+        "nivel": 1
+      }
+    ]
+  },
+  "archivos_grandes": [
+    {
+      "nombre": "main copy 4.py",
+      "ruta": "app\\main copy 4.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 24593,
+      "lineas": 568,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 5.py",
+      "ruta": "app\\main copy 5.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 31584,
+      "lineas": 731,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 6.py",
+      "ruta": "app\\main copy 6.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 29703,
+      "lineas": 672,
+      "nivel": 0
+    },
+    {
+      "nombre": "main.py",
+      "ruta": "app\\main.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 30844,
+      "lineas": 651,
+      "nivel": 0
+    },
+    {
+      "nombre": "chat copy 2.py",
+      "ruta": "app\\routers\\chat copy 2.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 50771,
+      "lineas": 1346,
+      "nivel": 1
+    },
+    {
+      "nombre": "chat copy.py",
+      "ruta": "app\\routers\\chat copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 22509,
+      "lineas": 663,
+      "nivel": 1
+    },
+    {
+      "nombre": "chat.py",
+      "ruta": "app\\routers\\chat.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 88513,
+      "lineas": 2015,
+      "nivel": 1
+    },
+    {
+      "nombre": "documentos.py",
+      "ruta": "app\\routers\\documentos.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 23874,
+      "lineas": 674,
+      "nivel": 1
+    },
+    {
+      "nombre": "proyectos.py",
+      "ruta": "app\\routers\\proyectos.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 26386,
+      "lineas": 720,
+      "nivel": 1
+    },
+    {
+      "nombre": "file_processor.py",
+      "ruta": "app\\services\\file_processor.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 30213,
+      "lineas": 757,
+      "nivel": 1
+    },
+    {
+      "nombre": "gemini_service.py",
+      "ruta": "app\\services\\gemini_service.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 37252,
+      "lineas": 963,
+      "nivel": 1
+    },
+    {
+      "nombre": "pdf_generator.py",
+      "ruta": "app\\services\\pdf_generator.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 29464,
+      "lineas": 712,
+      "nivel": 1
+    },
+    {
+      "nombre": "pili_brain.py",
+      "ruta": "app\\services\\pili_brain.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 64887,
+      "lineas": 1614,
+      "nivel": 1
+    },
+    {
+      "nombre": "pili_integrator.py",
+      "ruta": "app\\services\\pili_integrator.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 30819,
+      "lineas": 803,
+      "nivel": 1
+    },
+    {
+      "nombre": "chart_engine.py",
+      "ruta": "app\\services\\professional\\charts\\chart_engine.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 22104,
+      "lineas": 690,
+      "nivel": 3
+    },
+    {
+      "nombre": "ml_engine.py",
+      "ruta": "app\\services\\professional\\ml\\ml_engine.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 19633,
+      "lineas": 574,
+      "nivel": 3
+    },
+    {
+      "nombre": "file_processor_pro.py",
+      "ruta": "app\\services\\professional\\processors\\file_processor_pro.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 16780,
+      "lineas": 544,
+      "nivel": 3
+    },
+    {
+      "nombre": "report_generator.py",
+      "ruta": "app\\services\\report_generator.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 29084,
+      "lineas": 692,
+      "nivel": 1
+    },
+    {
+      "nombre": "template_processor copy.py",
+      "ruta": "app\\services\\template_processor copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 22374,
+      "lineas": 549,
+      "nivel": 1
+    },
+    {
+      "nombre": "template_processor.py",
+      "ruta": "app\\services\\template_processor.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 34880,
+      "lineas": 786,
+      "nivel": 1
+    },
+    {
+      "nombre": "word_generator copy.py",
+      "ruta": "app\\services\\word_generator copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 27497,
+      "lineas": 674,
+      "nivel": 1
+    },
+    {
+      "nombre": "word_generator.py",
+      "ruta": "app\\services\\word_generator.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 37544,
+      "lineas": 946,
+      "nivel": 1
+    },
+    {
+      "nombre": "plantillas_modelo.py",
+      "ruta": "app\\templates\\documentos\\plantillas_modelo.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 43554,
+      "lineas": 1267,
+      "nivel": 2
+    }
+  ],
+  "archivos_copy": [
+    {
+      "nombre": "config copy 2.py",
+      "ruta": "app\\core\\config copy 2.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 10984,
+      "lineas": 335,
+      "nivel": 1
+    },
+    {
+      "nombre": "config copy 3.py",
+      "ruta": "app\\core\\config copy 3.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 10015,
+      "lineas": 305,
+      "nivel": 1
+    },
+    {
+      "nombre": "config copy 4.py",
+      "ruta": "app\\core\\config copy 4.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 8583,
+      "lineas": 246,
+      "nivel": 1
+    },
+    {
+      "nombre": "config copy.py",
+      "ruta": "app\\core\\config copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 6806,
+      "lineas": 222,
+      "nivel": 1
+    },
+    {
+      "nombre": "database copy.py",
+      "ruta": "app\\core\\database copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 3871,
+      "lineas": 133,
+      "nivel": 1
+    },
+    {
+      "nombre": "database.py.backup",
+      "ruta": "app\\core\\database.py.backup",
+      "tipo": "archivo",
+      "extension": ".backup",
+      "tamaño_bytes": 3188,
+      "lineas": 0,
+      "nivel": 1
+    },
+    {
+      "nombre": "main copy 2.py",
+      "ruta": "app\\main copy 2.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 9599,
+      "lineas": 316,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 3.py",
+      "ruta": "app\\main copy 3.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 9129,
+      "lineas": 301,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 4.py",
+      "ruta": "app\\main copy 4.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 24593,
+      "lineas": 568,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 5.py",
+      "ruta": "app\\main copy 5.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 31584,
+      "lineas": 731,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy 6.py",
+      "ruta": "app\\main copy 6.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 29703,
+      "lineas": 672,
+      "nivel": 0
+    },
+    {
+      "nombre": "main copy.py",
+      "ruta": "app\\main copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 8768,
+      "lineas": 302,
+      "nivel": 0
+    },
+    {
+      "nombre": "chat copy 2.py",
+      "ruta": "app\\routers\\chat copy 2.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 50771,
+      "lineas": 1346,
+      "nivel": 1
+    },
+    {
+      "nombre": "chat copy.py",
+      "ruta": "app\\routers\\chat copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 22509,
+      "lineas": 663,
+      "nivel": 1
+    },
+    {
+      "nombre": "cotizaciones copy.py",
+      "ruta": "app\\routers\\cotizaciones copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 12051,
+      "lineas": 376,
+      "nivel": 1
+    },
+    {
+      "nombre": "cotizacion copy.py",
+      "ruta": "app\\schemas\\cotizacion copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 6431,
+      "lineas": 153,
+      "nivel": 1
+    },
+    {
+      "nombre": "file_processor copy.py",
+      "ruta": "app\\services\\file_processor copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 8657,
+      "lineas": 247,
+      "nivel": 1
+    },
+    {
+      "nombre": "gemini_service copy.py",
+      "ruta": "app\\services\\gemini_service copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 9620,
+      "lineas": 307,
+      "nivel": 1
+    },
+    {
+      "nombre": "template_processor copy.py",
+      "ruta": "app\\services\\template_processor copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 22374,
+      "lineas": 549,
+      "nivel": 1
+    },
+    {
+      "nombre": "word_generator copy.py",
+      "ruta": "app\\services\\word_generator copy.py",
+      "tipo": "archivo",
+      "extension": ".py",
+      "tamaño_bytes": 27497,
+      "lineas": 674,
+      "nivel": 1
+    }
+  ]
+}

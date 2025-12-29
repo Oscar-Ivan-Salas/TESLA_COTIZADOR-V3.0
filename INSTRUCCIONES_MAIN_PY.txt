@@ -1,0 +1,33 @@
+# INSTRUCCIONES PARA ARREGLAR main.py
+
+El archivo `backend/app/main.py` necesita un pequeño cambio en la línea 73.
+
+## Cambio Requerido:
+
+**Línea 73 ACTUAL:**
+```python
+    from app.routers import chat, cotizaciones, proyectos, informes, documentos, system
+```
+
+**Línea 73 NUEVA:**
+```python
+    from app.routers import chat, cotizaciones, proyectos, informes, documentos, system, auth, generar_directo
+```
+
+## Y agregar en el diccionario routers_info (después de la línea 81):
+
+```python
+        "auth": {"router": auth.router, "prefix": "/api/auth", "tags": ["Auth"], "descripcion": "Login simple"},
+        "generar_directo": {"router": generar_directo.router, "prefix": "/api", "tags": ["Generación Directa"], "descripcion": "Generar Word/PDF sin BD"}
+```
+
+## Ubicación Exacta:
+
+1. Abre `backend/app/main.py`
+2. Ve a la línea 73
+3. Al final de la línea, agrega: `, auth, generar_directo`
+4. Ve a la línea 81 (después de `"system": ...`)
+5. Agrega una coma al final de la línea 81
+6. Agrega las dos líneas nuevas de "auth" y "generar_directo"
+
+¡Eso es todo! Guarda el archivo y el backend debería recargar automáticamente.

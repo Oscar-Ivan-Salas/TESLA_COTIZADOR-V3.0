@@ -35,7 +35,17 @@ from io import BytesIO
 import json
 import tempfile
 
+# Configurar logger PRIMERO
 logger = logging.getLogger(__name__)
+
+# 🆕 IMPORTAR PLANTILLAS PROFESIONALES
+try:
+    from app.templates.documentos.plantillas_modelo import obtener_plantilla, SERVICIOS_INFO
+    PLANTILLAS_DISPONIBLES = True
+    logger.info("✅ Plantillas profesionales cargadas")
+except ImportError as e:
+    PLANTILLAS_DISPONIBLES = False
+    logger.warning(f"⚠️ Plantillas no disponibles: {e}")
 
 class WordGenerator:
     """
@@ -47,15 +57,23 @@ class WordGenerator:
     
     def __init__(self):
         """🔄 CONSERVADO + 🤖 PILI mejorado"""
-        # Colores Tesla originales conservados
-        self.COLOR_ROJO = RGBColor(139, 0, 0)      # #8B0000
-        self.COLOR_DORADO = RGBColor(218, 165, 32)  # #DAA520
-        self.COLOR_NEGRO = RGBColor(0, 0, 0)        # #000000
-        self.COLOR_GRIS = RGBColor(128, 128, 128)   # #808080
-        
-        # 🤖 Nuevos colores PILI
-        self.COLOR_PILI = RGBColor(212, 175, 55)    # #D4AF37 (Dorado PILI)
-        self.COLOR_AZUL_TECH = RGBColor(0, 102, 204)  # #0066CC (Azul tecnológico)
+        # ✅ COLORES TESLA AZUL (CORPORATIVOS)
+        # Basados en la identidad visual de Tesla Electricidad
+        self.COLOR_AZUL_PRIMARIO = RGBColor(0, 82, 163)      # #0052A3 (Azul Tesla principal)
+        self.COLOR_AZUL_SECUNDARIO = RGBColor(30, 64, 175)   # #1E40AF (Azul oscuro)
+        self.COLOR_AZUL_CLARO = RGBColor(59, 130, 246)       # #3B82F6 (Azul claro/tecnológico)
+
+        # Colores complementarios
+        self.COLOR_ROJO_ENERGIA = RGBColor(220, 38, 38)      # #DC2626 (Rojo para acentos)
+        self.COLOR_NEGRO = RGBColor(0, 0, 0)                 # #000000
+        self.COLOR_GRIS = RGBColor(107, 114, 128)            # #6B7280 (Gris moderno)
+        self.COLOR_BLANCO = RGBColor(255, 255, 255)          # #FFFFFF
+
+        # Compatibilidad (mapeo a colores azules)
+        self.COLOR_DORADO = self.COLOR_AZUL_PRIMARIO  # Reemplazado por azul
+        self.COLOR_PILI = self.COLOR_AZUL_SECUNDARIO  # Reemplazado por azul
+        self.COLOR_ROJO = self.COLOR_ROJO_ENERGIA
+        self.COLOR_AZUL_TECH = self.COLOR_AZUL_CLARO
         
         # Configuración de documentos
         self.empresa_info = {
@@ -65,8 +83,46 @@ class WordGenerator:
             "telefono": "906315961",
             "email": "ingenieria.teslaelectricidad@gmail.com"
         }
-        
+
         logger.info("✅ WordGenerator + PILI inicializado")
+
+    def _aplicar_esquema_colores(self, esquema: str):
+        """
+        ✅ Aplica dinámicamente un esquema de colores al generador
+
+        Args:
+            esquema: 'azul-tesla', 'rojo-energia', 'verde-ecologico', 'personalizado'
+        """
+        if esquema == "azul-tesla":
+            # Ya son los colores por defecto, pero los re-aplicamos explícitamente
+            self.COLOR_PRIMARIO = RGBColor(0, 82, 163)      # #0052A3
+            self.COLOR_SECUNDARIO = RGBColor(30, 64, 175)   # #1E40AF
+            self.COLOR_ACENTO = RGBColor(59, 130, 246)      # #3B82F6
+            logger.info("🎨 Esquema: Azul Tesla (corporativo)")
+
+        elif esquema == "rojo-energia":
+            self.COLOR_PRIMARIO = RGBColor(220, 38, 38)     # #DC2626
+            self.COLOR_SECUNDARIO = RGBColor(185, 28, 28)   # #B91C1C
+            self.COLOR_ACENTO = RGBColor(248, 113, 113)     # #F87171
+            logger.info("🎨 Esquema: Rojo Energía (vibrante)")
+
+        elif esquema == "verde-ecologico":
+            self.COLOR_PRIMARIO = RGBColor(34, 197, 94)     # #22C55E
+            self.COLOR_SECUNDARIO = RGBColor(22, 163, 74)   # #16A34A
+            self.COLOR_ACENTO = RGBColor(134, 239, 172)     # #86EFAC
+            logger.info("🎨 Esquema: Verde Ecológico (sostenible)")
+
+        elif esquema == "personalizado":
+            # Por ahora usa azul, en futuro se puede personalizar
+            self.COLOR_PRIMARIO = RGBColor(147, 51, 234)    # #9333EA (Púrpura)
+            self.COLOR_SECUNDARIO = RGBColor(126, 34, 206)  # #7E22CE
+            self.COLOR_ACENTO = RGBColor(216, 180, 254)     # #D8B4FE
+            logger.info("🎨 Esquema: Personalizado")
+
+        # Actualizar colores de compatibilidad para que usen el nuevo esquema
+        self.COLOR_DORADO = self.COLOR_PRIMARIO
+        self.COLOR_PILI = self.COLOR_SECUNDARIO
+        self.COLOR_AZUL_TECH = self.COLOR_ACENTO
 
     # ═══════════════════════════════════════════════════════════════
     # 🤖 NUEVOS MÉTODOS PILI v3.0
@@ -137,11 +193,52 @@ class WordGenerator:
             }
     
     def _procesar_json_pili(self, datos_json: Dict[str, Any], tipo_documento: str) -> Dict[str, Any]:
-        """Procesa y valida JSON de PILI para generación Word"""
-        
+        """
+        🆕 VERSIÓN MEJORADA: Procesa JSON de PILI + PLANTILLAS PROFESIONALES
+
+        Integra las plantillas profesionales con los datos del usuario para generar
+        documentos impecables con precios reales, normativas y observaciones técnicas.
+        """
+
         # Extraer datos principales
         datos_extraidos = datos_json.get("datos_extraidos", {})
-        
+
+        # ✅ APLICAR OPCIONES DE PERSONALIZACIÓN
+        opciones = datos_extraidos.get("_opciones_personalizacion", {})
+        if opciones:
+            esquema_colores = opciones.get("esquema_colores", "azul-tesla")
+            self._aplicar_esquema_colores(esquema_colores)
+            logger.info(f"✅ Personalizacion aplicada: {esquema_colores}")
+
+        # 🆕 PASO 1: Detectar servicio y parámetros para plantilla profesional
+        servicio = datos_extraidos.get("servicio", "electrico-residencial")
+        area_m2 = float(datos_extraidos.get("area_m2", 100))
+        cliente = datos_extraidos.get("cliente", "Cliente")
+
+        # Detectar complejidad
+        complejidad = "simple"
+        if "complejo" in tipo_documento.lower() or "compleja" in tipo_documento.lower():
+            complejidad = "complejo"
+        elif datos_extraidos.get("complejidad"):
+            complejidad = datos_extraidos.get("complejidad")
+
+        # 🆕 PASO 2: Obtener datos profesionales de plantilla (si disponible)
+        datos_plantilla = {}
+        if PLANTILLAS_DISPONIBLES:
+            try:
+                logger.info(f"📋 Usando plantilla profesional: {tipo_documento} - {complejidad} - {servicio}")
+                plantilla_completa = obtener_plantilla(
+                    tipo_documento=tipo_documento,
+                    complejidad=complejidad,
+                    servicio=servicio,
+                    cliente=cliente,
+                    area_m2=area_m2
+                )
+                datos_plantilla = plantilla_completa.get("datos_extraidos", {})
+                logger.info(f"✅ Plantilla cargada con {len(datos_plantilla.get('items', []))} items profesionales")
+            except Exception as e:
+                logger.warning(f"⚠️ No se pudo cargar plantilla: {e}, usando datos básicos")
+
         # Datos base del documento
         datos_procesados = {
             "empresa_nombre": self.empresa_info["nombre"],
@@ -152,24 +249,38 @@ class WordGenerator:
             "fecha_generacion": datetime.now().strftime("%d/%m/%Y"),
             "agente_pili": datos_json.get("agente_responsable", "PILI")
         }
-        
-        # Combinar con datos extraídos
-        datos_procesados.update(datos_extraidos)
-        
+
+        # 🆕 PASO 3: Combinar plantilla profesional + datos del usuario
+        # Primero plantilla (base profesional), luego usuario (sobrescribe)
+        datos_procesados.update(datos_plantilla)  # Datos profesionales
+        datos_procesados.update(datos_extraidos)  # Usuario sobrescribe
+
+        # 🆕 PASO 4: Enriquecer con normativas si tenemos info del servicio
+        if PLANTILLAS_DISPONIBLES and servicio in SERVICIOS_INFO:
+            info_servicio = SERVICIOS_INFO[servicio]
+            datos_procesados.setdefault("normativa_aplicable", info_servicio["normativa"])
+            datos_procesados.setdefault("servicio_nombre", info_servicio["nombre"])
+
         # Valores por defecto según tipo de documento
         if "cotizacion" in tipo_documento:
             datos_procesados.setdefault("numero", self._generar_numero_cotizacion())
-            datos_procesados.setdefault("vigencia", "30 días")
-            datos_procesados.setdefault("observaciones", "Precios incluyen IGV. Instalación según CNE-Utilización.")
-            
+            datos_procesados.setdefault("vigencia", "30 días calendario")
+            if not datos_procesados.get("observaciones"):
+                obs_base = "Precios incluyen IGV."
+                if datos_procesados.get("normativa_aplicable"):
+                    obs_base += f" Instalación según {datos_procesados['normativa_aplicable']}."
+                datos_procesados["observaciones"] = obs_base
+
         elif "proyecto" in tipo_documento:
             datos_procesados.setdefault("estado", "En Planificación")
             datos_procesados.setdefault("duracion_estimada", "4 semanas")
-            
+
         elif "informe" in tipo_documento:
             datos_procesados.setdefault("autor", self.empresa_info["nombre"])
             datos_procesados.setdefault("fecha_informe", datos_procesados["fecha_generacion"])
-        
+
+        logger.info(f"📄 Documento procesado: {datos_procesados.get('numero', 'SIN-NUM')} - {datos_procesados.get('cliente', 'SIN-CLIENTE')}")
+
         return datos_procesados
     
     def _generar_cotizacion_pili(
@@ -746,6 +857,7 @@ class WordGenerator:
 
         try:
             # Usar ruta personalizada o generar una
+            # Usar ruta personalizada o generar una
             if ruta_salida:
                 ruta_archivo = Path(ruta_salida)
                 # Asegurar que el directorio existe
@@ -757,8 +869,8 @@ class WordGenerator:
                 cliente_slug = self._slugify(datos.get("cliente", "cliente"))
                 nombre_archivo = f"{tipo}_{cliente_slug}_{timestamp}.docx"
 
-                # Ruta de salida por defecto
-                output_dir = Path("backend/storage/generated")
+                # Ruta de salida por defecto (CORREGIDO: Usar ruta absoluta basada en archivo)
+                output_dir = Path(__file__).parent.parent.parent / "storage" / "generados"
                 output_dir.mkdir(parents=True, exist_ok=True)
                 ruta_archivo = output_dir / nombre_archivo
 

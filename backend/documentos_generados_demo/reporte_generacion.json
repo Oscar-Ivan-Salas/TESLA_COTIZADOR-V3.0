@@ -1,0 +1,37 @@
+{
+  "fecha_generacion": "2025-11-24T17:20:08.751728",
+  "documentos_generados": [
+    {
+      "tipo": "Cotización Simple",
+      "archivo": "documentos_generados_demo\\1_Cotizacion_Simple.docx",
+      "total": 3593.1
+    },
+    {
+      "tipo": "Cotización Compleja",
+      "archivo": "documentos_generados_demo\\2_Cotizacion_Compleja.docx",
+      "total": 3593.1
+    },
+    {
+      "tipo": "Proyecto Simple",
+      "archivo": "documentos_generados_demo\\3_Proyecto_Simple.docx",
+      "duracion": 53
+    },
+    {
+      "tipo": "Proyecto Complejo PMI",
+      "archivo": "documentos_generados_demo\\4_Proyecto_Complejo_PMI.docx",
+      "duracion": 89
+    },
+    {
+      "tipo": "Informe Técnico",
+      "archivo": "documentos_generados_demo\\5_Informe_Tecnico.docx",
+      "secciones": 5
+    },
+    {
+      "tipo": "Informe Ejecutivo APA",
+      "archivo": "documentos_generados_demo\\6_Informe_Ejecutivo_APA.docx",
+      "secciones": 6
+    }
+  ],
+  "total": 6,
+  "exitoso": true
+}

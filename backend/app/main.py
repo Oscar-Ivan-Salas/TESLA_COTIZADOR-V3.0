@@ -1,4 +1,5 @@
 """
+# Force reload 3
 ═══════════════════════════════════════════════════════════════
 TESLA COTIZADOR V3.0 - APLICACIÓN PRINCIPAL FASTAPI HÍBRIDA
 ═══════════════════════════════════════════════════════════════
@@ -15,6 +16,8 @@ ARQUITECTURA HÍBRIDA:
 - Si routers avanzados cargan → Funcionalidad completa PILI
 - Si NO cargan → Funcionalidad actual (modo demo/mock)
 - Frontend funciona SIEMPRE sin cambios
+
+🔧 CORREGIDO: Agregada lógica de importación de routers que faltaba
 ═══════════════════════════════════════════════════════════════
 """
 
@@ -62,39 +65,136 @@ except ImportError as e:
         return False
 
 # ═══════════════════════════════════════════════════════════════
-# 🆕 IMPORTACIÓN ROUTERS AVANZADOS (NUEVO)
+# 🔧 IMPORTACIÓN INTELIGENTE DE ROUTERS AVANZADOS (REPARADO)
 # ═══════════════════════════════════════════════════════════════
 
 ROUTERS_AVANZADOS_DISPONIBLES = False
 routers_info = {}
 
 try:
-    # Intentar cargar routers avanzados
-    from app.routers import chat, cotizaciones, proyectos, informes, documentos, system
-    ROUTERS_AVANZADOS_DISPONIBLES = True
-    routers_info = {
-        "chat": {"router": chat.router, "prefix": "/api/chat", "tags": ["Chat PILI"], "descripcion": "PILI Agente IA (1917 líneas)"},
-        "cotizaciones": {"router": cotizaciones.router, "prefix": "/api/cotizaciones", "tags": ["Cotizaciones"], "descripcion": "CRUD + Generación completa"},
-        "proyectos": {"router": proyectos.router, "prefix": "/api/proyectos", "tags": ["Proyectos"], "descripcion": "Gestión proyectos"},
-        "informes": {"router": informes.router, "prefix": "/api/informes", "tags": ["Informes"], "descripcion": "Generación informes"},
-        "documentos": {"router": documentos.router, "prefix": "/api/documentos", "tags": ["Documentos"], "descripcion": "Upload y análisis"},
-        "system": {"router": system.router, "prefix": "/api/system", "tags": ["System"], "descripcion": "Health checks"}
-    }
-    logger.info("🚀 ROUTERS AVANZADOS CARGADOS EXITOSAMENTE")
-except ImportError as e:
-    logger.warning(f"⚠️ Routers avanzados no disponibles: {e}")
-    logger.info("🔄 Continuando con endpoints básicos/mock")
+    logger.info("🔄 Intentando cargar routers avanzados...")
+    
+    # Importar routers uno por uno con manejo individual de errores
+    try:
+        from app.routers import chat
+        routers_info["chat"] = {
+            "router": chat.router,
+            "prefix": "/api/chat",
+            "tags": ["Chat PILI"],
+            "descripcion": "Chat conversacional con PILI IA"
+        }
+        logger.info("✅ Router Chat PILI cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router chat no disponible: {e}")
+    
+    try:
+        from app.routers import cotizaciones
+        routers_info["cotizaciones"] = {
+            "router": cotizaciones.router,
+            "prefix": "/api/cotizaciones",
+            "tags": ["Cotizaciones"],
+            "descripcion": "CRUD completo cotizaciones"
+        }
+        logger.info("✅ Router Cotizaciones cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router cotizaciones no disponible: {e}")
+    
+    try:
+        from app.routers import proyectos
+        routers_info["proyectos"] = {
+            "router": proyectos.router,
+            "prefix": "/api/proyectos",
+            "tags": ["Proyectos"],
+            "descripcion": "Gestión completa de proyectos"
+        }
+        logger.info("✅ Router Proyectos cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router proyectos no disponible: {e}")
+    
+    try:
+        from app.routers import informes
+        routers_info["informes"] = {
+            "router": informes.router,
+            "prefix": "/api/informes",
+            "tags": ["Informes"],
+            "descripcion": "Generación de informes técnicos"
+        }
+        logger.info("✅ Router Informes cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router informes no disponible: {e}")
+    
+    try:
+        from app.routers import documentos
+        routers_info["documentos"] = {
+            "router": documentos.router,
+            "prefix": "/api/documentos",
+            "tags": ["Documentos"],
+            "descripcion": "Gestión y análisis de documentos"
+        }
+        logger.info("✅ Router Documentos cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router documentos no disponible: {e}")
+    
+    try:
+        from app.routers import system
+        routers_info["system"] = {
+            "router": system.router,
+            "prefix": "/api/system",
+            "tags": ["Sistema"],
+            "descripcion": "Health checks y configuración"
+        }
+        logger.info("✅ Router System cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router system no disponible: {e}")
 
-# Configuración de logging básico si no está configurado (CONSERVADO)
-if not logger.handlers:
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    try:
+        from app.routers import generar_directo
+        routers_info["generar_directo"] = {
+            "router": generar_directo.router,
+            "prefix": "/api",
+            "tags": ["Generación Directa"],
+            "descripcion": "Generación de documentos sin BD"
+        }
+        logger.info("✅ Router Generación Directa cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router generar_directo no disponible: {e}")
 
-# ═══════════════════════════════════════════════════════════════
-# 🔄 MODELOS PYDANTIC CONSERVADOS
-# ═══════════════════════════════════════════════════════════════
+    try:
+        from app.routers import clientes
+        routers_info["clientes"] = {
+            "router": clientes.router,
+            "prefix": "/api/clientes",
+            "tags": ["Clientes"],
+            "descripcion": "CRUD completo de clientes"
+        }
+        logger.info("✅ Router Clientes cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router clientes no disponible: {e}")
+
+    try:
+        from app.routers import admin
+        routers_info["admin"] = {
+            "router": admin.router,
+            "prefix": "/api/admin",
+            "tags": ["Admin"],
+            "descripcion": "Panel de administración"
+        }
+        logger.info("✅ Router Admin cargado")
+    except Exception as e:
+        logger.warning(f"⚠️ Router admin no disponible: {e}")
+
+    # Verificar si tenemos suficientes routers para modo completo
+    if len(routers_info) >= 1:  # Al menos uno disponible (especialmente chat)
+        ROUTERS_AVANZADOS_DISPONIBLES = True
+        logger.info(f"🎉 ROUTERS AVANZADOS ACTIVADOS: {len(routers_info)}/8 disponibles")
+        logger.info(f"📋 Routers cargados: {list(routers_info.keys())}")
+    else:
+        logger.warning("⚠️ Ningún router avanzado disponible, manteniendo modo básico")
+        
+except Exception as e:
+    logger.warning(f"⚠️ Error general cargando routers avanzados: {e}")
+    logger.info("🔄 Continuando en modo básico/demo")
+    ROUTERS_AVANZADOS_DISPONIBLES = False
 
 from pydantic import BaseModel
 
@@ -138,7 +238,7 @@ app.add_middleware(
 )
 
 # ═══════════════════════════════════════════════════════════════
-# 🆕 REGISTRO DE ROUTERS AVANZADOS (NUEVO)
+# 🔧 REGISTRO DE ROUTERS AVANZADOS (REPARADO)
 # ═══════════════════════════════════════════════════════════════
 
 if ROUTERS_AVANZADOS_DISPONIBLES:
@@ -157,7 +257,9 @@ if ROUTERS_AVANZADOS_DISPONIBLES:
         except Exception as e:
             logger.error(f"❌ Error registrando router {nombre}: {e}")
     
-    logger.info(f"🎉 ROUTERS REGISTRADOS: {len(routers_registrados)}/6")
+    logger.info(f"🎉 ROUTERS REGISTRADOS: {len(routers_registrados)}/{len(routers_info)}")
+    for router_info in routers_registrados:
+        logger.info(f"   - {router_info}")
 else:
     logger.info("🔄 Usando endpoints básicos/mock (compatibilidad frontend)")
 
@@ -179,36 +281,6 @@ except:
     upload_path.mkdir(parents=True, exist_ok=True)
     logger.info(f"⚠️ Usando directorios por defecto: {storage_path}")
 
-app.mount("/storage", StaticFiles(directory=str(storage_path)), name="storage")
-
-# ═══════════════════════════════════════════════════════════════
-# 🆕 ENDPOINT ROOT (NUEVO)
-# ═══════════════════════════════════════════════════════════════
-
-@app.get("/")
-async def root():
-    """Endpoint raíz con información del sistema"""
-    return {
-        "message": "Tesla Cotizador API v3.0",
-        "status": "online",
-        "version": "3.0.0",
-        "routers_avanzados": ROUTERS_AVANZADOS_DISPONIBLES,
-        "gemini_disponible": TIENE_GEMINI_SERVICE and validate_gemini_key(),
-        "modo": "COMPLETO" if ROUTERS_AVANZADOS_DISPONIBLES else "BÁSICO/DEMO",
-        "endpoints_disponibles": {
-            "chat": "/api/chat/",
-            "cotizaciones": "/api/cotizaciones/",
-            "proyectos": "/api/proyectos/",
-            "informes": "/api/informes/",
-            "documentos": "/api/documentos/" if ROUTERS_AVANZADOS_DISPONIBLES else "/api/upload",
-            "system": "/api/system/health" if ROUTERS_AVANZADOS_DISPONIBLES else None,
-            "docs": "/docs"
-        }
-    }
-
-# ═══════════════════════════════════════════════════════════════
-# 🔄 SERVICIO DE IA INTEGRADO (CONSERVADO)
-# ═══════════════════════════════════════════════════════════════
 
 async def generar_respuesta_ia(mensaje: str, contexto: str, historial: List[Dict], tipo_flujo: str) -> Dict:
     """Genera respuesta usando Gemini existente o modo demo (CONSERVADO)"""
@@ -272,170 +344,199 @@ Tu rol es asistir en {tipo_flujo} con información técnica y precisa.
 # 🔄 FUNCIONES DEMO CONSERVADAS
 # ═══════════════════════════════════════════════════════════════
 
-def generar_cotizacion_demo(mensaje: str, contexto: str) -> Dict:
-    """Genera cotización demo inteligente (CONSERVADO)"""
-    
-    # Detectar tipo de instalación
-    if any(word in mensaje.lower() for word in ['casa', 'residencial', 'hogar']):
-        items = [
-            {"descripcion": "Punto de luz empotrado LED 18W", "cantidad": 15, "precioUnitario": 25.0},
-            {"descripcion": "Tomacorriente doble con tierra", "cantidad": 12, "precioUnitario": 35.0},
-            {"descripcion": "Interruptor simple", "cantidad": 8, "precioUnitario": 18.0}
-        ]
-    elif any(word in mensaje.lower() for word in ['oficina', 'comercial']):
-        items = [
-            {"descripcion": "Luminaria LED panel 40W", "cantidad": 25, "precioUnitario": 120.0},
-            {"descripcion": "Tomacorriente industrial", "cantidad": 20, "precioUnitario": 45.0},
-            {"descripcion": "Tablero eléctrico 12 polos", "cantidad": 1, "precioUnitario": 1200.0}
-        ]
-    else:
-        items = [
-            {"descripcion": "Instalación eléctrica general", "cantidad": 1, "precioUnitario": 1500.0},
-            {"descripcion": "Materiales diversos", "cantidad": 1, "precioUnitario": 800.0}
-        ]
-    
-    return {
-        "cliente": "Cliente Demo",
-        "proyecto": "Instalación Eléctrica",
-        "items": items
-    }
-
-def generar_proyecto_demo(mensaje: str, contexto: str) -> Dict:
-    """Genera proyecto demo (CONSERVADO)"""
-    return {
-        "fases": ["Planificación", "Ejecución", "Entrega"],
-        "hitos": ["Inicio del proyecto", "50% de avance", "Finalización"],
-        "recursos": ["Personal técnico", "Materiales", "Equipos"]
-    }
-
-def generar_informe_demo(mensaje: str, contexto: str) -> Dict:
-    """Genera informe demo (CONSERVADO)"""
-    return {
-        "secciones": ["Resumen ejecutivo", "Análisis técnico", "Recomendaciones"],
-        "datos": {"parametros": 5, "mediciones": 12, "conclusiones": 3}
-    }
-
 async def respuesta_demo(mensaje: str, tipo_flujo: str) -> Dict:
-    """Respuesta demo cuando no hay IA real (CONSERVADO)"""
+    """🎭 Respuesta inteligente modo demo (CONSERVADO)"""
     
     respuestas_demo = {
-        "cotizacion": "Perfecto. He analizado tu solicitud y puedo generar una cotización. Necesito confirmar algunos detalles técnicos para asegurar precisión en el presupuesto.",
-        "proyecto": "Entiendo. Voy a estructurar este proyecto paso a paso. Primero definamos el alcance y luego organizaremos las fases de ejecución.",
-        "informe": "Excelente. Procederé a crear el informe con la información proporcionada. Incluiré análisis técnico y recomendaciones específicas."
+        'cotizacion-simple': "Perfecto, vamos a crear tu cotización eléctrica. Basándome en la información que me proporcionaste, puedo ayudarte a estructurar una cotización completa con materiales, mano de obra y especificaciones técnicas según las normativas peruanas.",
+        
+        'cotizacion-compleja': "Excelente proyecto complejo. Necesitaremos hacer un análisis técnico detallado, cálculos de cargas eléctricas, dimensionamiento de conductores y equipos de protección. Te guiaré paso a paso para crear una cotización técnica profesional.",
+        
+        'proyecto-simple': "Te ayudo a estructurar tu proyecto eléctrico. Crearemos un plan de trabajo con fases claramente definidas, cronograma, recursos necesarios y seguimiento de avances. Todo organizado para una ejecución exitosa.",
+        
+        'proyecto-complejo': "Proyecto de gran envergadura detectado. Aplicaremos metodología PMI con gestión de stakeholders, análisis de riesgos, WBS detallado y control de calidad. Te acompañaré en cada fase del proyecto.",
+        
+        'informe-simple': "Vamos a crear tu informe técnico. Estructuraremos el documento con análisis claro, conclusiones fundamentadas y recomendaciones específicas. El formato será profesional y cumplirá con estándares técnicos.",
+        
+        'informe-ejecutivo': "Informe ejecutivo en preparación. Incluiremos análisis estratégico, métricas clave, evaluación financiera y recomendaciones de alto nivel. Formato APA con gráficos profesionales."
     }
     
-    tipo_detectado = "cotizacion"
-    if "proyecto" in tipo_flujo:
-        tipo_detectado = "proyecto"
-    elif "informe" in tipo_flujo:
-        tipo_detectado = "informe"
-    
     return {
-        "respuesta": respuestas_demo.get(tipo_detectado, "Procesando solicitud..."),
+        "respuesta": respuestas_demo.get(tipo_flujo, "¿En qué puedo ayudarte con tu proyecto eléctrico?"),
         "generar_estructura": True
     }
 
-def generar_html_preview(datos: Dict, tipo: str) -> str:
-    """Genera HTML preview para frontend (CONSERVADO)"""
+def generar_cotizacion_demo(mensaje: str, contexto: str) -> Dict:
+    """🎭 Genera estructura demo para cotización (CONSERVADO)"""
     
-    if tipo == "cotizacion":
-        items_html = ""
-        total = 0
-        
-        for item in datos.get("items", []):
-            subtotal = item["cantidad"] * item["precioUnitario"]
-            total += subtotal
-            items_html += f"""
-            <tr>
-                <td>{item['descripcion']}</td>
-                <td>{item['cantidad']}</td>
-                <td>S/ {item['precioUnitario']:.2f}</td>
-                <td>S/ {subtotal:.2f}</td>
-            </tr>
-            """
-        
-        igv = total * 0.18
-        total_con_igv = total + igv
-        
-        return f"""
-        <div style="font-family: Arial; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;">
-            <h2 style="color: #f39c12; text-align: center;">⚡ TESLA ELECTRICIDAD ⚡</h2>
-            <h3>COTIZACIÓN - {datos.get('proyecto', 'Proyecto Tesla')}</h3>
-            <p><strong>Cliente:</strong> {datos.get('cliente', 'Cliente Demo')}</p>
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                <thead style="background: #f39c12; color: white;">
-                    <tr>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Descripción</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Cant.</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">P. Unit.</th>
-                        <th style="padding: 10px; border: 1px solid #ddd;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {items_html}
-                </tbody>
-            </table>
-            <div style="text-align: right; margin-top: 20px;">
-                <p><strong>Subtotal: S/ {total:.2f}</strong></p>
-                <p><strong>IGV (18%): S/ {igv:.2f}</strong></p>
-                <p style="font-size: 1.2em; color: #f39c12;"><strong>TOTAL: S/ {total_con_igv:.2f}</strong></p>
-            </div>
-        </div>
-        """
+    # Extraer información básica del mensaje
+    tiene_m2 = any(word in mensaje.lower() for word in ['m2', 'metro', 'área', 'casa', 'local'])
+    tiene_puntos = any(word in mensaje.lower() for word in ['punto', 'luz', 'luminaria'])
+    tiene_tomacorrientes = any(word in mensaje.lower() for word in ['tomacorriente', 'enchufe', 'toma'])
     
-    return "<div>Vista previa no disponible</div>"
+    items = []
+    
+    # Generar items inteligentes basados en el mensaje
+    if tiene_m2 or 'casa' in mensaje.lower():
+        items.extend([
+            {
+                "descripcion": "Punto de luz LED 18W empotrado en techo",
+                "cantidad": 8,
+                "unidad": "pto", 
+                "precio_unitario": 32.00,
+                "subtotal": 256.00
+            },
+            {
+                "descripcion": "Tomacorriente doble con línea a tierra",
+                "cantidad": 6,
+                "unidad": "pto",
+                "precio_unitario": 38.00,
+                "subtotal": 228.00
+            },
+            {
+                "descripcion": "Cable THW 2.5mm² para circuitos de tomacorrientes",
+                "cantidad": 50,
+                "unidad": "m",
+                "precio_unitario": 4.20,
+                "subtotal": 210.00
+            }
+        ])
+    
+    if 'tablero' in mensaje.lower() or len(items) > 2:
+        items.append({
+            "descripcion": "Tablero eléctrico monofásico 12 polos",
+            "cantidad": 1,
+            "unidad": "und",
+            "precio_unitario": 420.00,
+            "subtotal": 420.00
+        })
+    
+    # Si no hay items específicos, usar items básicos
+    if not items:
+        items = [
+            {
+                "descripcion": "Análisis técnico y cotización personalizada",
+                "cantidad": 1,
+                "unidad": "glb",
+                "precio_unitario": 150.00,
+                "subtotal": 150.00
+            }
+        ]
+    
+    # Calcular totales
+    subtotal = sum(item["subtotal"] for item in items)
+    igv = subtotal * 0.18
+    total = subtotal + igv
+    
+    return {
+        "numero": f"COT-{datetime.now().strftime('%Y%m%d')}-{datetime.now().strftime('%H%M')}",
+        "cliente": "[Cliente por definir]",
+        "proyecto": "Instalación Eléctrica",
+        "descripcion": mensaje[:200] + "..." if len(mensaje) > 200 else mensaje,
+        "fecha": datetime.now().strftime("%d/%m/%Y"),
+        "vigencia": "30 días",
+        "items": items,
+        "observaciones": "Precios incluyen IGV. Instalación según CNE-Utilización. Garantía 12 meses.",
+        "subtotal": round(subtotal, 2),
+        "igv": round(igv, 2),
+        "total": round(total, 2)
+    }
+
+def generar_proyecto_demo(mensaje: str, contexto: str) -> Dict:
+    """🎭 Genera estructura demo para proyecto (CONSERVADO)"""
+    
+    return {
+        "nombre": "Proyecto Eléctrico",
+        "descripcion": mensaje,
+        "cliente": "[Cliente por definir]",
+        "fecha_inicio": datetime.now().strftime("%d/%m/%Y"),
+        "duracion_estimada": "4 semanas",
+        "fases": [
+            {"nombre": "Planificación", "duracion": "1 semana", "progreso": 0},
+            {"nombre": "Diseño técnico", "duracion": "1 semana", "progreso": 0},
+            {"nombre": "Instalación", "duracion": "2 semanas", "progreso": 0}
+        ],
+        "presupuesto_estimado": 2500.00,
+        "estado": "En preparación"
+    }
+
+def generar_informe_demo(mensaje: str, contexto: str) -> Dict:
+    """🎭 Genera estructura demo para informe (CONSERVADO)"""
+    
+    return {
+        "titulo": "Informe Técnico Eléctrico",
+        "fecha": datetime.now().strftime("%d/%m/%Y"),
+        "resumen": mensaje[:300],
+        "conclusiones": "Análisis técnico completado satisfactoriamente",
+        "recomendaciones": "Se recomienda seguir normativas CNE vigentes"
+    }
 
 # ═══════════════════════════════════════════════════════════════
-# 🔄 ENDPOINTS BÁSICOS CONSERVADOS (COMPATIBILIDAD FRONTEND)
+# 🔄 ENDPOINTS DE ESTADO Y CHAT CONSERVADOS
 # ═══════════════════════════════════════════════════════════════
-# NOTA: Estos endpoints se mantienen para compatibilidad aunque 
-# los routers avanzados tengan versiones mejores
 
-@app.post("/api/chat/mensaje")
-async def chat_mensaje(request: ChatRequest):
-    """
-    🔄 CONSERVADO - Endpoint principal de chat (compatible con frontend)
+@app.get("/")
+async def root():
+    """🔄 CONSERVADO + Mejorado - Estado del sistema"""
     
-    Si routers avanzados cargan, este endpoint coexiste con /api/chat/
-    Si NO cargan, este endpoint mantiene funcionalidad básica
-    """
+    return {
+        "message": "Tesla Cotizador API v3.0",
+        "status": "running",
+        "timestamp": datetime.now().isoformat(),
+        "modo": "COMPLETO" if ROUTERS_AVANZADOS_DISPONIBLES else "BÁSICO",
+        "routers_avanzados": ROUTERS_AVANZADOS_DISPONIBLES,
+        "routers_cargados": list(routers_info.keys()) if ROUTERS_AVANZADOS_DISPONIBLES else [],
+        "gemini_configurado": TIENE_GEMINI_SERVICE and validate_gemini_key(),
+        "endpoints_disponibles": {
+            "docs": "/docs",
+            "chat": "/api/chat/conversacional",
+            "upload": "/api/upload",
+            "cotizaciones": "/api/cotizaciones/",
+            "proyectos": "/api/proyectos/",
+            "informes": "/api/informes/"
+        }
+    }
+
+@app.post("/api/chat/conversacional")
+async def chat_conversacional(request: ChatRequest):
+    """🔄 CONSERVADO - Endpoint de chat conversacional principal"""
     
     try:
-        logger.info(f"💬 Chat mensaje - Tipo: {request.tipo_flujo}, Routers avanzados: {ROUTERS_AVANZADOS_DISPONIBLES}")
+        logger.info(f"💬 Chat {request.tipo_flujo}: {request.mensaje[:50]}...")
         
         # Generar respuesta usando IA o demo
-        ia_response = await generar_respuesta_ia(
+        respuesta_data = await generar_respuesta_ia(
             mensaje=request.mensaje,
             contexto=request.contexto_adicional,
             historial=request.historial,
             tipo_flujo=request.tipo_flujo
         )
         
+        # Preparar respuesta final
         response_data = {
             "success": True,
-            "respuesta": ia_response.get("respuesta", ""),
+            "respuesta": respuesta_data.get("respuesta", ""),
             "tipo_flujo": request.tipo_flujo,
-            "generar_html": request.generar_html,
-            "html_preview": None,
-            "routers_avanzados_activos": ROUTERS_AVANZADOS_DISPONIBLES
+            "timestamp": datetime.now().isoformat(),
+            "routers_avanzados_activos": ROUTERS_AVANZADOS_DISPONIBLES,
+            "modo_funcionamiento": "COMPLETO" if ROUTERS_AVANZADOS_DISPONIBLES else "BÁSICO"
         }
         
-        # Generar HTML preview si se solicita
-        if request.generar_html and ia_response.get("generar_estructura"):
-            if request.tipo_flujo.startswith('cotizacion'):
-                estructura = ia_response.get("estructura_generada")
-                if estructura:
-                    response_data["html_preview"] = generar_html_preview(estructura, "cotizacion")
-                    response_data["cotizacion_generada"] = estructura
-            elif request.tipo_flujo.startswith('proyecto'):
-                estructura = ia_response.get("estructura_generada")
-                if estructura:
-                    response_data["proyecto_generado"] = estructura
-            elif request.tipo_flujo.startswith('informe'):
-                estructura = ia_response.get("estructura_generada")
-                if estructura:
-                    response_data["informe_generado"] = estructura
+        # Agregar vista HTML si se solicitó y se generó estructura
+        if request.generar_html and respuesta_data.get("generar_estructura"):
+            estructura = respuesta_data.get("estructura_generada", {})
+            
+            if 'cotizacion' in request.tipo_flujo and estructura:
+                # Generar HTML para cotización
+                html_preview = generar_html_cotizacion(estructura)
+                response_data["html_preview"] = html_preview
+                response_data["estructura_generada"] = estructura
+            elif 'proyecto' in request.tipo_flujo and estructura:
+                response_data["proyecto_generado"] = estructura
+            elif 'informe' in request.tipo_flujo and estructura:
+                response_data["informe_generado"] = estructura
         
+        logger.info(f"✅ Respuesta generada para {request.tipo_flujo}")
         return response_data
         
     except Exception as e:
@@ -446,6 +547,81 @@ async def chat_mensaje(request: ChatRequest):
             "html_preview": None,
             "routers_avanzados_activos": ROUTERS_AVANZADOS_DISPONIBLES
         }
+
+def generar_html_cotizacion(datos: Dict) -> str:
+    """🎭 Genera HTML para vista previa de cotización (CONSERVADO)"""
+    
+    items_html = ""
+    for item in datos.get("items", []):
+        items_html += f"""
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">{item.get('descripcion', '')}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">{item.get('cantidad', 0)}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">{item.get('unidad', '')}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">S/ {item.get('precio_unitario', 0):.2f}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">S/ {item.get('subtotal', 0):.2f}</td>
+        </tr>
+        """
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Vista Previa - Cotización</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; }}
+            .header {{ text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 15px; margin-bottom: 20px; }}
+            .company {{ color: #007bff; font-size: 24px; font-weight: bold; }}
+            .info {{ margin: 15px 0; }}
+            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+            th {{ background: #007bff; color: white; padding: 10px; text-align: left; }}
+            .totales {{ background: #f8f9fa; padding: 15px; margin-top: 20px; text-align: right; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="company">⚡ TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
+            <h2>💰 COTIZACIÓN ELÉCTRICA</h2>
+        </div>
+        
+        <div class="info">
+            <p><strong>Número:</strong> {datos.get('numero', '')}</p>
+            <p><strong>Cliente:</strong> {datos.get('cliente', '')}</p>
+            <p><strong>Proyecto:</strong> {datos.get('proyecto', '')}</p>
+            <p><strong>Fecha:</strong> {datos.get('fecha', '')}</p>
+            <p><strong>Vigencia:</strong> {datos.get('vigencia', '')}</p>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>DESCRIPCIÓN</th>
+                    <th>CANT.</th>
+                    <th>UND.</th>
+                    <th>P.UNIT.</th>
+                    <th>SUBTOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                {items_html}
+            </tbody>
+        </table>
+        
+        <div class="totales">
+            <p><strong>Subtotal: S/ {datos.get('subtotal', 0):.2f}</strong></p>
+            <p><strong>IGV (18%): S/ {datos.get('igv', 0):.2f}</strong></p>
+            <p style="font-size: 18px; color: #007bff;"><strong>TOTAL: S/ {datos.get('total', 0):.2f}</strong></p>
+        </div>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
+            <p><strong>Observaciones:</strong> {datos.get('observaciones', '')}</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return html
 
 @app.get("/api/chat/botones-contextuales/{tipo_flujo}")
 async def obtener_botones_contextuales(tipo_flujo: str, etapa: str = "inicial"):
@@ -565,6 +741,123 @@ async def guardar_informe(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ═══════════════════════════════════════════════════════════════
+# 🆕 ENDPOINT GENERACIÓN DIRECTA DE DOCUMENTOS
+# ═══════════════════════════════════════════════════════════════
+
+@app.post("/api/generar-documento-directo")
+async def generar_documento_directo(
+    datos: dict = Body(...),
+    formato: str = "word"
+):
+    """
+    Genera documento Word o PDF directamente desde datos JSON
+
+    Args:
+        datos: Datos de la cotización/proyecto/informe
+        formato: "word" o "pdf"
+
+    Returns:
+        Archivo descargable
+    """
+    try:
+        logger.info(f"📄 Generando documento {formato.upper()} directo")
+
+        # Importar generadores (lazy import para evitar dependencias)
+        from app.services.word_generator import word_generator
+        from app.services.pdf_generator import pdf_generator
+
+        # 🆕 Detectar servicio y área para usar plantillas profesionales
+        servicio_detectado = datos.get("servicio", "electrico-residencial")
+        area_m2_detectada = datos.get("area_m2", 100)
+
+        # ✅ Extraer opciones de personalización del frontend
+        opciones_personalizacion = datos.get("opciones_personalizacion", {})
+        esquema_colores = opciones_personalizacion.get("esquema_colores", "azul-tesla")
+        fuente = opciones_personalizacion.get("fuente", "Calibri")
+        tamaño_fuente = opciones_personalizacion.get("tamaño_fuente", 11)
+        mostrar_logo = opciones_personalizacion.get("mostrar_logo", True)
+        ocultar_igv = opciones_personalizacion.get("ocultar_igv", False)
+        ocultar_precios_unitarios = opciones_personalizacion.get("ocultar_precios_unitarios", False)
+
+        logger.info(f"🎨 Personalizacion: {esquema_colores}, {fuente} {tamaño_fuente}pt, Logo: {mostrar_logo}")
+
+        # Determinar tipo
+        tipo_documento = "cotizacion"
+        if "fases" in datos or "cronograma" in datos:
+            tipo_documento = "proyecto"
+        elif "secciones" in datos:
+            tipo_documento = "informe"
+
+        # 🆕 Enriquecer datos con servicio y área (para plantillas profesionales)
+        datos_enriquecidos = datos.copy()
+        datos_enriquecidos.setdefault("servicio", servicio_detectado)
+        datos_enriquecidos.setdefault("area_m2", area_m2_detectada)
+
+        # ✅ Agregar opciones de personalización a los datos
+        datos_enriquecidos["_opciones_personalizacion"] = {
+            "esquema_colores": esquema_colores,
+            "fuente": fuente,
+            "tamaño_fuente": tamaño_fuente,
+            "mostrar_logo": mostrar_logo and datos.get("logo_base64"),  # Solo si hay logo
+            "ocultar_igv": ocultar_igv,
+            "ocultar_precios_unitarios": ocultar_precios_unitarios
+        }
+
+        # Generar archivo
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        if formato == "word":
+            filename = f"{tipo_documento.upper()}_{datos_enriquecidos.get('numero', 'DOC')}.docx"
+            filepath = storage_path / filename
+
+            # Empaquetar datos para estructura PILI (con datos enriquecidos)
+            datos_pili = {
+                "datos_extraidos": datos_enriquecidos,  # 🆕 Usar datos enriquecidos
+                "agente_responsable": "PILI (Generación Directa)",
+                "tipo_servicio": f"{tipo_documento}-{servicio_detectado}",
+                "timestamp": datetime.now().isoformat()
+            }
+
+            logger.info(f"🔄 Usando WordGenerator (PILI) para: {tipo_documento}")
+            
+            resultado = word_generator.generar_desde_json_pili(
+                datos_json=datos_pili,
+                tipo_documento=tipo_documento,
+                ruta_salida=str(filepath),
+                opciones=opciones_personalizacion
+            )
+            
+            if not resultado.get("exito", True) and "ruta_archivo" not in resultado:
+                 # Fallback si falla
+                 logger.error(f"❌ Error en WordGenerator: {resultado.get('error')}")
+                 raise HTTPException(status_code=500, detail=f"Error generando documento: {resultado.get('error')}")
+
+            # Extraer ruta del resultado
+            archivo = resultado.get("ruta_archivo", str(filepath)) if isinstance(resultado, dict) else str(filepath)
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        else:
+            filename = f"{tipo_documento}_{timestamp}.pdf"
+            filepath = storage_path / filename
+            archivo = str(filepath)
+            pdf_generator.generar_cotizacion(datos=datos, ruta_salida=archivo)
+            media_type = "application/pdf"
+
+        logger.info(f"✅ Documento generado: {filename}")
+
+        return FileResponse(
+            path=archivo,
+            media_type=media_type,
+            filename=filename,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+
+    except Exception as e:
+        logger.error(f"❌ Error generando documento: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════
 # 🔄 MANEJO DE ERRORES CONSERVADO
 # ═══════════════════════════════════════════════════════════════
 
@@ -575,7 +868,50 @@ async def http_exception_handler(request, exc):
         content={"error": exc.detail}
     )
 
-@app.exception_handler(Exception)
+
+# ═══════════════════════════════════════════════════════════════
+# 🆕 ENDPOINT PARA SERVIR PLANTILLAS HTML
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/templates/{tipo}")
+async def obtener_plantilla_html(tipo: str):
+    """Sirve plantillas HTML profesionales al frontend"""
+    try:
+        plantillas_map = {
+            'cotizacion-simple': 'PLANTILLA_HTML_COTIZACION_SIMPLE.html',
+            'cotizacion-compleja': 'PLANTILLA_HTML_COTIZACION_COMPLEJA.html',
+            'proyecto-simple': 'PLANTILLA_HTML_PROYECTO_SIMPLE.html',
+            'proyecto-pmi': 'PLANTILLA_HTML_PROYECTO_COMPLEJO_PMI.html',
+            'informe-tecnico': 'PLANTILLA_HTML_INFORME_TECNICO.html',
+            'informe-ejecutivo': 'PLANTILLA_HTML_INFORME_EJECUTIVO_APA.html',
+        }
+        
+        archivo = plantillas_map.get(tipo)
+        if not archivo:
+            raise HTTPException(status_code=404, detail=f"Plantilla '{tipo}' no encontrada")
+        
+        templates_dir = Path(__file__).parent / "templates" / "documentos"
+        template_path = templates_dir / archivo
+        
+        if not template_path.exists():
+            raise HTTPException(status_code=404, detail=f"Archivo no encontrado: {archivo}")
+        
+        with open(template_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        logger.info(f"📄 Plantilla servida: {tipo}")
+        return JSONResponse(content={"html": html_content, "tipo": tipo})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error sirviendo plantilla {tipo}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════
+# 🔄 EXCEPTION HANDLERS
+# ═══════════════════════════════════════════════════════════════
+
 async def general_exception_handler(request, exc):
     logger.error(f"❌ Unhandled exception: {exc}")
     return JSONResponse(
@@ -631,6 +967,7 @@ if __name__ == "__main__":
         logger.info("   - ✅ Generadores Word/PDF reales")
         logger.info("   - ✅ Upload y análisis documentos")
         logger.info("   - ✅ Health checks profesionales")
+        logger.info(f"   - 📋 Routers activos: {list(routers_info.keys())}")
     else:
         logger.info("🔄 SISTEMA BÁSICO:")
         logger.info("   - ✅ Endpoints mock funcionando")

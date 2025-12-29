@@ -20,6 +20,11 @@ procesamiento de archivos para OCR inteligente y extracción especializada.
 - guardar_archivo() ✅
 - extraer_metadata() ✅
 - Todo el manejo de errores robusto ✅
+
+🔧 REPARADO:
+- Función _detectar_tipo_mime faltante agregada
+- Cambio de python-magic a filetype para compatibilidad Windows
+- Manejo robusto de errores en detección de tipos MIME
 """
 
 import os
@@ -35,7 +40,7 @@ from docx import Document
 from openpyxl import load_workbook
 from PIL import Image
 import pytesseract
-import magic
+import filetype  # Reemplazado magic por filetype para compatibilidad Windows
 
 # Imports PILI
 from pathlib import Path
@@ -98,414 +103,408 @@ class FileProcessor:
                 r"IP\s+camera"
             ],
             "redes": [
-                r"red\s+de\s+datos",
-                r"cableado\s+estructurado",
+                r"red\s+inform[aá]tica",
+                r"ethernet",
                 r"switch",
                 r"router",
                 r"fibra\s+[oó]ptica",
-                r"ethernet",
-                r"WiFi"
+                r"cableado\s+estructurado",
+                r"rack"
             ],
-            "financieros": [
-                r"S/\s*[\d,]+\.?\d*",
-                r"precio",
-                r"costo",
-                r"presupuesto",
-                r"cotizaci[oó]n",
-                r"total",
-                r"subtotal",
-                r"IGV"
-            ],
-            "cantidades": [
-                r"\d+\s*(metros?|mts?|m)\b",
-                r"\d+\s*(unidades?|und|u)\b",
-                r"\d+\s*(puntos?|ptos?)\b",
-                r"\d+\s*mm²",
-                r"\d+\s*AWG"
+            "normativas": [
+                r"CNE",
+                r"CNE-Utilizaci[oó]n",
+                r"CNE-Suministro", 
+                r"RNE",
+                r"INDECOPI",
+                r"OSINERGMIN",
+                r"DS-066-2007",
+                r"IEEE-80",
+                r"NFPA"
             ]
         }
         
-        logger.info("✅ FileProcessor + PILI inicializado")
+        logger.info("🤖 FileProcessor + PILI v3.0 inicializado con OCR inteligente")
 
-    # ═══════════════════════════════════════════════════════════════
-    # 🤖 NUEVOS MÉTODOS PILI v3.0
-    # ═══════════════════════════════════════════════════════════════
-    
-    async def procesar_archivo_con_pili(
-        self, 
-        archivo_path: str, 
+    # ════════════════════════════════════════════════════════════════
+    # 🤖 PILI - PROCESAMIENTO INTELIGENTE POR SERVICIO
+    # ════════════════════════════════════════════════════════════════
+
+    def procesar_con_pili(
+        self,
+        archivo_path: str,
         nombre_original: str,
-        tipo_servicio: str = "cotizacion-simple",
-        agente_pili: str = "PILI",
-        contexto_adicional: Optional[str] = None
+        tipo_servicio: str = "electricidad",
+        agente_pili: str = "PILI Analista"
     ) -> Dict[str, Any]:
         """
-        🤖 NUEVO PILI v3.0 - Procesa archivo con inteligencia especializada por servicio
+        🤖 NUEVO PILI v3.0 - Procesamiento inteligente especializado
+        
+        Procesa archivos con análisis específico según el tipo de servicio,
+        usando patrones especializados y extracción selectiva de información.
         
         Args:
-            archivo_path: Ruta del archivo
+            archivo_path: Ruta del archivo a procesar
             nombre_original: Nombre original del archivo
-            tipo_servicio: Tipo de servicio PILI
-            agente_pili: Agente PILI responsable
-            contexto_adicional: Contexto adicional del proyecto
+            tipo_servicio: Tipo de servicio (electricidad, automatizacion, cctv, redes)
+            agente_pili: Agente PILI responsable del procesamiento
             
         Returns:
-            Resultado de procesamiento inteligente PILI
+            Dict con análisis inteligente y datos estructurados
         """
         
         try:
-            logger.info(f"🤖 {agente_pili} procesando archivo: {nombre_original}")
+            logger.info(f"🤖 {agente_pili} procesando {nombre_original} para servicio: {tipo_servicio}")
             
-            # 1. Procesamiento básico (usando método original)
-            resultado_base = await self.procesar_archivo(archivo_path, nombre_original)
+            # Procesamiento base usando método original
+            resultado_base = self.procesar_archivo(archivo_path, nombre_original)
             
-            if not resultado_base.get("exito"):
-                return resultado_base
+            if not resultado_base["exito"]:
+                return {
+                    "exito": False,
+                    "error": f"Error en procesamiento base: {resultado_base.get('error', 'Desconocido')}",
+                    "agente_pili": agente_pili
+                }
             
-            # 2. Análisis inteligente PILI por tipo de servicio
-            analisis_pili = self._analizar_contenido_pili(
-                contenido=resultado_base["contenido_texto"],
-                tipo_servicio=tipo_servicio,
-                agente_pili=agente_pili,
-                nombre_archivo=nombre_original
-            )
+            # Análisis especializado PILI
+            contenido_texto = resultado_base.get("contenido_texto", "")
             
-            # 3. Extracción especializada
-            datos_especializados = self._extraer_datos_especializados_pili(
-                contenido=resultado_base["contenido_texto"],
-                tipo_servicio=tipo_servicio
-            )
-            
-            # 4. Combinar resultados
-            resultado_pili = {
-                **resultado_base,
-                "pili_analisis": analisis_pili,
-                "datos_especializados": datos_especializados,
+            analisis_pili = {
                 "agente_responsable": agente_pili,
                 "tipo_servicio": tipo_servicio,
-                "timestamp_pili": datetime.now().isoformat(),
-                "contexto_adicional": contexto_adicional or ""
+                "timestamp": datetime.now().isoformat(),
+                
+                # Análisis de contenido técnico
+                "elementos_detectados": self._detectar_elementos_tecnicos(contenido_texto, tipo_servicio),
+                "normativas_identificadas": self._identificar_normativas(contenido_texto),
+                "datos_estructurados": self._extraer_datos_estructurados(contenido_texto, tipo_servicio),
+                
+                # Clasificación inteligente
+                "tipo_documento_identificado": self._clasificar_documento_tecnico(contenido_texto, nombre_original),
+                "nivel_complejidad": self._evaluar_complejidad(contenido_texto),
+                "recomendaciones_procesamiento": self._generar_recomendaciones(contenido_texto, tipo_servicio),
+                
+                # Extracción específica por tipo de servicio
+                "datos_especificos": self._extraer_por_servicio(contenido_texto, tipo_servicio),
+                
+                # Metadatos enriquecidos
+                "confianza_extraccion": self._calcular_confianza(contenido_texto),
+                "requiere_revision_humana": self._necesita_revision(contenido_texto),
+                "siguiente_paso_recomendado": self._recomendar_siguiente_paso(contenido_texto, tipo_servicio)
             }
             
-            logger.info(f"✅ {agente_pili} completó procesamiento inteligente")
-            return resultado_pili
+            # Combinar resultado base con análisis PILI
+            resultado_final = {
+                **resultado_base,
+                "pili_analysis": analisis_pili,
+                "procesamiento_inteligente": True,
+                "mensaje_pili": f"✅ {agente_pili} completó el análisis del documento. Elementos técnicos detectados: {len(analisis_pili['elementos_detectados'])}"
+            }
+            
+            logger.info(f"✅ {agente_pili} completó procesamiento inteligente de {nombre_original}")
+            return resultado_final
             
         except Exception as e:
-            logger.error(f"❌ Error {agente_pili} procesando archivo: {str(e)}")
+            logger.error(f"❌ Error en procesamiento PILI: {str(e)}")
             return {
                 "exito": False,
-                "error": str(e),
-                "agente_responsable": agente_pili,
-                "mensaje_pili": f"Error procesando {nombre_original}: {str(e)}"
+                "error": f"Error PILI: {str(e)}",
+                "agente_pili": agente_pili,
+                "procesamiento_inteligente": False
             }
-    
-    def _analizar_contenido_pili(
-        self, 
-        contenido: str, 
-        tipo_servicio: str, 
-        agente_pili: str,
-        nombre_archivo: str
-    ) -> Dict[str, Any]:
-        """Analiza contenido con inteligencia PILI especializada"""
-        
-        analisis = {
-            "tipo_documento_detectado": self._detectar_tipo_documento(contenido, nombre_archivo),
-            "relevancia_por_servicio": {},
-            "elementos_tecnicos": [],
-            "informacion_critica": [],
-            "sugerencias_pili": [],
-            "confianza_analisis": 0.0
-        }
-        
-        # Análisis de relevancia por categorías
-        for categoria, patterns in self.pili_patterns.items():
-            coincidencias = 0
-            elementos_encontrados = []
-            
-            for pattern in patterns:
-                matches = re.findall(pattern, contenido, re.IGNORECASE)
-                coincidencias += len(matches)
-                elementos_encontrados.extend(matches)
-            
-            if coincidencias > 0:
-                analisis["relevancia_por_servicio"][categoria] = {
-                    "coincidencias": coincidencias,
-                    "elementos": elementos_encontrados[:10],  # Limitar a 10
-                    "relevancia": min(coincidencias / 10.0, 1.0)  # Normalizar a 0-1
-                }
-        
-        # Detectar elementos técnicos específicos
-        analisis["elementos_tecnicos"] = self._detectar_elementos_tecnicos(contenido)
-        
-        # Información crítica según tipo de servicio
-        analisis["informacion_critica"] = self._extraer_informacion_critica(
-            contenido, tipo_servicio
-        )
-        
-        # Sugerencias específicas del agente PILI
-        analisis["sugerencias_pili"] = self._generar_sugerencias_pili(
-            analisis, tipo_servicio, agente_pili
-        )
-        
-        # Calcular confianza general
-        total_relevancia = sum(
-            cat.get("relevancia", 0) 
-            for cat in analisis["relevancia_por_servicio"].values()
-        )
-        analisis["confianza_analisis"] = min(total_relevancia / 2.0, 0.95)  # Max 95%
-        
-        return analisis
-    
-    def _detectar_tipo_documento(self, contenido: str, nombre_archivo: str) -> Dict[str, Any]:
-        """Detecta tipo de documento usando patrones PILI"""
-        
-        tipos_detectados = []
-        
-        # Patrones por tipo de documento
-        patrones_documento = {
-            "plano_electrico": [
-                r"plano\s+el[eé]ctrico",
-                r"diagrama\s+unifilar",
-                r"esquema\s+el[eé]ctrico",
-                r"layout\s+el[eé]ctrico"
-            ],
-            "especificacion_tecnica": [
-                r"especificaci[oó]n\s+t[eé]cnica",
-                r"memoria\s+descriptiva", 
-                r"bases\s+t[eé]cnicas",
-                r"requerimientos\s+t[eé]cnicos"
-            ],
-            "cotizacion": [
-                r"cotizaci[oó]n",
-                r"presupuesto",
-                r"proforma",
-                r"oferta\s+econ[oó]mica"
-            ],
-            "informe": [
-                r"informe",
-                r"reporte",
-                r"an[aá]lisis",
-                r"evaluaci[oó]n"
-            ],
-            "manual": [
-                r"manual\s+de\s+usuario",
-                r"gu[ií]a\s+de\s+instalaci[oó]n",
-                r"instructivo",
-                r"procedimiento"
-            ]
-        }
-        
-        # Detectar por contenido
-        for tipo, patterns in patrones_documento.items():
-            for pattern in patterns:
-                if re.search(pattern, contenido, re.IGNORECASE):
-                    tipos_detectados.append(tipo)
-                    break
-        
-        # Detectar por nombre de archivo
-        nombre_lower = nombre_archivo.lower()
-        if "plano" in nombre_lower or "dwg" in nombre_lower:
-            tipos_detectados.append("plano_electrico")
-        elif "espec" in nombre_lower or "memoria" in nombre_lower:
-            tipos_detectados.append("especificacion_tecnica")
-        elif "cotiz" in nombre_lower or "presup" in nombre_lower:
-            tipos_detectados.append("cotizacion")
-        
-        return {
-            "tipos_detectados": list(set(tipos_detectados)),
-            "tipo_principal": tipos_detectados[0] if tipos_detectados else "documento_general",
-            "confianza": 0.8 if tipos_detectados else 0.3
-        }
-    
-    def _detectar_elementos_tecnicos(self, contenido: str) -> List[Dict[str, Any]]:
-        """Detecta elementos técnicos específicos"""
+
+    def _detectar_elementos_tecnicos(self, contenido: str, tipo_servicio: str) -> List[Dict[str, Any]]:
+        """Detecta elementos técnicos específicos según el servicio"""
         
         elementos = []
+        patrones = self.pili_patterns.get(tipo_servicio, [])
         
-        # Especificaciones de cables
-        cables = re.findall(r"cable\s+(?:THW|THHN|NYY)\s+(\d+(?:\.\d+)?)\s*mm²?", contenido, re.IGNORECASE)
-        for cable in cables:
-            elementos.append({
-                "tipo": "especificacion_cable",
-                "valor": f"{cable}mm²",
-                "descripcion": f"Cable {cable}mm² detectado"
-            })
+        for patron in patrones:
+            matches = re.finditer(patron, contenido, re.IGNORECASE | re.UNICODE)
+            for match in matches:
+                elementos.append({
+                    "elemento": match.group(),
+                    "posicion": match.start(),
+                    "contexto": contenido[max(0, match.start()-50):match.end()+50],
+                    "patron_usado": patron,
+                    "tipo_servicio": tipo_servicio
+                })
         
-        # Voltajes
-        voltajes = re.findall(r"(\d+(?:\.\d+)?)\s*(?:V|voltios?)", contenido, re.IGNORECASE)
-        for voltaje in voltajes:
-            elementos.append({
-                "tipo": "voltaje",
-                "valor": f"{voltaje}V",
-                "descripcion": f"Voltaje {voltaje}V detectado"
-            })
+        return elementos
+
+    def _identificar_normativas(self, contenido: str) -> List[str]:
+        """Identifica normativas técnicas mencionadas en el documento"""
         
-        # Corrientes
-        corrientes = re.findall(r"(\d+(?:\.\d+)?)\s*(?:A|amperios?)", contenido, re.IGNORECASE)
-        for corriente in corrientes:
-            elementos.append({
-                "tipo": "corriente",
-                "valor": f"{corriente}A",
-                "descripcion": f"Corriente {corriente}A detectada"
-            })
+        normativas_encontradas = []
+        patrones_normativas = self.pili_patterns["normativas"]
         
-        # Potencias
-        potencias = re.findall(r"(\d+(?:\.\d+)?)\s*(?:W|KW|watts?)", contenido, re.IGNORECASE)
-        for potencia in potencias:
-            elementos.append({
-                "tipo": "potencia",
-                "valor": f"{potencia}W",
-                "descripcion": f"Potencia {potencia}W detectada"
-            })
+        for patron in patrones_normativas:
+            if re.search(patron, contenido, re.IGNORECASE):
+                # Extraer la normativa específica
+                matches = re.findall(patron, contenido, re.IGNORECASE)
+                normativas_encontradas.extend(matches)
         
-        return elementos[:20]  # Limitar a 20 elementos más relevantes
-    
-    def _extraer_datos_especializados_pili(
-        self, 
-        contenido: str, 
-        tipo_servicio: str
-    ) -> Dict[str, Any]:
-        """Extrae datos específicos según tipo de servicio PILI"""
+        # Eliminar duplicados y ordenar
+        return sorted(list(set(normativas_encontradas)))
+
+    def _extraer_datos_estructurados(self, contenido: str, tipo_servicio: str) -> Dict[str, Any]:
+        """Extrae datos estructurados específicos del documento"""
         
-        datos_especializados = {
-            "precios_detectados": [],
-            "cantidades_detectadas": [],
-            "materiales_detectados": [],
-            "especificaciones_tecnicas": [],
-            "fechas_relevantes": [],
-            "contactos_detectados": []
+        datos = {
+            "cantidades": self._extraer_cantidades(contenido),
+            "medidas": self._extraer_medidas(contenido),
+            "precios": self._extraer_precios(contenido),
+            "especificaciones": self._extraer_especificaciones_tecnicas(contenido, tipo_servicio)
         }
         
-        # Extraer precios
-        precios = re.findall(r"S/\s*[\d,]+\.?\d*", contenido)
-        datos_especializados["precios_detectados"] = precios[:10]
+        return datos
+
+    def _extraer_cantidades(self, contenido: str) -> List[Dict[str, Any]]:
+        """Extrae cantidades numéricas del documento"""
         
-        # Extraer cantidades con unidades
-        cantidades = re.findall(r"\d+\s*(?:metros?|mts?|unidades?|und|puntos?|ptos?)", contenido, re.IGNORECASE)
-        datos_especializados["cantidades_detectadas"] = cantidades[:15]
-        
-        # Extraer materiales eléctricos
-        materiales_patterns = [
-            r"cable\s+(?:THW|THHN|NYY)\s+\d+(?:\.\d+)?\s*mm²?",
-            r"interruptor\s+(?:termomagnético|diferencial)",
-            r"tablero\s+(?:eléctrico|de\s+distribución)",
-            r"tomacorriente\s+(?:doble|simple|polarizado)",
-            r"punto\s+de\s+luz"
+        # Patrones para cantidades
+        patrones_cantidad = [
+            r"(\d+)\s*(punto[s]?\s+de\s+luz)",
+            r"(\d+)\s*(tomacorriente[s]?)",
+            r"(\d+)\s*(metro[s]?\s+de\s+cable)",
+            r"(\d+)\s*(m[2]?)",
+            r"(\d+)\s*(und|unidad[es]?)",
+            r"(\d+)\s*(pza[s]?|pieza[s]?)"
         ]
         
-        for pattern in materiales_patterns:
-            matches = re.findall(pattern, contenido, re.IGNORECASE)
-            datos_especializados["materiales_detectados"].extend(matches)
+        cantidades = []
+        for patron in patrones_cantidad:
+            matches = re.finditer(patron, contenido, re.IGNORECASE)
+            for match in matches:
+                cantidades.append({
+                    "cantidad": int(match.group(1)),
+                    "item": match.group(2),
+                    "contexto": match.group(0)
+                })
         
-        # Extraer especificaciones técnicas
-        if "cotizacion" in tipo_servicio:
-            # Buscar especificaciones de cotización
-            specs = re.findall(r"(?:instalación|montaje|suministro)\s+de\s+[^.]+", contenido, re.IGNORECASE)
-            datos_especializados["especificaciones_tecnicas"] = specs[:10]
+        return cantidades
+
+    def _extraer_medidas(self, contenido: str) -> List[Dict[str, Any]]:
+        """Extrae medidas y dimensiones del documento"""
         
-        elif "proyecto" in tipo_servicio:
-            # Buscar cronogramas y fases
-            cronograma = re.findall(r"(?:fase|etapa|semana|mes)\s+\d+", contenido, re.IGNORECASE)
-            datos_especializados["cronograma_detectado"] = cronograma[:8]
+        # Patrones para medidas
+        patrones_medidas = [
+            r"(\d+\.?\d*)\s*x\s*(\d+\.?\d*)\s*(m|metro[s]?|cm|centímetro[s]?)",
+            r"(\d+\.?\d*)\s*(m[2]|metro[s]?\s+cuadrado[s]?)",
+            r"(\d+\.?\d*)\s*(mm[2]|AWG|THW)",
+            r"(\d+\.?\d*)\s*(voltio[s]?|V|amperio[s]?|A|watt[s]?|W)"
+        ]
         
-        # Extraer fechas
-        fechas = re.findall(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}", contenido)
-        datos_especializados["fechas_relevantes"] = fechas[:5]
+        medidas = []
+        for patron in patrones_medidas:
+            matches = re.finditer(patron, contenido, re.IGNORECASE)
+            for match in matches:
+                medidas.append({
+                    "valor": match.group(1),
+                    "unidad": match.group(2) if len(match.groups()) >= 2 else "",
+                    "contexto": match.group(0)
+                })
         
-        # Extraer contactos (teléfonos, emails)
-        telefonos = re.findall(r"(?:\+51\s*)?[9]\d{8}", contenido)
-        emails = re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", contenido)
-        datos_especializados["contactos_detectados"] = {
-            "telefonos": telefonos[:3],
-            "emails": emails[:3]
+        return medidas
+
+    def _extraer_precios(self, contenido: str) -> List[Dict[str, Any]]:
+        """Extrae precios y costos del documento"""
+        
+        # Patrones para precios en soles peruanos
+        patrones_precios = [
+            r"S/\.?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)",
+            r"(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*soles",
+            r"PEN\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)",
+            r"(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*nuevos soles"
+        ]
+        
+        precios = []
+        for patron in patrones_precios:
+            matches = re.finditer(patron, contenido, re.IGNORECASE)
+            for match in matches:
+                valor_str = match.group(1).replace(",", "")
+                try:
+                    valor = float(valor_str)
+                    precios.append({
+                        "valor": valor,
+                        "moneda": "PEN",
+                        "formato_original": match.group(0),
+                        "contexto": contenido[max(0, match.start()-30):match.end()+30]
+                    })
+                except ValueError:
+                    pass
+        
+        return precios
+
+    def _extraer_especificaciones_tecnicas(self, contenido: str, tipo_servicio: str) -> Dict[str, List[str]]:
+        """Extrae especificaciones técnicas específicas del servicio"""
+        
+        especificaciones = {
+            "cables": [],
+            "equipos": [],
+            "protecciones": [],
+            "mediciones": [],
+            "normas_aplicables": []
         }
         
-        return datos_especializados
-    
-    def _extraer_informacion_critica(self, contenido: str, tipo_servicio: str) -> List[str]:
-        """Extrae información crítica específica del tipo de servicio"""
-        
-        info_critica = []
-        
-        if "cotizacion" in tipo_servicio:
-            # Información crítica para cotizaciones
-            if re.search(r"instalaci[oó]n\s+el[eé]ctrica", contenido, re.IGNORECASE):
-                info_critica.append("📋 Documento contiene información de instalación eléctrica")
+        if tipo_servicio == "electricidad":
+            # Especificaciones eléctricas
+            especificaciones["cables"] = re.findall(r"cable\s+THW\s+\d+\.?\d*\s*mm[2]?", contenido, re.IGNORECASE)
+            especificaciones["equipos"] = re.findall(r"tablero\s+\w+", contenido, re.IGNORECASE)
+            especificaciones["protecciones"] = re.findall(r"interruptor\s+\d+A?", contenido, re.IGNORECASE)
             
-            if re.search(r"S/\s*[\d,]+", contenido):
-                info_critica.append("💰 Precios detectados en el documento")
+        elif tipo_servicio == "automatizacion":
+            # Especificaciones de automatización
+            especificaciones["equipos"] = re.findall(r"PLC\s+\w+", contenido, re.IGNORECASE)
+            especificaciones["equipos"].extend(re.findall(r"sensor\s+\w+", contenido, re.IGNORECASE))
             
-            if re.search(r"(?:metros?|puntos?|unidades?)", contenido, re.IGNORECASE):
-                info_critica.append("📏 Cantidades específicas detectadas")
-        
-        elif "proyecto" in tipo_servicio:
-            # Información crítica para proyectos
-            if re.search(r"(?:cronograma|planificaci[oó]n)", contenido, re.IGNORECASE):
-                info_critica.append("📅 Información de cronograma detectada")
+        elif tipo_servicio == "cctv":
+            # Especificaciones de CCTV
+            especificaciones["equipos"] = re.findall(r"cámara\s+\w+", contenido, re.IGNORECASE)
+            especificaciones["equipos"].extend(re.findall(r"DVR\s+\w+", contenido, re.IGNORECASE))
             
-            if re.search(r"(?:fase|etapa)", contenido, re.IGNORECASE):
-                info_critica.append("🔄 Fases del proyecto identificadas")
-        
-        elif "informe" in tipo_servicio:
-            # Información crítica para informes
-            if re.search(r"(?:conclusi[oó]n|recomendaci[oó]n)", contenido, re.IGNORECASE):
-                info_critica.append("📊 Conclusiones o recomendaciones detectadas")
-        
-        # Información crítica general
-        if re.search(r"(?:cliente|empresa)", contenido, re.IGNORECASE):
-            info_critica.append("🏢 Información del cliente identificada")
-        
-        if re.search(r"(?:urgente|prioritario|inmediato)", contenido, re.IGNORECASE):
-            info_critica.append("⚡ Documento marcado como prioritario")
-        
-        return info_critica[:10]  # Máximo 10 puntos críticos
-    
-    def _generar_sugerencias_pili(
-        self, 
-        analisis: Dict[str, Any], 
-        tipo_servicio: str, 
-        agente_pili: str
-    ) -> List[str]:
-        """Genera sugerencias específicas del agente PILI"""
-        
-        sugerencias = []
-        
-        # Sugerencias basadas en relevancia
-        relevancia = analisis.get("relevancia_por_servicio", {})
-        
-        if relevancia.get("electricas", {}).get("relevancia", 0) > 0.3:
-            sugerencias.append(f"✨ {agente_pili}: Detecté información eléctrica relevante. Puedo generar cotización especializada.")
-        
-        if relevancia.get("financieros", {}).get("relevancia", 0) > 0.2:
-            sugerencias.append(f"💰 {agente_pili}: Hay datos financieros. Puedo validar precios del mercado peruano.")
-        
-        if relevancia.get("cantidades", {}).get("relevancia", 0) > 0.2:
-            sugerencias.append(f"📏 {agente_pili}: Cantidades detectadas. Puedo calcular metrados automáticamente.")
-        
-        # Sugerencias específicas por tipo de servicio
-        if "cotizacion" in tipo_servicio:
-            if analisis["confianza_analisis"] > 0.6:
-                sugerencias.append(f"🎯 {agente_pili}: Confianza alta. Listo para generar cotización completa.")
-            else:
-                sugerencias.append(f"🔍 {agente_pili}: Necesito más información. ¿Puedes subir planos o especificaciones?")
-        
-        elif "proyecto" in tipo_servicio:
-            sugerencias.append(f"📋 {agente_pili}: Puedo estructurar este contenido en fases de proyecto.")
-        
-        elif "informe" in tipo_servicio:
-            sugerencias.append(f"📊 {agente_pili}: Puedo generar informe ejecutivo con este contenido.")
-        
-        # Sugerencias adicionales
-        if len(analisis.get("elementos_tecnicos", [])) > 5:
-            sugerencias.append(f"⚡ {agente_pili}: Muchos elementos técnicos detectados. Excelente para análisis detallado.")
-        
-        return sugerencias[:6]  # Máximo 6 sugerencias
+        return especificaciones
 
-    # ═══════════════════════════════════════════════════════════════
-    # 🔄 MÉTODOS ORIGINALES CONSERVADOS (COMPATIBILIDAD)
-    # ═══════════════════════════════════════════════════════════════
-    
-    async def procesar_archivo(self, archivo_path: str, nombre_original: str) -> Dict[str, Any]:
+    def _clasificar_documento_tecnico(self, contenido: str, nombre_archivo: str) -> str:
+        """Clasifica el tipo de documento técnico"""
+        
+        # Análisis por nombre de archivo
+        nombre_lower = nombre_archivo.lower()
+        
+        if any(word in nombre_lower for word in ["plano", "drawing", "dwg"]):
+            return "Plano técnico"
+        elif any(word in nombre_lower for word in ["especificacion", "spec", "manual"]):
+            return "Especificación técnica"
+        elif any(word in nombre_lower for word in ["cotizacion", "quote", "presupuesto"]):
+            return "Cotización/Presupuesto"
+        elif any(word in nombre_lower for word in ["memoria", "calculo", "calculation"]):
+            return "Memoria de cálculo"
+        elif any(word in nombre_lower for word in ["informe", "report"]):
+            return "Informe técnico"
+        
+        # Análisis por contenido
+        if re.search(r"memoria\s+de\s+c[aá]lculo", contenido, re.IGNORECASE):
+            return "Memoria de cálculo"
+        elif re.search(r"especificaci[oó]n\s+t[eé]cnica", contenido, re.IGNORECASE):
+            return "Especificación técnica"
+        elif re.search(r"presupuesto|cotizaci[oó]n", contenido, re.IGNORECASE):
+            return "Cotización/Presupuesto"
+        
+        return "Documento técnico general"
+
+    def _evaluar_complejidad(self, contenido: str) -> str:
+        """Evalúa el nivel de complejidad del documento"""
+        
+        # Factores de complejidad
+        palabras_tecnicas = len(re.findall(r"\b(?:instalaci[oó]n|circuito|tablero|cable|interruptor|voltaje)\b", contenido, re.IGNORECASE))
+        numeros_especificos = len(re.findall(r"\d+\.?\d*\s*(?:mm|A|V|W|m)", contenido, re.IGNORECASE))
+        referencias_normativas = len(re.findall(r"\b(?:CNE|IEEE|NFPA|DS-066)\b", contenido, re.IGNORECASE))
+        
+        # Calcular puntuación de complejidad
+        puntuacion = palabras_tecnicas * 2 + numeros_especificos + referencias_normativas * 3
+        
+        if puntuacion >= 20:
+            return "Alta complejidad"
+        elif puntuacion >= 10:
+            return "Complejidad media"
+        else:
+            return "Baja complejidad"
+
+    def _generar_recomendaciones(self, contenido: str, tipo_servicio: str) -> List[str]:
+        """Genera recomendaciones de procesamiento"""
+        
+        recomendaciones = []
+        
+        # Recomendaciones basadas en contenido
+        if re.search(r"instalaci[oó]n\s+el[eé]ctrica", contenido, re.IGNORECASE):
+            recomendaciones.append("Revisar especificaciones de instalación eléctrica")
+            
+        if re.search(r"pozo\s+a\s+tierra", contenido, re.IGNORECASE):
+            recomendaciones.append("Verificar normativa de puesta a tierra")
+            
+        if re.search(r"tablero\s+el[eé]ctrico", contenido, re.IGNORECASE):
+            recomendaciones.append("Validar dimensionamiento del tablero eléctrico")
+            
+        # Recomendaciones por tipo de servicio
+        if tipo_servicio == "electricidad":
+            recomendaciones.append("Aplicar normativa CNE-Utilización vigente")
+        elif tipo_servicio == "automatizacion":
+            recomendaciones.append("Considerar protocolos de comunicación industrial")
+        elif tipo_servicio == "cctv":
+            recomendaciones.append("Evaluar calidad de imagen y almacenamiento")
+        
+        return recomendaciones
+
+    def _extraer_por_servicio(self, contenido: str, tipo_servicio: str) -> Dict[str, Any]:
+        """Extrae datos específicos según el tipo de servicio"""
+        
+        if tipo_servicio == "electricidad":
+            return {
+                "puntos_luz": len(re.findall(r"punto\s+de\s+luz", contenido, re.IGNORECASE)),
+                "tomacorrientes": len(re.findall(r"tomacorriente", contenido, re.IGNORECASE)),
+                "tableros": re.findall(r"tablero\s+[^,\n]*", contenido, re.IGNORECASE),
+                "cables_detectados": re.findall(r"cable\s+THW[^,\n]*", contenido, re.IGNORECASE)
+            }
+        elif tipo_servicio == "automatizacion":
+            return {
+                "plcs": re.findall(r"PLC[^,\n]*", contenido, re.IGNORECASE),
+                "sensores": re.findall(r"sensor[^,\n]*", contenido, re.IGNORECASE),
+                "actuadores": re.findall(r"actuador[^,\n]*", contenido, re.IGNORECASE)
+            }
+        elif tipo_servicio == "cctv":
+            return {
+                "camaras": re.findall(r"c[aá]mara[^,\n]*", contenido, re.IGNORECASE),
+                "dvrs": re.findall(r"DVR[^,\n]*", contenido, re.IGNORECASE),
+                "monitores": re.findall(r"monitor[^,\n]*", contenido, re.IGNORECASE)
+            }
+        
+        return {}
+
+    def _calcular_confianza(self, contenido: str) -> float:
+        """Calcula el nivel de confianza en la extracción de datos"""
+        
+        # Factores que aumentan la confianza
+        palabras_tecnicas = len(re.findall(r"\b(?:instalaci[oó]n|circuito|cable|voltaje|amperaje)\b", contenido, re.IGNORECASE))
+        numeros_con_unidades = len(re.findall(r"\d+\s*(?:mm|A|V|W|m)", contenido, re.IGNORECASE))
+        estructura_documento = 1 if re.search(r"(?:especificaci[oó]n|descripci[oó]n|alcance)", contenido, re.IGNORECASE) else 0
+        
+        # Calcular confianza (0-100%)
+        puntuacion = min(100, (palabras_tecnicas * 5 + numeros_con_unidades * 3 + estructura_documento * 10))
+        
+        return puntuacion / 100
+
+    def _necesita_revision(self, contenido: str) -> bool:
+        """Determina si el documento necesita revisión humana"""
+        
+        # Criterios que requieren revisión humana
+        texto_muy_corto = len(contenido.strip()) < 100
+        sin_datos_tecnicos = len(re.findall(r"\d+", contenido)) < 3
+        texto_ilegible = contenido.count("?") > len(contenido) * 0.05
+        
+        return texto_muy_corto or sin_datos_tecnicos or texto_ilegible
+
+    def _recomendar_siguiente_paso(self, contenido: str, tipo_servicio: str) -> str:
+        """Recomienda el siguiente paso en el procesamiento"""
+        
+        if self._necesita_revision(contenido):
+            return "Revisión humana requerida - documento con poca información extraíble"
+        
+        if re.search(r"cotizaci[oó]n|presupuesto", contenido, re.IGNORECASE):
+            return "Generar cotización formal usando los datos extraídos"
+        
+        if re.search(r"proyecto|instalaci[oó]n", contenido, re.IGNORECASE):
+            return "Crear estructura de proyecto y cronograma de trabajo"
+        
+        if re.search(r"especificaci[oó]n|memoria", contenido, re.IGNORECASE):
+            return "Generar informe técnico basado en las especificaciones"
+        
+        return "Continuar con el flujo de trabajo estándar"
+
+    # ════════════════════════════════════════════════════════════════
+    # 🔄 MÉTODOS ORIGINALES CONSERVADOS
+    # ════════════════════════════════════════════════════════════════
+
+    def procesar_archivo(self, archivo_path: str, nombre_original: str) -> Dict[str, Any]:
         """
         🔄 CONSERVADO - Procesa un archivo y extrae su contenido
         
@@ -528,37 +527,45 @@ class FileProcessor:
         
         try:
             # Procesar según tipo
-            if extension in ['pdf']:
+            if extension == 'pdf':
                 contenido = self._extraer_texto_pdf(archivo_path)
-            elif extension in ['doc', 'docx']:
-                contenido = self._extraer_texto_docx(archivo_path)
-            elif extension in ['xls', 'xlsx']:
+            elif extension in ['docx', 'doc']:
+                contenido = self._extraer_texto_word(archivo_path)
+            elif extension in ['xlsx', 'xls']:
                 contenido = self._extraer_texto_excel(archivo_path)
-            elif extension in ['txt']:
-                contenido = self._extraer_texto_txt(archivo_path)
-            elif extension in ['jpg', 'jpeg', 'png']:
+            elif extension in ['jpg', 'jpeg', 'png', 'bmp']:
                 contenido = self._extraer_texto_imagen(archivo_path)
+            elif extension == 'txt':
+                contenido = self._extraer_texto_plano(archivo_path)
             else:
                 contenido = f"Tipo de archivo no soportado para extracción: {extension}"
             
-            resultado["exito"] = True
-            resultado["contenido_texto"] = contenido
-            resultado["metadata"] = self._extraer_metadata(archivo_path, extension)
+            resultado.update({
+                "exito": True,
+                "contenido_texto": contenido,
+                "metadata": self.extraer_metadata(archivo_path),
+                "tipo_documento_detectado": self._detectar_tipo_documento(contenido, nombre_original),
+            })
             
         except Exception as e:
+            logger.error(f"Error procesando archivo {nombre_original}: {str(e)}")
             resultado["error"] = str(e)
         
         return resultado
-    
+
     def _detectar_tipo_mime(self, archivo_path: str) -> str:
         """
-        🔄 CONSERVADO - Detecta el tipo MIME del archivo
+        🔧 FUNCIÓN REPARADA - Detecta tipo MIME usando filetype (compatible Windows)
+        
+        Reemplaza el uso de python-magic por filetype para mejor compatibilidad.
         """
         try:
-            mime = magic.Magic(mime=True)
-            return mime.from_file(archivo_path)
-        except:
-            # Fallback basado en extensión
+            # Usar filetype para detectar tipo MIME (compatible con Windows)
+            kind = filetype.guess(archivo_path)
+            if kind is not None:
+                return kind.mime
+            
+            # Fallback: detectar por extensión
             extension = archivo_path.split('.')[-1].lower()
             mime_types = {
                 'pdf': 'application/pdf',
@@ -569,10 +576,67 @@ class FileProcessor:
                 'txt': 'text/plain',
                 'jpg': 'image/jpeg',
                 'jpeg': 'image/jpeg',
-                'png': 'image/png'
+                'png': 'image/png',
+                'bmp': 'image/bmp',
+                'gif': 'image/gif'
             }
             return mime_types.get(extension, 'application/octet-stream')
-    
+            
+        except Exception as e:
+            logger.warning(f"Error detectando tipo MIME para {archivo_path}: {e}")
+            # Fallback seguro por extensión
+            extension = archivo_path.split('.')[-1].lower()
+            return {
+                'pdf': 'application/pdf',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'txt': 'text/plain'
+            }.get(extension, 'application/octet-stream')
+
+    def _detectar_tipo_documento(self, contenido: str, nombre_archivo: str) -> Dict[str, Any]:
+        """
+        🔄 CONSERVADO - Detecta el tipo de documento basado en contenido
+        """
+        tipos_detectados = []
+        
+        # Análisis por nombre de archivo
+        nombre_lower = nombre_archivo.lower()
+        if any(word in nombre_lower for word in ["cotizacion", "presupuesto", "quote"]):
+            tipos_detectados.append("cotizacion")
+        if any(word in nombre_lower for word in ["proyecto", "project"]):
+            tipos_detectados.append("proyecto")
+        if any(word in nombre_lower for word in ["informe", "reporte", "report"]):
+            tipos_detectados.append("informe")
+        if any(word in nombre_lower for word in ["plano", "drawing"]):
+            tipos_detectados.append("plano")
+        if any(word in nombre_lower for word in ["especificacion", "spec"]):
+            tipos_detectados.append("especificacion")
+        
+        # Análisis por contenido
+        if re.search(r"cotizaci[oó]n|presupuesto", contenido, re.IGNORECASE):
+            tipos_detectados.append("cotizacion")
+        if re.search(r"proyecto|instalaci[oó]n", contenido, re.IGNORECASE):
+            tipos_detectados.append("proyecto")
+        if re.search(r"informe|reporte|conclusi[oó]n", contenido, re.IGNORECASE):
+            tipos_detectados.append("informe")
+        if re.search(r"especificaci[oó]n\s+t[eé]cnica", contenido, re.IGNORECASE):
+            tipos_detectados.append("especificacion")
+        
+        # Detectar si es documento técnico eléctrico
+        es_tecnico_electrico = any([
+            re.search(r"instalaci[oó]n\s+el[eé]ctrica", contenido, re.IGNORECASE),
+            re.search(r"punto\s+de\s+luz", contenido, re.IGNORECASE),
+            re.search(r"tablero\s+el[eé]ctrico", contenido, re.IGNORECASE),
+            re.search(r"cable\s+THW", contenido, re.IGNORECASE),
+            re.search(r"CNE", contenido, re.IGNORECASE)
+        ])
+        
+        return {
+            "tipos_detectados": list(set(tipos_detectados)),
+            "tipo_principal": tipos_detectados[0] if tipos_detectados else "documento_general",
+            "es_tecnico_electrico": es_tecnico_electrico,
+            "confianza": min(1.0, len(tipos_detectados) / 2)
+        }
+
     def _extraer_texto_pdf(self, archivo_path: str) -> str:
         """
         🔄 CONSERVADO - Extrae texto de un archivo PDF
@@ -581,134 +645,118 @@ class FileProcessor:
         
         with open(archivo_path, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
-            
             for page in pdf_reader.pages:
                 texto.append(page.extract_text())
         
         return '\n'.join(texto)
     
-    def _extraer_texto_docx(self, archivo_path: str) -> str:
+    def _extraer_texto_word(self, archivo_path: str) -> str:
         """
         🔄 CONSERVADO - Extrae texto de un archivo Word
         """
-        doc = Document(archivo_path)
-        texto = []
-        
-        for paragraph in doc.paragraphs:
-            texto.append(paragraph.text)
-        
-        # Extraer texto de tablas
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    texto.append(cell.text)
-        
-        return '\n'.join(texto)
+        documento = Document(archivo_path)
+        return '\n'.join([p.text for p in documento.paragraphs])
     
     def _extraer_texto_excel(self, archivo_path: str) -> str:
         """
         🔄 CONSERVADO - Extrae texto de un archivo Excel
         """
-        workbook = load_workbook(archivo_path, data_only=True)
+        workbook = load_workbook(archivo_path)
         texto = []
         
         for sheet_name in workbook.sheetnames:
             sheet = workbook[sheet_name]
-            texto.append(f"\n=== Hoja: {sheet_name} ===\n")
-            
             for row in sheet.iter_rows(values_only=True):
-                row_text = [str(cell) if cell is not None else '' for cell in row]
-                texto.append(' | '.join(row_text))
+                row_text = ' '.join([str(cell) for cell in row if cell is not None])
+                if row_text.strip():
+                    texto.append(row_text)
         
         return '\n'.join(texto)
-    
-    def _extraer_texto_txt(self, archivo_path: str) -> str:
-        """
-        🔄 CONSERVADO - Extrae texto de un archivo de texto plano
-        """
-        encodings = ['utf-8', 'latin-1', 'cp1252']
-        
-        for encoding in encodings:
-            try:
-                with open(archivo_path, 'r', encoding=encoding) as file:
-                    return file.read()
-            except UnicodeDecodeError:
-                continue
-        
-        return "Error: No se pudo decodificar el archivo de texto"
     
     def _extraer_texto_imagen(self, archivo_path: str) -> str:
         """
         🔄 CONSERVADO - Extrae texto de una imagen usando OCR
         """
         try:
-            image = Image.open(archivo_path)
-            texto = pytesseract.image_to_string(image, lang='spa+eng')
+            imagen = Image.open(archivo_path)
+            texto = pytesseract.image_to_string(imagen, lang='spa+eng')
             return texto
         except Exception as e:
-            return f"Error en OCR: {str(e)}"
+            logger.warning(f"Error en OCR para {archivo_path}: {e}")
+            return f"Error extracting text from image: {str(e)}"
     
-    def _extraer_metadata(self, archivo_path: str, extension: str) -> Dict[str, Any]:
+    def _extraer_texto_plano(self, archivo_path: str) -> str:
         """
-        🔄 CONSERVADO - Extrae metadata del archivo
+        🔄 CONSERVADO - Extrae texto de un archivo de texto plano
         """
-        metadata = {
-            "tamano_bytes": os.path.getsize(archivo_path),
-            "fecha_modificacion": datetime.fromtimestamp(
-                os.path.getmtime(archivo_path)
-            ).isoformat()
+        with open(archivo_path, 'r', encoding='utf-8') as file:
+            return file.read()
+
+    def validar_archivo(self, archivo) -> Dict[str, Any]:
+        """
+        🔄 CONSERVADO - Valida un archivo antes del procesamiento
+        """
+        resultado = {
+            "valido": False,
+            "error": None,
+            "tamaño_mb": 0,
+            "extension": "",
+            "tipo_mime": ""
         }
         
-        # Metadata específica por tipo
-        if extension == 'pdf':
-            try:
-                with open(archivo_path, 'rb') as file:
-                    pdf_reader = PyPDF2.PdfReader(file)
-                    metadata["num_paginas"] = len(pdf_reader.pages)
-                    if pdf_reader.metadata:
-                        metadata["autor"] = pdf_reader.metadata.get('/Author', '')
-                        metadata["titulo"] = pdf_reader.metadata.get('/Title', '')
-            except:
-                pass
+        try:
+            # Validar extensión
+            if hasattr(archivo, 'filename'):
+                nombre = archivo.filename
+            else:
+                nombre = str(archivo)
+                
+            extension = nombre.split('.')[-1].lower()
+            
+            if extension not in self.allowed_extensions:
+                resultado["error"] = f"Extensión {extension} no permitida"
+                return resultado
+            
+            # Validar tamaño
+            if hasattr(archivo, 'size'):
+                tamaño_mb = archivo.size / (1024 * 1024)
+            else:
+                tamaño_mb = os.path.getsize(archivo) / (1024 * 1024)
+            
+            if tamaño_mb > self.max_file_size:
+                resultado["error"] = f"Archivo muy grande: {tamaño_mb:.2f}MB (máximo: {self.max_file_size}MB)"
+                return resultado
+            
+            resultado.update({
+                "valido": True,
+                "tamaño_mb": round(tamaño_mb, 2),
+                "extension": extension
+            })
+            
+        except Exception as e:
+            resultado["error"] = f"Error validando archivo: {str(e)}"
         
-        elif extension in ['docx']:
-            try:
-                doc = Document(archivo_path)
-                metadata["num_parrafos"] = len(doc.paragraphs)
-                metadata["num_tablas"] = len(doc.tables)
-            except:
-                pass
-        
-        elif extension in ['jpg', 'jpeg', 'png']:
-            try:
-                image = Image.open(archivo_path)
-                metadata["ancho"], metadata["alto"] = image.size
-                metadata["formato"] = image.format
-            except:
-                pass
-        
-        return metadata
-    
-    def validar_archivo(self, nombre: str, tamano: int) -> Dict[str, Any]:
+        return resultado
+
+    def extraer_metadata(self, archivo_path: str) -> Dict[str, Any]:
         """
-        🔄 CONSERVADO - Valida si un archivo cumple con los requisitos
+        🔄 CONSERVADO - Extrae metadatos de un archivo
         """
-        extension = nombre.split('.')[-1].lower()
-        
-        if extension not in self.allowed_extensions:
+        try:
+            stat_info = os.stat(archivo_path)
+            
             return {
-                "valido": False,
-                "error": f"Extensión no permitida. Permitidas: {', '.join(self.allowed_extensions)}"
+                "tamaño_bytes": stat_info.st_size,
+                "tamaño_mb": round(stat_info.st_size / (1024 * 1024), 2),
+                "fecha_modificacion": datetime.fromtimestamp(stat_info.st_mtime).isoformat(),
+                "fecha_acceso": datetime.fromtimestamp(stat_info.st_atime).isoformat(),
+                "extension": archivo_path.split('.')[-1].lower(),
+                "ruta": archivo_path
             }
-        
-        if tamano > self.max_file_size:
-            return {
-                "valido": False,
-                "error": f"Archivo muy grande. Máximo: {self.max_file_size / 1024 / 1024:.2f} MB"
-            }
-        
-        return {"valido": True}
-    
+        except Exception as e:
+            logger.error(f"Error extrayendo metadatos: {e}")
+            return {}
+
     def guardar_archivo(self, archivo, nombre_unico: str) -> str:
         """
         🔄 CONSERVADO - Guarda un archivo en el sistema

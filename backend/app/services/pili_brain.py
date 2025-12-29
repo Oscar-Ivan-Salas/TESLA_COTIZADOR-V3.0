@@ -399,7 +399,7 @@ class PILIBrain:
 
     def _items_electrico_residencial(self, datos: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Items para instalación eléctrica residencial"""
-        area = datos.get("area_m2", 100)
+        area = datos.get("area_m2") or 100
 
         # Cálculos según CNE
         num_circuitos = max(6, int(area / 25))  # 1 circuito por cada 25m²
@@ -448,7 +448,7 @@ class PILIBrain:
 
     def _items_electrico_comercial(self, datos: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Items para instalación eléctrica comercial"""
-        area = datos.get("area_m2", 200)
+        area = datos.get("area_m2") or 200
 
         items = [
             {
@@ -485,7 +485,7 @@ class PILIBrain:
 
     def _items_electrico_industrial(self, datos: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Items para instalación eléctrica industrial"""
-        potencia_hp = datos.get("potencia_hp", 10)
+        potencia_hp = datos.get("potencia_hp") or 10
 
         items = [
             {
@@ -522,7 +522,7 @@ class PILIBrain:
 
     def _items_contraincendios(self, datos: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Items para sistema contraincendios"""
-        area = datos.get("area_m2", 300)
+        area = datos.get("area_m2") or 300
 
         # Cálculos según NFPA
         num_rociadores = int(area / 12)  # 1 rociador cada 12m² aprox
@@ -570,7 +570,7 @@ class PILIBrain:
 
     def _items_domotica(self, datos: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Items para sistema domótico"""
-        area = datos.get("area_m2", 150)
+        area = datos.get("area_m2") or 150
 
         items = [
             {
@@ -813,7 +813,7 @@ NOTA: Cotización válida por 30 días. Sujeto a verificación en campo."""
 
     def _estimar_tiempo_ejecucion(self, datos: Dict[str, Any]) -> int:
         """Estima tiempo de ejecución en días"""
-        area = datos.get("area_m2", 100)
+        area = datos.get("area_m2") or 100
 
         if area < 100:
             return 15

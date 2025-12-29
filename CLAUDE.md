@@ -1,7 +1,7 @@
 # CLAUDE.md - Tesla Cotizador V3.0
 
 > **Guía completa para asistentes de IA trabajando en este repositorio**
-> Última actualización: 2025-11-26
+> Última actualización: 2025-12-04
 > Versión del proyecto: 3.0.0
 
 ---
@@ -26,6 +26,18 @@
 ## 🎯 Visión General del Proyecto
 
 **Tesla Cotizador V3.0** es un sistema profesional de cotización y gestión de proyectos para **TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.**, una empresa especializada en servicios eléctricos y de automatización en Perú.
+
+### ⚠️ IMPORTANTE: INSTALACIÓN
+
+**🐳 SE RECOMIENDA USAR DOCKER**
+La instalación manual tiene dependencias complejas que pueden fallar. Docker garantiza un entorno funcional.
+
+```bash
+# Instalación recomendada con Docker
+docker-compose up -d
+```
+
+Ver `INFORME_CRITICO_DEPENDENCIAS_ROTAS.md` para detalles técnicos.
 
 ### Propósito Principal
 
@@ -106,6 +118,8 @@ El sistema permite:
 - **Monolito modular**: Backend FastAPI con routers separados
 - **SPA**: Frontend React de una sola página
 - **Event-driven**: Chat conversacional con historial
+- **Degradación elegante**: Sistema funciona incluso si algunos routers no cargan (modo fallback)
+- **Carga dinámica de routers**: Cada router se importa individualmente con manejo robusto de errores
 
 ---
 
@@ -137,11 +151,13 @@ TESLA_COTIZADOR-V3.0/
 │   │   │   └── __init__.py
 │   │   │
 │   │   ├── routers/             # Endpoints API (controladores)
-│   │   │   ├── chat.py         # PILI - Chat IA (~2000 líneas)
-│   │   │   ├── cotizaciones.py # CRUD cotizaciones
-│   │   │   ├── proyectos.py    # CRUD proyectos
+│   │   │   ├── chat.py         # PILI - Chat IA (~84KB, endpoint principal)
+│   │   │   ├── cotizaciones.py # CRUD cotizaciones (~12KB)
+│   │   │   ├── proyectos.py    # CRUD proyectos (~26KB)
 │   │   │   ├── informes.py     # Generación de informes
-│   │   │   ├── documentos.py   # Upload y análisis
+│   │   │   ├── documentos.py   # Upload y análisis (~24KB)
+│   │   │   ├── generar_directo.py # Generación directa Word/PDF
+│   │   │   ├── auth.py         # Autenticación (básico)
 │   │   │   ├── system.py       # Health checks
 │   │   │   └── __init__.py
 │   │   │
@@ -261,18 +277,20 @@ TESLA_COTIZADOR-V3.0/
 
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
-| **Python** | 3.11+ | Lenguaje principal |
-| **FastAPI** | 0.115.6 | Framework web moderno |
-| **Uvicorn** | 0.34.0 | Servidor ASGI |
+| **Python** | 3.11+ / 3.12 | Lenguaje principal (compatible con ambas versiones) |
+| **FastAPI** | 0.115.6 | Framework web moderno y rápido |
+| **Uvicorn** | 0.34.0 | Servidor ASGI de alto rendimiento |
 | **SQLAlchemy** | 2.0.36 | ORM para base de datos |
-| **Pydantic** | 2.10.6 | Validación de datos |
-| **google-generativeai** | 0.8.3 | Cliente Gemini AI |
+| **Pydantic** | 2.10.6 | Validación de datos con type hints |
+| **google-generativeai** | 0.8.3 | Cliente oficial Gemini AI |
 | **chromadb** | 0.5.23 | Base de datos vectorial (RAG) |
-| **sentence-transformers** | 3.4.0 | Embeddings para RAG |
-| **python-docx** | 1.1.2 | Generación de Word |
-| **reportlab** | 4.2.6 | Generación de PDF |
-| **pypdf** | 5.2.0 | Procesamiento PDF |
-| **pytest** | 8.3.5 | Testing |
+| **sentence-transformers** | 3.4.0 | Embeddings para búsqueda semántica |
+| **python-docx** | 1.1.2 | Generación de documentos Word |
+| **reportlab** | 4.4.5 | Generación de documentos PDF |
+| **weasyprint** | 63.1 | Conversión HTML a PDF profesional |
+| **pypdf** | 5.2.0 | Procesamiento y manipulación de PDFs |
+| **pytest** | 8.3.5 | Framework de testing |
+| **httpx** | 0.28.1 | Cliente HTTP asíncrono |
 
 ### Frontend
 
@@ -670,12 +688,13 @@ git push origin fix/descripcion-bug
 **Propósito**: Endpoints para interacción con PILI, el agente IA conversacional.
 
 **Endpoints principales**:
-- `POST /api/chat/mensaje` - Chat conversacional general
+- `POST /api/chat/mensaje` - Chat conversacional general con PILI
 - `POST /api/chat/generar-cotizacion-rapida` - Generación rápida (5-15 min)
 - `POST /api/chat/generar-cotizacion-compleja` - Generación compleja con análisis
 - `POST /api/chat/generar-proyecto` - Creación de proyectos
 - `POST /api/chat/generar-informe` - Generación de informes
-- `GET /api/chat/botones-contextuales/{tipo_flujo}` - Botones inteligentes
+- `GET /api/chat/botones-contextuales/{tipo_flujo}` - Botones inteligentes contextuales
+- `POST /api/generar-documento-directo` - Generación directa de documentos sin BD
 
 **Servicios que utiliza**:
 - `gemini_service` - Cliente Gemini AI
@@ -696,6 +715,7 @@ git push origin fix/descripcion-bug
 - `DELETE /api/cotizaciones/{id}` - Eliminar cotización
 - `POST /api/cotizaciones/{id}/generar-word` - Generar documento Word
 - `POST /api/cotizaciones/{id}/generar-pdf` - Generar documento PDF
+- `GET /api/cotizaciones/{id}/exportar/{formato}` - Exportar en Word/PDF/JSON
 
 #### proyectos.py
 
@@ -1320,7 +1340,7 @@ MAX_UPLOAD_SIZE_MB=10
 1. **Verifica el branch actual**: `git branch` o `git status`
 2. **Revisa la estructura real**: El proyecto puede tener archivos `copy` o backups (ej. `main copy.py`, `chat copy.py`) que NO deben modificarse
 3. **Archivos principales a modificar**:
-   - `backend/app/main.py` - Aplicación principal FastAPI
+   - `backend/app/main.py` - Aplicación principal FastAPI (~1000 líneas)
    - `backend/app/routers/*.py` - Routers sin sufijo "copy"
    - `backend/app/services/*.py` - Servicios sin sufijo "copy"
    - `frontend/src/App.jsx` - Aplicación principal React
@@ -1328,6 +1348,7 @@ MAX_UPLOAD_SIZE_MB=10
 
 4. **Archivos que NO debes modificar**:
    - Cualquier archivo con sufijo `copy`, `copy 2`, etc.
+   - Archivos en carpeta `_backup/`
    - Archivos en `storage/generados/`
    - Archivos `.env` (solo modificar `.env.example` si es necesario)
    - Base de datos directamente (usar SQLAlchemy)
@@ -1337,6 +1358,36 @@ MAX_UPLOAD_SIZE_MB=10
    - Verifica que no haya duplicados o versiones antiguas
    - Asegúrate de entender el flujo completo
    - Considera el impacto en otras partes del sistema
+
+### Problemas Comunes y Soluciones
+
+**Problema #1: Router no registrado** ⚠️
+- **Síntoma**: Endpoint devuelve 404 Not Found
+- **Causa**: Router existe pero no está registrado en `main.py`
+- **Solución**:
+  ```python
+  # En backend/app/main.py, agregar:
+  from app.routers import nuevo_router
+  routers_info["nuevo_router"] = {
+      "router": nuevo_router.router,
+      "prefix": "/api/nuevo",
+      "tags": ["NuevoRouter"]
+  }
+  ```
+
+**Problema #2: Generación de documentos falla** ⚠️
+- **Síntoma**: Botones de descarga no generan archivos
+- **Causa**: Estructura de datos incorrecta o falta endpoint
+- **Solución**: Verificar estructura de datos y endpoint `/api/generar-documento-directo`
+- **Referencia**: Ver `DIAGNOSTICO_ERRORES_GENERACION_DOCUMENTOS.md`
+
+**Problema #3: Cache del navegador** ⚠️
+- **Síntoma**: Cambios en frontend no se ven reflejados
+- **Solución**: Limpiar cache del navegador (Ctrl+Shift+R) o modo incógnito
+
+**Problema #4: CORS errors** ⚠️
+- **Síntoma**: Frontend no puede conectar con backend
+- **Solución**: Verificar configuración CORS en `main.py` y que backend esté corriendo
 
 ### Contexto del Negocio
 
@@ -1479,6 +1530,8 @@ return FileResponse(
 8. **NO** hacer push directo a main/master - siempre usar branches de trabajo
 9. **NO** eliminar archivos `.env.example` - son plantillas importantes
 10. **NO** commitear archivos `.env` con API keys reales
+11. **NO** olvidar registrar nuevos routers en `backend/app/main.py`
+12. **NO** modificar archivos con sufijo "copy" o en carpeta `_backup`
 
 ### Debugging
 
@@ -1526,10 +1579,15 @@ console.error("Error");
 
 **Documentación Adicional**:
 - `README.md` - Información general del proyecto
-- `README_PROFESSIONAL.md` - Documentación profesional completa
+- `README_PROFESSIONAL.md` - Documentación profesional completa (v4.0)
 - `README_TESIS.md` - Documentación para tesis
+- `README_FLUJO_PILI.md` - Documentación detallada del flujo PILI
 - `INSTRUCCIONES_INSTALACION.md` - Guía de instalación paso a paso
 - `INSTRUCCIONES_MULTI_IA.md` - Configuración multi-IA
+- `DIAGNOSTICO_ERRORES_GENERACION_DOCUMENTOS.md` - Diagnóstico de errores comunes
+- `MANUAL_USUARIO_TESLA_COTIZADOR_V3.md` - Manual de usuario
+- `AUDITORIA_ARQUITECTURA_BACKEND.md` - Auditoría técnica del backend
+- `INFORME_AUDITORIA_TECNICA.md` - Informe de auditoría técnica completa
 
 ---
 
@@ -1558,11 +1616,14 @@ console.error("Error");
 **Deprecado**:
 - Versiones anteriores (V1.0, V2.0)
 
-### Actualizaciones Recientes - Noviembre 2025
+### Actualizaciones Recientes - Diciembre 2025
 
+- **2025-12-04**: Actualización completa de CLAUDE.md con estado actual del proyecto
+- **2025-12-03**: Diagnóstico exhaustivo de errores de generación de documentos
+- **2025-12-03**: Implementación de generación híbrida de documentos (Word/PDF)
+- **2025-12-02**: Corrección de router generar_directo.py y registro en main.py
 - **2025-11-26**: Actualización de CLAUDE.md con información práctica para asistentes de IA
 - **2025-11-25**: Creación inicial de CLAUDE.md con guía completa del proyecto
-- **2025-11-XX**: Documentación profesional completa (README_PROFESSIONAL.md v4.0)
 
 ---
 
@@ -1600,11 +1661,14 @@ pytest
 
 | Archivo | Propósito | Cuándo Modificar |
 |---------|-----------|------------------|
-| `backend/app/main.py` | App principal FastAPI | Agregar routers, middleware, CORS |
-| `backend/app/routers/chat.py` | Chat con PILI | Modificar lógica de conversación |
-| `backend/app/services/gemini_service.py` | Cliente Gemini | Cambiar prompts o configuración IA |
+| `backend/app/main.py` | App principal FastAPI (~1000 líneas) | Agregar routers, middleware, CORS |
+| `backend/app/routers/chat.py` | Chat con PILI (~84KB) | Modificar lógica de conversación |
+| `backend/app/routers/generar_directo.py` | Generación directa | Modificar generación de documentos |
+| `backend/app/services/gemini_service.py` | Cliente Gemini (~36KB) | Cambiar prompts o configuración IA |
+| `backend/app/services/word_generator.py` | Generador Word (~37KB) | Modificar plantillas Word |
+| `backend/app/services/pili_brain.py` | Cerebro PILI (~63KB) | Modificar lógica de razonamiento |
 | `frontend/src/App.jsx` | App principal React | Agregar pantallas, cambiar flujo |
-| `frontend/src/components/ChatIA.jsx` | Componente chat | Modificar UI del chat |
+| `frontend/src/components/ChatIA.jsx` | Componente chat (~18KB) | Modificar UI del chat |
 | `backend/.env` | Configuración | **NO commitear** - solo local |
 | `backend/.env.example` | Plantilla config | Agregar nuevas variables |
 
@@ -1613,8 +1677,10 @@ pytest
 ```
 POST   /api/chat/mensaje                    - Chat con PILI
 POST   /api/chat/generar-cotizacion-rapida  - Cotización rápida
+POST   /api/generar-documento-directo       - Generar Word/PDF directo
 GET    /api/cotizaciones/                   - Listar cotizaciones
 POST   /api/cotizaciones/                   - Crear cotización
+GET    /api/cotizaciones/{id}/exportar/{formato} - Exportar cotización
 GET    /api/proyectos/                      - Listar proyectos
 POST   /api/documentos/upload               - Subir documentos
 GET    /api/system/health                   - Health check
@@ -1633,10 +1699,50 @@ GET    /api/system/health                   - Health check
 
 ---
 
+---
+
+## 📊 Estado Actual del Proyecto (Diciembre 2025)
+
+### ✅ Funcionalidades Completadas
+
+- [x] Sistema PILI conversacional totalmente funcional
+- [x] Generación de cotizaciones con IA (rápida y compleja)
+- [x] Generación de documentos Word/PDF profesionales
+- [x] Sistema de proyectos con gestión completa
+- [x] Upload y análisis de documentos con OCR
+- [x] RAG con ChromaDB para búsqueda semántica
+- [x] API REST completa con FastAPI
+- [x] Frontend React con Tailwind CSS
+- [x] Soporte multi-IA (Gemini, OpenAI, Claude, Groq, etc.)
+- [x] Arquitectura híbrida con degradación elegante
+- [x] Sistema de routers dinámicos con manejo de errores robusto
+
+### 🔧 En Desarrollo
+
+- [ ] Autenticación completa con JWT
+- [ ] Dashboard de estadísticas avanzado
+- [ ] Sistema de notificaciones en tiempo real
+- [ ] Integración con ERP externo
+- [ ] Versionamiento de cotizaciones
+
+### 🎯 Métricas del Proyecto
+
+- **Líneas de código backend**: ~150,000+
+- **Líneas de código frontend**: ~20,000+
+- **Routers implementados**: 8
+- **Servicios de IA**: 12+
+- **Modelos de base de datos**: 4 principales
+- **Endpoints API**: 40+
+- **Componentes React**: 6 principales
+- **Documentación**: 15+ archivos MD
+
+---
+
 **Fin de CLAUDE.md**
 
 _Documento vivo - Actualizar cuando haya cambios significativos en arquitectura o convenciones._
 
 **Versión**: 3.0.0
-**Última revisión**: 2025-11-26
+**Última revisión**: 2025-12-04
 **Mantenido por**: Tesla Electricidad y Automatización S.A.C.
+**Revisado por**: Claude Code (Sonnet 4.5)
