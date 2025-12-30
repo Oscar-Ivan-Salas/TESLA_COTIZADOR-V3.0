@@ -4698,7 +4698,18 @@ async def chat_pili_itse(request: ChatRequest):
         logger.info(f"   - tipo: {resultado['estado'].get('tipo')}")
         logger.info(f"   - area: {resultado['estado'].get('area')}")
         logger.info(f"   - pisos: {resultado['estado'].get('pisos')}")
-        
+
+        # ✅ Verificar datos_generados
+        datos_gen = resultado.get('datos_generados')
+        if datos_gen:
+            logger.info(f"📋 DATOS_GENERADOS ENCONTRADOS:")
+            logger.info(f"   - items: {len(datos_gen.get('items', []))} items")
+            logger.info(f"   - subtotal: {datos_gen.get('subtotal')}")
+            logger.info(f"   - igv: {datos_gen.get('igv')}")
+            logger.info(f"   - total: {datos_gen.get('total')}")
+        else:
+            logger.warning(f"⚠️ NO HAY datos_generados en resultado")
+
         # Formatear respuesta
         response = {
             "success": resultado['success'],
@@ -4707,7 +4718,8 @@ async def chat_pili_itse(request: ChatRequest):
             "botones": resultado.get('botones'),
             "state": resultado['estado'],
             "conversation_state": resultado['estado'],
-            "datos_generados": resultado.get('cotizacion'),
+            "datos_generados": resultado.get('datos_generados'),  # ✅ CORREGIDO: usar datos_generados, no cotizacion
+            "cotizacion": resultado.get('cotizacion'),  # Mantener cotizacion separada
             "cotizacion_generada": resultado.get('cotizacion') is not None,
             "agente_pili": "PILI ITSE"
         }
