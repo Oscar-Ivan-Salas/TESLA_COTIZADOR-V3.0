@@ -86,27 +86,32 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
     };
 
     const handleButtonClick = async (value, label) => {
+        // VALIDACIÓN: Prevenir múltiples clicks mientras se procesa
+        if (isTyping) {
+            console.log('⏸️ Ya hay una petición en curso, ignorando click');
+            return;
+        }
+
+        console.log('🖱️ CLICK EN BOTÓN:', { value, label, estadoActual: conversationState });
+
         addUserMessage(label);
+
+        // DELAY: Esperar 100ms para que React actualice el estado
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         await enviarMensajeBackend(value);
     };
 
     const enviarMensajeBackend = async (mensaje) => {
         setIsTyping(true);
 
+        console.log('📤 Enviando al backend:', { mensaje, conversationState });
         try {
-            const response = await fetch('http://localhost:8000/api/chat/chat-contextualizado', {
+            const response = await fetch('http://localhost:8000/api/chat/pili-itse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    tipo_flujo: 'itse',
                     mensaje: mensaje,
-                    historial: conversacion.map(msg => ({
-                        tipo: msg.sender === 'bot' ? 'asistente' : 'usuario',
-                        mensaje: msg.text
-                    })),
-                    contexto_adicional: 'Servicio: itse',
-                    generar_html: true,
-                    // CRÍTICO: Enviar estado de conversación para mantener flujo lógico
                     conversation_state: conversationState
                 })
             });
@@ -251,7 +256,7 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                             border: msg.sender === 'bot' ? 'none' : `1px solid ${colors.secondary}`
                         }}>
                             <div dangerouslySetInnerHTML={{
-                                __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                __html: (msg.text || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                             }} />
 
                             {msg.buttons && (
@@ -260,17 +265,19 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                                         <button
                                             key={btnIndex}
                                             onClick={() => handleButtonClick(btn.value, btn.text)}
+                                            disabled={isTyping}
                                             style={{
                                                 background: 'white',
                                                 color: colors.primary,
                                                 border: `1px solid ${colors.secondary}`,
                                                 padding: '8px 16px',
                                                 borderRadius: '20px',
-                                                cursor: 'pointer',
+                                                cursor: isTyping ? 'not-allowed' : 'pointer',
                                                 fontWeight: '600',
                                                 fontSize: '13px',
                                                 transition: 'all 0.2s',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                                opacity: isTyping ? 0.5 : 1
                                             }}
                                             onMouseOver={(e) => {
                                                 e.target.style.background = colors.secondary;

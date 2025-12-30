@@ -4633,3 +4633,97 @@ def generar_preview_informe_ejecutivo_apa_editable(datos: Dict[str, Any], agente
 """
 
     return html
+
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 PILI ITSE CHATBOT - Endpoint usando CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+# Importar caja negra
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from Pili_ChatBot.pili_itse_chatbot import PILIITSEChatBot
+
+# Crear instancia global
+pili_itse_bot = PILIITSEChatBot()
+
+@router.post("/pili-itse")
+async def chat_pili_itse(request: ChatRequest):
+    """
+    Endpoint para PILI ITSE usando CAJA NEGRA
+    
+    La lógica está en: Pili_ChatBot/pili_itse_chatbot.py
+    """
+    try:
+        logger.info("="*80)
+        logger.info("🚀 INICIO ENDPOINT /pili-itse")
+        logger.info("="*80)
+        
+        # Extraer datos del request
+        mensaje = request.mensaje
+        estado = request.conversation_state if hasattr(request, 'conversation_state') else None
+        
+        logger.info(f"📥 REQUEST COMPLETO:")
+        logger.info(f"   - mensaje: '{mensaje}'")
+        logger.info(f"   - conversation_state: {estado}")
+        logger.info(f"   - tipo estado: {type(estado)}")
+        
+        if estado:
+            logger.info(f"📊 DETALLES DEL ESTADO:")
+            logger.info(f"   - etapa: {estado.get('etapa')}")
+            logger.info(f"   - categoria: {estado.get('categoria')}")
+            logger.info(f"   - tipo: {estado.get('tipo')}")
+            logger.info(f"   - area: {estado.get('area')}")
+            logger.info(f"   - pisos: {estado.get('pisos')}")
+        
+        logger.info(f"🔧 LLAMANDO A CAJA NEGRA...")
+        logger.info(f"   - Instancia: {pili_itse_bot}")
+        logger.info(f"   - Tipo: {type(pili_itse_bot)}")
+        
+        # Llamar a la caja negra
+        resultado = pili_itse_bot.procesar(mensaje, estado)
+        
+        logger.info(f"✅ RESULTADO DE CAJA NEGRA:")
+        logger.info(f"   - success: {resultado['success']}")
+        logger.info(f"   - respuesta (primeros 100 chars): {resultado['respuesta'][:100]}...")
+        logger.info(f"   - botones: {len(resultado.get('botones', []))} botones")
+        logger.info(f"   - cotizacion: {'SÍ' if resultado.get('cotizacion') else 'NO'}")
+        
+        logger.info(f"📊 ESTADO DEVUELTO POR CAJA NEGRA:")
+        logger.info(f"   - etapa: {resultado['estado'].get('etapa')}")
+        logger.info(f"   - categoria: {resultado['estado'].get('categoria')}")
+        logger.info(f"   - tipo: {resultado['estado'].get('tipo')}")
+        logger.info(f"   - area: {resultado['estado'].get('area')}")
+        logger.info(f"   - pisos: {resultado['estado'].get('pisos')}")
+        
+        # Formatear respuesta
+        response = {
+            "success": resultado['success'],
+            "respuesta": resultado['respuesta'],
+            "botones_sugeridos": resultado.get('botones'),
+            "botones": resultado.get('botones'),
+            "state": resultado['estado'],
+            "conversation_state": resultado['estado'],
+            "datos_generados": resultado.get('cotizacion'),
+            "cotizacion_generada": resultado.get('cotizacion') is not None,
+            "agente_pili": "PILI ITSE"
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error en PILI ITSE: {e}", exc_info=True)
+        return {
+            "success": False,
+            "respuesta": "Lo siento, hubo un error. Por favor intenta de nuevo.",
+            "botones_sugeridos": None,
+            "botones": None,
+            "state": estado or {},
+            "conversation_state": estado or {},
+            "datos_generados": None,
+            "cotizacion_generada": False,
+            "agente_pili": "PILI ITSE"
+        }
