@@ -179,8 +179,13 @@ class ChatMessage(BaseModel):
     content: str = Field(..., min_length=1, description="Contenido del mensaje")
 
 class ChatRequest(BaseModel):
-    """Schema para request de chat conversacional"""
-    mensaje: str = Field(..., min_length=1, description="Mensaje del usuario")
+    tipo_flujo: str = "itse"  # Por defecto ITSE
+    mensaje: str = ""  # Permitir vacío para inicio
+    historial: List[dict] = []
+    contexto_adicional: str = ""
+    archivos_procesados: List[dict] = []
+    generar_html: bool = True
+    conversation_state: Optional[dict] = Field(None)
     cotizacion_id: Optional[int] = Field(None, description="ID de cotización existente")
     contexto: Optional[List[ChatMessage]] = Field(None, description="Historial de chat")
     cliente: Optional[str] = Field(None, description="Nombre del cliente")

@@ -4,6 +4,8 @@
 
 Esta clase lee configuraciones YAML y procesa conversaciones para TODOS los servicios.
 NO hay código duplicado - todo es genérico y reutilizable.
+
+✨ NUEVO: Integración multi-IA con fallback automático
 """
 
 import yaml
@@ -23,6 +25,8 @@ class UniversalSpecialist:
     - Lee configuración YAML del servicio
     - Carga knowledge base dinámicamente
     - Procesa conversación por etapas
+    - ✨ NUEVO: Usa IA (Gemini/Claude/GPT-4) para respuestas inteligentes
+    - Fallback a respuestas YAML si no hay IA disponible
     - Genera cotizaciones automáticamente
     - 0% código duplicado
     """
@@ -43,6 +47,17 @@ class UniversalSpecialist:
         
         # Cargar knowledge base si existe
         self.kb = self._load_knowledge_base()
+        
+        # ✨ NUEVO: Inicializar multi-IA manager
+        try:
+            from ..core import get_multi_ia_manager
+            self.multi_ia = get_multi_ia_manager()
+            self.use_ia = True
+            logger.info("✅ Multi-IA habilitado")
+        except Exception as e:
+            logger.warning(f"⚠️ Multi-IA no disponible: {e}")
+            self.multi_ia = None
+            self.use_ia = False
         
         # Obtener etapas del documento
         self.stages = self.config.get('documents', {}).get(document_type, {}).get('etapas', [])
@@ -109,9 +124,16 @@ class UniversalSpecialist:
         Returns:
             Dict con respuesta, botones, stage, etc.
         """
-        # Actualizar estado si se proporciona
-        if state:
-            self.conversation_state = state
+        # ✅ FIX CRÍTICO: Si viene state del frontend, usarlo COMPLETO
+        if state and isinstance(state, dict):
+            # Si el state tiene la estructura completa, usarlo directamente
+            if 'stage' in state or 'data' in state or 'history' in state:
+                self.conversation_state = state
+                logger.info(f"✅ Estado restaurado desde frontend: stage={state.get('stage')}, data={list(state.get('data', {}).keys())}")
+            else:
+                # Si solo viene data, mantener estructura
+                self.conversation_state['data'] = state
+                logger.info(f"✅ Datos actualizados desde frontend: {list(state.keys())}")
         
         # Obtener stage actual
         current_stage_id = self.conversation_state.get('stage', 'initial')
@@ -293,14 +315,66 @@ class UniversalSpecialist:
                 'state': self.conversation_state
             }
         
-        # Aquí llamaríamos al CalculationEngine
-        # Por ahora, retornamos un placeholder
-        return {
-            'texto': f'Cotización generada (calculator: {calculator_name})',
-            'stage': 'quotation',
-            'state': self.conversation_state,
-            'datos_generados': self.conversation_state['data']
-        }
+        # ✅ Llamar al calculator real
+        try:
+            from ..utils import calculate_itse_quote
+            
+            # Preparar datos para calculadora
+            data = self.conversation_state.get('data', {})
+            
+            # Calcular cotización
+            quote_data = calculate_itse_quote(data)
+            
+            # Renderizar mensaje con datos reales
+            message_template = stage.get('message_template', 'cotizacion')
+            mensaje = self._render_message_with_data(message_template, quote_data)
+            
+            # Preparar respuesta
+            response = {
+                'texto': mensaje,
+                'stage': stage['id'],
+                'state': self.conversation_state,
+                'datos_generados': quote_data,
+                'cotizacion_generada': True
+            }
+            
+            # Agregar botones de acciones si existen
+            actions = stage.get('actions', [])
+            if actions:
+                botones = [
+                    {'text': action['text'], 'value': action['value']}
+                    for action in actions
+                ]
+                response['botones'] = botones
+            
+            logger.info(f"✅ Cotización generada: {quote_data.get('total_min')} - {quote_data.get('total_max')}")
+            return response
+            
+        except Exception as e:
+            logger.error(f"❌ Error generando cotización: {e}")
+            return {
+                'texto': f'Error generando cotización: {str(e)}',
+                'stage': 'error',
+                'state': self.conversation_state
+            }
+    
+    def _render_message_with_data(self, template_key: str, data: Dict) -> str:
+        """
+        Renderiza mensaje con datos de cotización.
+        Similar a _render_message pero usa datos de cotización.
+        """
+        # Obtener el template del YAML
+        mensajes = self.config.get('mensajes', {})
+        template = mensajes.get(template_key, template_key)
+        
+        # Combinar datos de conversación con datos de cotización
+        all_data = {**self.conversation_state.get('data', {}), **data}
+        
+        try:
+            return template.format(**all_data)
+        except KeyError as e:
+            logger.warning(f"Variable faltante en template: {e}")
+            return template
     
     def _render_stage(self, stage: Dict) -> Dict:
         """Renderiza una etapa (genera el mensaje y botones)."""
@@ -327,7 +401,10 @@ class UniversalSpecialist:
         return response
     
     def _render_message(self, template_key: str) -> str:
-        """Renderiza un mensaje desde el template."""
+        """
+        Renderiza un mensaje desde el template.
+        ✨ MULTI-IA: Intenta Gemini → Fallback a template YAML
+        """
         # Obtener el template del YAML
         mensajes = self.config.get('mensajes', {})
         template = mensajes.get(template_key, template_key)
@@ -336,11 +413,57 @@ class UniversalSpecialist:
         data = self.conversation_state.get('data', {})
         
         try:
-            return template.format(**data)
+            mensaje_base = template.format(**data)
         except KeyError as e:
             # Si falta una variable, retornar el template sin formatear
             logger.warning(f"Variable faltante en template: {e}")
-            return template
+            mensaje_base = template
+        
+        # ✨ MULTI-IA: Intentar con Gemini si está disponible
+        if self.use_ia and self.multi_ia:
+            try:
+                # Construir contexto para Gemini
+                contexto = {
+                    "servicio": self.service_name,
+                    "document_type": self.document_type,
+                    "datos_actuales": data,
+                    "mensaje_base": mensaje_base
+                }
+                
+                # Construir prompt para Gemini
+                prompt = f"""Eres PILI, un asistente experto en {self.config.get('name', self.service_name)}.
+
+Contexto del servicio: {self.config.get('description', '')}
+
+Datos actuales de la conversación:
+{data}
+
+Mensaje base a mejorar:
+{mensaje_base}
+
+Por favor, genera una respuesta amigable, profesional y útil basándote en el mensaje base.
+Mantén el tono conversacional y ayuda al usuario a avanzar en el proceso.
+Si el mensaje base tiene botones o opciones, menciónalos de forma natural."""
+                
+                # Generar respuesta con Gemini
+                ia_response = self.multi_ia.generate_response(
+                    prompt=prompt,
+                    context=contexto,
+                    max_tokens=500
+                )
+                
+                if ia_response and len(ia_response.strip()) > 10:
+                    logger.info("✅ Respuesta generada con Gemini")
+                    return ia_response
+                else:
+                    logger.warning("⚠️ Gemini respondió vacío, usando template")
+            
+            except Exception as e:
+                logger.warning(f"⚠️ Error usando Gemini: {e}, usando template")
+        
+        # Fallback: retornar mensaje del template
+        logger.info("📝 Usando template YAML (fallback)")
+        return mensaje_base
     
     def _get_buttons_for_stage(self, stage: Dict) -> List[Dict]:
         """Obtiene los botones para una etapa."""

@@ -57,12 +57,349 @@ import json
 import base64
 import tempfile
 
+
 logger = logging.getLogger(__name__)
 
 # Inicializar PILIBrain para generación offline
 pili_brain = PILIBrain()
 
 router = APIRouter()
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 PILI ITSE CHATBOT - LÓGICA AUTOCONTENIDA (SIN IMPORTS EXTERNOS)
+# ═══════════════════════════════════════════════════════════════
+
+# Base de conocimiento ITSE (copiada directamente aquí)
+ITSE_KNOWLEDGE_BASE = {
+    "precios_municipales": {
+        "BAJO": {"precio": 168.30, "renovacion": 90.30, "dias": 7},
+        "MEDIO": {"precio": 208.60, "renovacion": 109.40, "dias": 7},
+        "ALTO": {"precio": 703.00, "renovacion": 417.40, "dias": 7},
+        "MUY_ALTO": {"precio": 1084.60, "renovacion": 629.20, "dias": 7}
+    },
+    "precios_tesla": {
+        "BAJO": {"min": 300, "max": 500},
+        "MEDIO": {"min": 450, "max": 650},
+        "ALTO": {"min": 800, "max": 1200},
+        "MUY_ALTO": {"min": 1200, "max": 1800}
+    },
+    "categorias": {
+        "SALUD": {
+            "tipos": ["Hospital", "Clínica", "Centro Médico", "Consultorio", "Laboratorio"],
+            "riesgo_base": "ALTO"
+        },
+        "EDUCACION": {
+            "tipos": ["Colegio", "Universidad", "Instituto", "Academia", "Guardería"],
+            "riesgo_base": "MEDIO"
+        },
+        "HOSPEDAJE": {
+            "tipos": ["Hotel", "Hostal", "Residencia", "Apart-hotel"],
+            "riesgo_base": "MEDIO"
+        },
+        "COMERCIO": {
+            "tipos": ["Tienda", "Supermercado", "Centro Comercial", "Galería"],
+            "riesgo_base": "MEDIO"
+        },
+        "RESTAURANTE": {
+            "tipos": ["Restaurante", "Cafetería", "Bar", "Discoteca"],
+            "riesgo_base": "MEDIO"
+        },
+        "OFICINA": {
+            "tipos": ["Oficina", "Estudio", "Coworking"],
+            "riesgo_base": "BAJO"
+        },
+        "INDUSTRIAL": {
+            "tipos": ["Fábrica", "Taller", "Almacén", "Planta"],
+            "riesgo_base": "ALTO"
+        },
+        "ENCUENTRO": {
+            "tipos": ["Auditorio", "Cine", "Teatro", "Iglesia", "Gimnasio"],
+            "riesgo_base": "ALTO"
+        }
+    }
+}
+
+def calcular_riesgo_itse(categoria: str, area: float, pisos: int) -> str:
+    """Calcula el nivel de riesgo ITSE"""
+    if categoria == "SALUD":
+        return "MUY_ALTO" if (area > 500 or pisos >= 2) else "ALTO"
+    elif categoria == "EDUCACION":
+        return "ALTO" if (area > 1000 or pisos >= 3) else "MEDIO"
+    elif categoria == "HOSPEDAJE":
+        return "ALTO" if (area > 500 or pisos >= 3) else "MEDIO"
+    elif categoria == "COMERCIO":
+        return "ALTO" if area > 500 else "MEDIO"
+    elif categoria == "RESTAURANTE":
+        return "ALTO" if area > 300 else "MEDIO"
+    elif categoria == "OFICINA":
+        return "MEDIO" if area > 500 else "BAJO"
+    elif categoria == "INDUSTRIAL":
+        return "ALTO"
+    elif categoria == "ENCUENTRO":
+        return "MUY_ALTO" if area > 500 else "ALTO"
+    
+    return ITSE_KNOWLEDGE_BASE["categorias"][categoria]["riesgo_base"]
+
+def generar_cotizacion_itse(riesgo: str, categoria: str, tipo: str, area: float, pisos: int) -> Dict:
+    """Genera la cotización ITSE"""
+    municipal = ITSE_KNOWLEDGE_BASE["precios_municipales"][riesgo]
+    tesla = ITSE_KNOWLEDGE_BASE["precios_tesla"][riesgo]
+    
+    total_min = municipal["precio"] + tesla["min"]
+    total_max = municipal["precio"] + tesla["max"]
+    
+    return {
+        "categoria": categoria,
+        "tipo": tipo,
+        "area": area,
+        "pisos": pisos,
+        "riesgo": riesgo,
+        "costo_tupa": municipal["precio"],
+        "costo_tesla_min": tesla["min"],
+        "costo_tesla_max": tesla["max"],
+        "total_min": total_min,
+        "total_max": total_max,
+        "dias": municipal["dias"]
+    }
+
+def procesar_mensaje_itse(mensaje: str, estado: Optional[Dict] = None) -> Dict:
+    """Procesa mensaje ITSE - LÓGICA COMPLETA AUTOCONTENIDA"""
+    
+    # Inicializar estado si no existe
+    if estado is None:
+        estado = {
+            "etapa": "inicial",
+            "categoria": None,
+            "tipo": None,
+            "area": None,
+            "pisos": None,
+            "riesgo": None
+        }
+    
+    etapa = estado.get("etapa", "inicial")
+    
+    # ETAPA 1: Mostrar categorías
+    if etapa == "inicial":
+        estado["etapa"] = "categoria"
+        
+        botones = [
+            {"text": "🏥 Salud", "value": "SALUD"},
+            {"text": "🎓 Educación", "value": "EDUCACION"},
+            {"text": "🏨 Hospedaje", "value": "HOSPEDAJE"},
+            {"text": "🏪 Comercio", "value": "COMERCIO"},
+            {"text": "🍽️ Restaurante", "value": "RESTAURANTE"},
+            {"text": "🏢 Oficina", "value": "OFICINA"},
+            {"text": "🏭 Industrial", "value": "INDUSTRIAL"},
+            {"text": "🎭 Encuentro", "value": "ENCUENTRO"}
+        ]
+        
+        return {
+            'success': True,
+            'respuesta': """¡Hola! 👋 Soy **Pili**, tu especialista en certificados ITSE de **Tesla Electricidad - Huancayo**.
+
+🎯 Te ayudo a obtener tu certificado ITSE con:
+✅ Visita técnica GRATUITA
+✅ Precios oficiales TUPA Huancayo
+✅ Trámite 100% gestionado
+✅ Entrega en 7 días hábiles
+
+**Selecciona tu tipo de establecimiento:**""",
+            'botones': botones,
+            'estado': estado,
+            'cotizacion': None
+        }
+    
+    # ETAPA 2: Procesar categoría
+    elif etapa == "categoria":
+        categoria = mensaje
+        estado["categoria"] = categoria
+        estado["etapa"] = "tipo"
+        
+        tipos = ITSE_KNOWLEDGE_BASE["categorias"][categoria]["tipos"]
+        botones = [{"text": t, "value": t} for t in tipos]
+        
+        return {
+            'success': True,
+            'respuesta': f"Perfecto, sector **{categoria}**. ¿Qué tipo específico es?",
+            'botones': botones,
+            'estado': estado,
+            'cotizacion': None
+        }
+    
+    # ETAPA 3: Procesar tipo
+    elif etapa == "tipo":
+        tipo = mensaje
+        estado["tipo"] = tipo
+        estado["etapa"] = "area"
+        
+        return {
+            'success': True,
+            'respuesta': f"Entendido, es un **{tipo}**.\n\n¿Cuál es el área total en m²?\n\n_Escribe el número (ejemplo: 150)_",
+            'botones': None,
+            'estado': estado,
+            'cotizacion': None
+        }
+    
+    # ETAPA 4: Procesar área
+    elif etapa == "area":
+        try:
+            area = float(mensaje)
+            if area <= 0:
+                return {
+                    'success': False,
+                    'respuesta': "Por favor ingresa un número válido de área en m²",
+                    'botones': None,
+                    'estado': estado,
+                    'cotizacion': None
+                }
+            
+            estado["area"] = area
+            estado["etapa"] = "pisos"
+            
+            return {
+                'success': True,
+                'respuesta': f"📐 Área: **{area} m²**\n\n¿Cuántos pisos tiene el establecimiento?\n\n_Escribe el número (ejemplo: 2)_",
+                'botones': None,
+                'estado': estado,
+                'cotizacion': None
+            }
+        except ValueError:
+            return {
+                'success': False,
+                'respuesta': "Por favor ingresa un número válido de área en m²",
+                'botones': None,
+                'estado': estado,
+                'cotizacion': None
+            }
+    
+    # ETAPA 5: Procesar pisos y generar cotización
+    elif etapa == "pisos":
+        try:
+            pisos = int(mensaje)
+            if pisos <= 0:
+                return {
+                    'success': False,
+                    'respuesta': "Por favor ingresa un número válido de pisos",
+                    'botones': None,
+                    'estado': estado,
+                    'cotizacion': None
+                }
+            
+            estado["pisos"] = pisos
+            
+            # Calcular riesgo
+            riesgo = calcular_riesgo_itse(
+                estado["categoria"],
+                estado["area"],
+                pisos
+            )
+            estado["riesgo"] = riesgo
+            estado["etapa"] = "cotizacion"
+            
+            # Generar cotización
+            cotizacion = generar_cotizacion_itse(
+                riesgo,
+                estado["categoria"],
+                estado["tipo"],
+                estado["area"],
+                pisos
+            )
+            
+            # Formatear respuesta
+            respuesta = f"""📊 **COTIZACIÓN ITSE - NIVEL {riesgo.replace('_', ' ')}**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**💰 COSTOS DESGLOSADOS:**
+
+🏛️ **Derecho Municipal (TUPA):**
+└ S/ {cotizacion['costo_tupa']:.2f}
+
+⚡ **Servicio Técnico TESLA:**
+└ S/ {cotizacion['costo_tesla_min']} - {cotizacion['costo_tesla_max']}
+└ Incluye: Evaluación + Planos + Gestión + Seguimiento
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**📈 TOTAL ESTIMADO:**
+**S/ {cotizacion['total_min']:.2f} - {cotizacion['total_max']:.2f}**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱️ **Tiempo:** {cotizacion['dias']} días hábiles
+🎁 **Visita técnica:** GRATUITA
+✅ **Garantía:** 100% aprobación
+
+¿Qué deseas hacer?"""
+            
+            botones = [
+                {"text": "📅 Agendar visita", "value": "AGENDAR"},
+                {"text": "💬 Más información", "value": "INFO"},
+                {"text": "🔄 Nueva consulta", "value": "REINICIAR"}
+            ]
+            
+            return {
+                'success': True,
+                'respuesta': respuesta,
+                'botones': botones,
+                'estado': estado,
+                'cotizacion': cotizacion
+            }
+            
+        except ValueError:
+            return {
+                'success': False,
+                'respuesta': "Por favor ingresa un número válido de pisos",
+                'botones': None,
+                'estado': estado,
+                'cotizacion': None
+            }
+    
+    # ETAPA 6: Post-cotización
+    elif etapa == "cotizacion":
+        if mensaje == "REINICIAR":
+            return procesar_mensaje_itse("", None)
+        elif mensaje == "INFO":
+            return {
+                'success': True,
+                'respuesta': """📞 **Puedes contactarnos:**
+
+**WhatsApp:** 906 315 961
+**Email:** ingenieria.teslaelectricidad@gmail.com
+**Dirección:** Jr. Los Narcisos Mz H lote 4, Huancayo
+
+¿Deseas agendar la visita técnica?""",
+                'botones': [
+                    {"text": "✅ Sí, agendar", "value": "AGENDAR"},
+                    {"text": "🔄 Nueva consulta", "value": "REINICIAR"}
+                ],
+                'estado': estado,
+                'cotizacion': None
+            }
+        elif mensaje == "AGENDAR":
+            return {
+                'success': True,
+                'respuesta': """✅ **¡Excelente decisión!**
+
+Nos comunicaremos contigo en las próximas 2 horas para coordinar la visita técnica GRATUITA.
+
+📞 WhatsApp: 906 315 961
+
+¡Gracias por confiar en Tesla Electricidad! ⚡""",
+                'botones': [
+                    {"text": "🏠 Inicio", "value": "REINICIAR"}
+                ],
+                'estado': estado,
+                'cotizacion': None
+            }
+    
+    return {
+        'success': False,
+        'respuesta': 'Error: Etapa desconocida',
+        'botones': None,
+        'estado': estado,
+        'cotizacion': None
+    }
+
+
+
 
 # ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0
@@ -97,7 +434,9 @@ CONTEXTOS_SERVICIOS = {
                 "🔌 Pozo a Tierra",
                 "🤖 Automatización",
                 "📹 CCTV",
-                "🌐 Redes"
+                "🌐 Redes",
+                "📄 Expedientes Técnicos",
+                "💧 Saneamiento"
             ],
             "refinamiento": [
                 "📝 Necesito más detalles técnicos",
@@ -2891,7 +3230,7 @@ async def chat_contextualizado(
         # 🔥 BYPASS DIRECTO PARA ITSE - Llamar directamente a ITSESpecialist
         if tipo_flujo == 'itse':
             try:
-                # ✅ NUEVO: Usar arquitectura modular con adapter
+                # ✅ NUEVA ARQUITECTURA CON GEMINI INTEGRADO
                 from app.services.pili.adapters.legacy_adapter import LocalSpecialistFactory
                 
                 logger.info(f"🔥 BYPASS DIRECTO: Usando ITSESpecialist para tipo_flujo='itse'")
@@ -4635,3 +4974,57 @@ def generar_preview_informe_ejecutivo_apa_editable(datos: Dict[str, Any], agente
 """
 
     return html
+
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 PILI ITSE CHATBOT - Endpoint con Lógica Autocontenida
+# ═══════════════════════════════════════════════════════════════
+
+@router.post("/pili-itse")
+async def chat_pili_itse_nuevo(request: ChatRequest):
+    """
+    Endpoint para PILI ITSE usando lógica autocontenida
+    
+    NO requiere imports externos - TODO está en este archivo
+    """
+    try:
+        # Extraer datos del request
+        mensaje = request.mensaje
+        estado = request.conversation_state if hasattr(request, 'conversation_state') else None
+        
+        logger.info(f"🤖 PILI ITSE - Mensaje: {mensaje[:50] if mensaje else 'INICIO'}...")
+        logger.info(f"📊 Estado: {estado}")
+        
+        # Procesar con función autocontenida
+        resultado = procesar_mensaje_itse(mensaje, estado)
+        
+        logger.info(f"✅ Resultado: success={resultado['success']}, cotizacion={resultado['cotizacion'] is not None}")
+        
+        # Formatear respuesta compatible con frontend
+        response = {
+            "success": resultado['success'],
+            "respuesta": resultado['respuesta'],
+            "botones_sugeridos": resultado['botones'],
+            "botones": resultado['botones'],
+            "state": resultado['estado'],
+            "conversation_state": resultado['estado'],
+            "datos_generados": resultado['cotizacion'],
+            "cotizacion_generada": resultado['cotizacion'] is not None,
+            "agente_pili": "PILI ITSE"
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error en PILI ITSE: {e}", exc_info=True)
+        return {
+            "success": False,
+            "respuesta": f"Lo siento, hubo un error. Por favor intenta de nuevo.",
+            "botones_sugeridos": None,
+            "botones": None,
+            "state": estado or {},
+            "conversation_state": estado or {},
+            "datos_generados": None,
+            "cotizacion_generada": False,
+            "agente_pili": "PILI ITSE"
+        }

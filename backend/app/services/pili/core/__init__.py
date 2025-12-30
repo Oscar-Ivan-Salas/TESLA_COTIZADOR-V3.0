@@ -1,9 +1,16 @@
 """
-Core engines for PILI modular architecture
+🧠 Core - Componentes centrales de PILI
 """
 
-from .conversation_engine import ConversationEngine
-from .validation_engine import ValidationEngine
-from .calculation_engine import CalculationEngine
+from .config_loader import ConfigLoader, get_config_loader
+from .fallback_manager import FallbackManager, get_fallback_manager
+from .multi_ia_manager import MultiIAManager, get_multi_ia_manager
 
-__all__ = ['ConversationEngine', 'ValidationEngine', 'CalculationEngine']
+__all__ = [
+    'ConfigLoader',
+    'get_config_loader',
+    'FallbackManager',
+    'get_fallback_manager',
+    'MultiIAManager',
+    'get_multi_ia_manager'
+]

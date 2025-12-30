@@ -82,19 +82,42 @@ class LocalSpecialistFactory:
     
     Crea especialistas usando la nueva arquitectura modular
     pero con interfaz legacy.
+    
+    ✅ FIX: Usa patrón Singleton para reutilizar instancias
     """
+    
+    # Cache de instancias por servicio
+    _instances = {}
     
     @staticmethod
     def create(service_name: str, document_type: str = "cotizacion-simple"):
         """
         Crea un especialista con interfaz legacy.
+        ✅ FIX: Reutiliza instancia existente en lugar de crear nueva
         
         Args:
             service_name: Nombre del servicio
             document_type: Tipo de documento (opcional)
         
         Returns:
-            LegacySpecialistAdapter configurado
+            LegacySpecialistAdapter configurado (reutilizado si existe)
         """
-        logger.info(f"🏭 Factory creando especialista: {service_name}")
-        return LegacySpecialistAdapter(service_name, document_type)
+        # Crear clave única para cache
+        cache_key = f"{service_name}_{document_type}"
+        
+        # Si ya existe, reutilizar
+        if cache_key in LocalSpecialistFactory._instances:
+            logger.info(f"♻️ Reutilizando especialista existente: {service_name}")
+            return LocalSpecialistFactory._instances[cache_key]
+        
+        # Si no existe, crear nuevo y cachear
+        logger.info(f"🏭 Factory creando NUEVO especialista: {service_name}")
+        instance = LegacySpecialistAdapter(service_name, document_type)
+        LocalSpecialistFactory._instances[cache_key] = instance
+        return instance
+    
+    @staticmethod
+    def clear_cache():
+        """Limpia el cache de instancias"""
+        LocalSpecialistFactory._instances = {}
+        logger.info("🗑️ Cache de especialistas limpiado")

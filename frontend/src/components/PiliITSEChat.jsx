@@ -18,13 +18,16 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
     const [hasQuote, setHasQuote] = useState(false); // Estado para habilitar botón Finalizar
     const messagesEndRef = useRef(null);
 
-    // Colores corporativos Tesla EXACTOS (según tailwind.config.js e index.css)
+
+    // ✨ Colores corporativos Tesla - Rojos oscuros SÓLIDOS + Dorado
     const colors = {
-        primary: '#8B0000',      // tesla-red-900 (Oficial)
-        secondary: '#D4AF37',    // tesla-gold-500 (Oficial)
-        dark: '#450a0a',         // tesla-red-950 (Fondo oscuro)
-        light_red: '#b91c1c',    // tesla-red-700 (Gradiente)
-        gold_highlight: '#facc15' // tesla-gold-400 (Brillo)
+        primary: '#5C0A0A',           // Rojo oscuro SÓLIDO (fondo principal)
+        secondary: '#D4AF37',          // Dorado Tesla (letras)
+        dark: '#2D0505',              // Rojo muy oscuro SÓLIDO (header)
+        light_red: '#8B0000',         // Rojo medio SÓLIDO (gradientes)
+        gold_highlight: '#FFD700',     // Dorado brillante (acentos)
+        white: '#FFFFFF',              // Blanco para contraste
+        chatBg: '#F5F5F5'             // Fondo claro para área de chat
     };
 
     const initialized = useRef(false);
@@ -52,7 +55,9 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                 { text: '🍽️ Restaurante', value: 'RESTAURANTE' },
                 { text: '🏢 Oficina', value: 'OFICINA' },
                 { text: '🏭 Industrial', value: 'INDUSTRIAL' },
-                { text: '🎭 Encuentro', value: 'ENCUENTRO' }
+                { text: '🎭 Encuentro', value: 'ENCUENTRO' },
+                { text: '🔌 Pozo a Tierra', value: 'POZO_TIERRA' },
+                { text: '⚙️ Automatización', value: 'AUTOMATIZACION' }
             ]
         );
     }, []);
@@ -94,19 +99,11 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
         setIsTyping(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/chat/chat-contextualizado', {
+            const response = await fetch('http://localhost:8000/api/chat/pili-itse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    tipo_flujo: 'itse',
                     mensaje: mensaje,
-                    historial: conversacion.map(msg => ({
-                        tipo: msg.sender === 'bot' ? 'asistente' : 'usuario',
-                        mensaje: msg.text
-                    })),
-                    contexto_adicional: 'Servicio: itse',
-                    generar_html: true,
-                    // CRÍTICO: Enviar estado de conversación para mantener flujo lógico
                     conversation_state: conversationState
                 })
             });
@@ -177,10 +174,10 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
 
             {/* Header */}
             <div style={{
-                background: `linear-gradient(90deg, ${colors.primary}, ${colors.light_red})`,
-                padding: '20px',
-                borderRadius: '20px 20px 0 0',
+                background: `linear-gradient(135deg, ${colors.dark}, ${colors.primary})`,
                 borderBottom: `3px solid ${colors.secondary}`,
+                padding: '20px 24px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between'
@@ -190,12 +187,13 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                         width: '60px',
                         height: '60px',
                         borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${colors.secondary}, ${colors.gold_highlight})`,
+                        background: colors.secondary,
+                        padding: '12px',
+                        boxShadow: '0 4px 15px rgba(212, 175, 55, 0.4)',
+                        border: `2px solid ${colors.gold_highlight}`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 0 15px rgba(212, 175, 55, 0.4)',
-                        border: `2px solid ${colors.dark}`
                     }}>
                         <Zap size={32} color={colors.dark} strokeWidth={2.5} fill={colors.dark} />
                     </div>
@@ -261,26 +259,28 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                                             key={btnIndex}
                                             onClick={() => handleButtonClick(btn.value, btn.text)}
                                             style={{
-                                                background: 'white',
+                                                background: colors.white,
                                                 color: colors.primary,
-                                                border: `1px solid ${colors.secondary}`,
-                                                padding: '8px 16px',
-                                                borderRadius: '20px',
+                                                border: `2px solid ${colors.secondary}`,
+                                                padding: '10px 18px',
+                                                borderRadius: '12px',
                                                 cursor: 'pointer',
+                                                transition: 'all 0.3s ease',
                                                 fontWeight: '600',
-                                                fontSize: '13px',
-                                                transition: 'all 0.2s',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                                fontSize: '14px',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                                             }}
                                             onMouseOver={(e) => {
                                                 e.target.style.background = colors.secondary;
-                                                e.target.style.color = 'black';
+                                                e.target.style.color = colors.dark;
                                                 e.target.style.transform = 'translateY(-2px)';
+                                                e.target.style.boxShadow = '0 4px 12px rgba(212, 175, 55, 0.4)';
                                             }}
                                             onMouseOut={(e) => {
-                                                e.target.style.background = 'white';
+                                                e.target.style.background = colors.white;
                                                 e.target.style.color = colors.primary;
                                                 e.target.style.transform = 'translateY(0)';
+                                                e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
                                             }}
                                         >
                                             {btn.text}

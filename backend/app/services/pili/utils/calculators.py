@@ -89,65 +89,107 @@ def calculate_complex_quote(data: Dict[str, Any]) -> Dict[str, Any]:
 
 def calculate_itse_quote(data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Calcula cotización ITSE según categoría y tipo.
+    Calcula cotización ITSE según categoría, área y pisos.
+    Usa precios reales del YAML (TUPA + Tesla).
     
     Args:
-        data: Datos ITSE (categoria, tipo, area_m2, pisos)
+        data: Datos ITSE (categoria, tipo, area, pisos)
     
     Returns:
-        Dict con cálculos ITSE
+        Dict con cálculos ITSE reales
     """
+    import yaml
+    from pathlib import Path
+    
+    # Cargar configuración YAML
+    config_path = Path(__file__).parent.parent / 'config' / 'itse.yaml'
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+    
     categoria = data.get("categoria", "SALUD")
-    tipo = data.get("tipo", "Hospital")
-    area = data.get("area_m2", 100)
-    pisos = data.get("pisos", 1)
+    area = float(data.get("area", 100))
+    pisos = int(data.get("pisos", 1))
     
-    # Precios base ITSE
-    precios_base_itse = {
-        "SALUD": {"Hospital": 800, "Clínica": 600, "Centro de Salud": 400},
-        "EDUCACION": {"Universidad": 700, "Colegio": 500, "Instituto": 450},
-        "COMERCIO": {"Centro Comercial": 900, "Tienda": 400, "Supermercado": 700},
-        "HOSPEDAJE": {"Hotel": 750, "Hostal": 500, "Apart-hotel": 650},
-        "INDUSTRIA": {"Fábrica": 1000, "Almacén": 600, "Taller": 500}
-    }
+    # Determinar nivel de riesgo según reglas
+    riesgo = _calcular_riesgo_itse(categoria, area, pisos, config)
     
-    precio_base = precios_base_itse.get(categoria, {}).get(tipo, 500)
+    # Obtener precios según nivel de riesgo
+    precios_muni = config['precios_municipales'][riesgo]
+    precios_tesla = config['precios_tesla'][riesgo]
     
-    # Factor por área
-    factor_area = 1.0
-    if area > 500:
-        factor_area = 1.2
-    elif area > 1000:
-        factor_area = 1.5
+    costo_tupa = precios_muni['precio']
+    costo_tesla_min = precios_tesla['min']
+    costo_tesla_max = precios_tesla['max']
+    incluye_tesla = precios_tesla['incluye']
+    dias = precios_muni['dias']
     
-    # Factor por pisos
-    factor_pisos = 1.0 + (pisos - 1) * 0.1
-    
-    # Cálculo
-    subtotal = precio_base * factor_area * factor_pisos
-    igv = subtotal * 0.18
-    total = subtotal + igv
+    # Calcular totales
+    total_min = costo_tupa + costo_tesla_min
+    total_max = costo_tupa + costo_tesla_max
     
     return {
         **data,
+        "riesgo": riesgo,
+        "costo_tupa": costo_tupa,
+        "costo_tesla_min": costo_tesla_min,
+        "costo_tesla_max": costo_tesla_max,
+        "incluye_tesla": incluye_tesla,
+        "total_min": total_min,
+        "total_max": total_max,
+        "dias": dias,
         "items": [
             {
-                "descripcion": f"Certificado ITSE - {categoria} - {tipo}",
+                "descripcion": f"Derecho Municipal TUPA - Riesgo {riesgo}",
                 "cantidad": 1,
                 "unidad": "servicio",
-                "precio_unitario": subtotal,
-                "subtotal": subtotal
+                "precio_unitario": costo_tupa,
+                "subtotal": costo_tupa
+            },
+            {
+                "descripcion": f"Servicio Técnico TESLA - {incluye_tesla}",
+                "cantidad": 1,
+                "unidad": "servicio",
+                "precio_unitario": costo_tesla_min,
+                "subtotal": costo_tesla_min
             }
         ],
-        "subtotal": subtotal,
-        "igv": igv,
-        "total": total,
-        "detalles": {
-            "precio_base": precio_base,
-            "factor_area": factor_area,
-            "factor_pisos": factor_pisos
-        }
+        "subtotal": total_min,
+        "total": total_min
     }
+
+
+def _calcular_riesgo_itse(categoria: str, area: float, pisos: int, config: Dict) -> str:
+    """
+    Calcula nivel de riesgo ITSE según categoría, área y pisos.
+    
+    Returns:
+        Nivel de riesgo: BAJO, MEDIO, ALTO, MUY_ALTO
+    """
+    reglas = config.get('reglas_calculo_riesgo', {}).get(categoria, [])
+    
+    for regla in reglas:
+        condicion = regla['condicion']
+        
+        # Evaluar condición (simple)
+        if 'area > 1000' in condicion and area > 1000:
+            return regla['resultado']
+        elif 'area > 500' in condicion and area > 500:
+            return regla['resultado']
+        elif 'area > 300' in condicion and area > 300:
+            return regla['resultado']
+        elif 'pisos >= 3' in condicion and pisos >= 3:
+            return regla['resultado']
+        elif 'pisos >= 2' in condicion and pisos >= 2:
+            return regla['resultado']
+        elif 'area <= 500' in condicion and area <= 500:
+            return regla['resultado']
+        elif 'area <= 300' in condicion and area <= 300:
+            return regla['resultado']
+    
+    # Default según categoría
+    categoria_info = config.get('categorias', {}).get(categoria, {})
+    return categoria_info.get('riesgo_default', 'MEDIO')
+
 
 
 def calculate_project_budget(data: Dict[str, Any]) -> Dict[str, Any]:
