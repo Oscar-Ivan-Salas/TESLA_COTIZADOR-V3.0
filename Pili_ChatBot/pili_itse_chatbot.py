@@ -282,12 +282,27 @@ class PILIITSEChatBot:
                 {"text": "🔄 Nueva consulta", "value": "REINICIAR"}
             ]
             
+            # ✅ Preparar datos_generados para frontend
+            datos_generados = {
+                "proyecto": {
+                    "nombre": f"Certificado ITSE - {estado.get('categoria', 'COMERCIO')}",
+                    "area_m2": estado.get("area", 0),
+                    "pisos": pisos,
+                    "nivel_riesgo": estado.get("riesgo", "MEDIO")
+                },
+                "items": cotizacion["items"],
+                "subtotal": cotizacion["subtotal"],
+                "igv": cotizacion["igv"],
+                "total": cotizacion["total"]
+            }
+
             return {
                 'success': True,
                 'respuesta': respuesta,
                 'botones': botones,
                 'estado': estado,
-                'cotizacion': cotizacion
+                'cotizacion': cotizacion,
+                'datos_generados': datos_generados  # ✅ PARA TABLA FRONTEND
             }
             
         except ValueError:
@@ -367,13 +382,43 @@ Nos comunicaremos contigo en las próximas 2 horas para coordinar la visita téc
         return self.knowledge_base["categorias"][categoria]["riesgo_base"]
     
     def _generar_cotizacion(self, riesgo: str, categoria: str, tipo: str, area: float, pisos: int) -> Dict:
-        """Genera la cotización ITSE"""
+        """Genera la cotización ITSE con items para tabla"""
         municipal = self.knowledge_base["precios_municipales"][riesgo]
         tesla = self.knowledge_base["precios_tesla"][riesgo]
-        
+
+        # Usar precio promedio Tesla
+        precio_tesla = (tesla["min"] + tesla["max"]) / 2
+
+        # ✅ GENERAR ITEMS para tabla "Detalle de la Cotización"
+        items = [
+            {
+                "descripcion": f"Certificado ITSE - Nivel {riesgo.replace('_', ' ')}",
+                "cantidad": 1,
+                "unidad": "servicio",
+                "precio_unitario": municipal["precio"]
+            },
+            {
+                "descripcion": "Servicio técnico profesional - Evaluación + Planos + Gestión",
+                "cantidad": 1,
+                "unidad": "servicio",
+                "precio_unitario": precio_tesla
+            },
+            {
+                "descripcion": "Visita técnica gratuita",
+                "cantidad": 1,
+                "unidad": "servicio",
+                "precio_unitario": 0.0
+            }
+        ]
+
+        # Calcular totales
+        subtotal = sum(item["cantidad"] * item["precio_unitario"] for item in items)
+        igv = subtotal * 0.18
+        total = subtotal + igv
+
         total_min = municipal["precio"] + tesla["min"]
         total_max = municipal["precio"] + tesla["max"]
-        
+
         return {
             "categoria": categoria,
             "tipo": tipo,
@@ -385,7 +430,12 @@ Nos comunicaremos contigo en las próximas 2 horas para coordinar la visita téc
             "costo_tesla_max": tesla["max"],
             "total_min": total_min,
             "total_max": total_max,
-            "dias": municipal["dias"]
+            "dias": municipal["dias"],
+            # ✅ NUEVOS CAMPOS para tabla
+            "items": items,
+            "subtotal": subtotal,
+            "igv": igv,
+            "total": total
         }
 
 

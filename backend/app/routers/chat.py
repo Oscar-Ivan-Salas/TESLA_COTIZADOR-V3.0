@@ -2888,40 +2888,39 @@ async def chat_contextualizado(
         botones_sugeridos = []  # Inicializar para evitar UnboundLocalError
         datos_generados = {}
         
-        # 🔥 BYPASS DIRECTO PARA ITSE - Llamar directamente a ITSESpecialist
+        # 🔥 CAJA NEGRA ITSE - Usar PILIITSEChatBot independiente
         if tipo_flujo == 'itse':
             try:
-                from app.services.pili_local_specialists import LocalSpecialistFactory
-                
-                logger.info(f"🔥 BYPASS DIRECTO: Usando ITSESpecialist para tipo_flujo='itse'")
-                
-                # Crear especialista ITSE directamente
-                specialist = LocalSpecialistFactory.create('itse')
-                
+                from Pili_ChatBot.pili_itse_chatbot import PILIITSEChatBot
+
+                logger.info(f"🔥 CAJA NEGRA: Usando PILIITSEChatBot para tipo_flujo='itse'")
+
+                # Crear chatbot ITSE
+                chatbot = PILIITSEChatBot()
+
                 # Procesar mensaje con estado de conversación
-                response = specialist.process_message(mensaje, conversation_state)
-                
-                logger.info(f"✅ ITSESpecialist respondió: {response.get('texto', '')[:100]}")
-                
-                # Retornar respuesta directamente
+                resultado = chatbot.procesar(mensaje, conversation_state)
+
+                logger.info(f"✅ Chatbot respondió: {resultado.get('respuesta', '')[:100]}")
+
+                # Retornar respuesta con datos_generados
                 return {
-                    "success": True,
-                    "respuesta": response.get("texto", ""),
-                    "botones_sugeridos": response.get("botones", []),
-                    "botones": response.get("botones", []),
-                    "state": response.get("state"),
-                    "conversation_state": response.get("state"),
-                    "datos_generados": response.get("datos_generados"),
-                    "cotizacion_generada": response.get("cotizacion_generada"),
-                    "html_preview": response.get("html_preview", ""),
+                    "success": resultado.get("success", True),
+                    "respuesta": resultado.get("respuesta", ""),
+                    "botones_sugeridos": resultado.get("botones", []),
+                    "botones": resultado.get("botones", []),
+                    "state": resultado.get("estado"),
+                    "conversation_state": resultado.get("estado"),
+                    "datos_generados": resultado.get("datos_generados"),  # ✅ ITEMS PARA TABLA
+                    "cotizacion": resultado.get("cotizacion"),
                     "agente_pili": nombre_pili
                 }
-                
+
             except Exception as e:
-                logger.error(f"❌ Error en bypass ITSE: {e}")
+                logger.error(f"❌ Error en chatbot ITSE: {e}")
                 import traceback
                 traceback.print_exc()
-                # Si falla el bypass, continuar con el flujo normal
+                # Si falla, continuar con flujo normal
         
         # ✅ USAR PILI INTEGRATOR PARA CONVERSACION INTELIGENTE
         try:
