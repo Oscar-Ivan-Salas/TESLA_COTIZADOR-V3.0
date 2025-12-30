@@ -819,7 +819,22 @@ KNOWLEDGE_BASE = {
                 "mas_1000m2": 982.00
             }
         },
-        
+
+        # ✅ Precios simplificados para cálculos rápidos
+        "precios_municipales": {
+            "BAJO": {"precio": 368.30, "renovacion": 90.30, "dias": 7, "descripcion": "Riesgo Bajo"},
+            "MEDIO": {"precio": 491.00, "renovacion": 109.40, "dias": 7, "descripcion": "Riesgo Medio"},
+            "ALTO": {"precio": 613.80, "renovacion": 417.40, "dias": 7, "descripcion": "Riesgo Alto"},
+            "MUY_ALTO": {"precio": 736.50, "renovacion": 629.20, "dias": 7, "descripcion": "Riesgo Muy Alto"}
+        },
+
+        "precios_tesla": {
+            "BAJO": {"min": 300, "max": 500, "incluye": "Evaluación + Planos básicos + Gestión"},
+            "MEDIO": {"min": 450, "max": 650, "incluye": "Evaluación + Planos + Memoria + Gestión"},
+            "ALTO": {"min": 600, "max": 850, "incluye": "Evaluación completa + Expediente técnico + Gestión"},
+            "MUY_ALTO": {"min": 800, "max": 1200, "incluye": "Evaluación integral + Expediente + Protocolo + Gestión"}
+        },
+
         "normativa": "Ley N° 28976 - Reglamento de Inspecciones Técnicas de Seguridad en Edificaciones",
         "etapas": ["initial", "categoria", "tipo_especifico", "area", "pisos", "quotation"]
     }
@@ -883,12 +898,12 @@ class LocalSpecialist:
         try:
             valor_limpio = valor.strip().replace(',', '.')
             num = int(float(valor_limpio)) if tipo == 'entero' else float(valor_limpio)
-            
-            if num <= min_val:
-                return False, None, f'El valor debe ser mayor a {min_val}'
+
+            if num < min_val:
+                return False, None, f'El valor debe ser mayor o igual a {min_val}'
             if max_val and num > max_val:
-                return False, None, f'El valor debe ser menor a {max_val}'
-            
+                return False, None, f'El valor debe ser menor o igual a {max_val}'
+
             return True, num, ''
         except ValueError:
             return False, None, 'Por favor ingresa un nmero vlido'
@@ -1358,11 +1373,49 @@ _Escribe el número (ejemplo: 2)_""",
         return self.kb["categorias"][categoria]["riesgo_default"]
     
     def _generar_cotizacion_itse(self, riesgo: str) -> Dict:
+        data = self.conversation_state["data"]
+        categoria = data.get("categoria", "COMERCIO")
+        area = data.get("area", 0)
+        pisos = data.get("pisos", 1)
+
         municipal = self.kb["precios_municipales"][riesgo]
         tesla = self.kb["precios_tesla"][riesgo]
+
+        # Usar precio promedio Tesla para la cotización
+        precio_tesla = (tesla["min"] + tesla["max"]) / 2
+
+        # ✅ GENERAR ITEMS en formato tabla "Detalle de la Cotización"
+        items = []
+
+        items.append({
+            "descripcion": f"Certificado ITSE - Nivel {riesgo.replace('_', ' ')}",
+            "cantidad": 1,
+            "unidad": "servicio",
+            "precio_unitario": municipal["precio"]
+        })
+
+        items.append({
+            "descripcion": f"Servicio técnico profesional - {tesla['incluye']}",
+            "cantidad": 1,
+            "unidad": "servicio",
+            "precio_unitario": precio_tesla
+        })
+
+        items.append({
+            "descripcion": "Visita técnica gratuita",
+            "cantidad": 1,
+            "unidad": "servicio",
+            "precio_unitario": 0
+        })
+
+        # Calcular totales
+        subtotal = sum(item["cantidad"] * item["precio_unitario"] for item in items)
+        igv = subtotal * 0.18
+        total = subtotal + igv
+
         total_min = municipal["precio"] + tesla["min"]
         total_max = municipal["precio"] + tesla["max"]
-        
+
         texto = f"""📊 **COTIZACIÓN ITSE - NIVEL {riesgo.replace('_', ' ')}**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -1377,7 +1430,8 @@ _Escribe el número (ejemplo: 2)_""",
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **📈 TOTAL ESTIMADO:**
-**S/ {total_min} - {total_max}**
+**S/ {total_min:.2f} - {total_max:.2f}** (sin IGV)
+**S/ {total:.2f}** (con IGV 18%)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 ⏱️ **Tiempo:** {municipal["dias"]} días hábiles
@@ -1385,7 +1439,7 @@ _Escribe el número (ejemplo: 2)_""",
 ✅ **Garantía:** 100% aprobación
 
 ¿Qué deseas hacer?"""
-        
+
         return {
             "texto": texto,
             "botones": [
@@ -1395,10 +1449,16 @@ _Escribe el número (ejemplo: 2)_""",
             "stage": "quotation",
             "state": self.conversation_state,
             "datos_generados": {
-                "servicio": "ITSE",
-                "nivel_riesgo": riesgo,
-                "total_min": total_min,
-                "total_max": total_max
+                "proyecto": {
+                    "nombre": f"Certificado ITSE - {categoria}",
+                    "area_m2": area,
+                    "pisos": pisos,
+                    "nivel_riesgo": riesgo
+                },
+                "items": items,
+                "subtotal": subtotal,
+                "igv": igv,
+                "total": total
             },
             "progreso": "5/5"
         }
@@ -3602,21 +3662,40 @@ class ITSESpecialist(LocalSpecialist):
     def _process_itse(self, message: str) -> Dict:
         stage = self.conversation_state["stage"]
         data = self.conversation_state["data"]
-        
+
+        # 🔥 DETECTAR CATEGORÍA PRIMERO (antes de stage=="initial")
+        message_upper = message.upper().strip()
+        if message_upper in self.kb.get("categorias", {}).keys():
+            # Usuario seleccionó categoría válida
+            data["categoria"] = message_upper
+            categoria_info = self.kb["categorias"][message_upper]
+            tipos = categoria_info.get("tipos", [])
+            botones = [{"text": t, "value": t} for t in tipos]
+
+            self.conversation_state["stage"] = "tipo_especifico"
+
+            return {
+                "texto": f"Perfecto, sector **{categoria_info['nombre']}**. ¿Qué tipo específico es?",
+                "botones": botones,
+                "stage": "tipo_especifico",
+                "state": self.conversation_state,
+                "progreso": "2/5"
+            }
+
         # 1. ETAPA INICIAL: Mostrar Categorías
         if stage == "initial":
             categorias = self.kb.get("categorias", {})
             botones = []
-            
+
             for key, info in categorias.items():
                 botones.append({
                     "text": f"{info.get('icon', '')} {info.get('nombre', key)}",
                     "value": key
                 })
-            
+
             return {
                 "texto": """¡Hola! 👋 Soy **Pili**, tu especialista en certificados ITSE de **Tesla Electricidad - Huancayo**.
-    
+
 🎯 Te ayudo a obtener tu certificado ITSE con:
 ✅ Visita técnica GRATUITA
 ✅ Precios oficiales TUPA Huancayo
@@ -3628,43 +3707,23 @@ Selecciona tu tipo de establecimiento:""",
                 "state": self.conversation_state,
                 "progreso": "1/5"
             }
-        
-        # 2. SELECCIÓN DE CATEGORÍA -> PREGUNTAR TIPO ESPECÍFICO
-        elif stage == "tipo_especifico" or (stage == "initial" and message in self.kb.get("categorias", {})):
-            # Guardar categoría
-            data["categoria"] = message
-            categoria_info = self.kb["categorias"][message]
-            
-            # Preparar botones de tipos específicos
-            tipos = categoria_info.get("tipos", [])
-            botones = [{"text": t, "value": t} for t in tipos]
-            
+
+        # 2. TIPO ESPECÍFICO -> PREGUNTAR ÁREA
+        elif stage == "tipo_especifico":
+            # Guardar tipo específico
+            data["tipo_especifico"] = message
+
             self.conversation_state["stage"] = "area"
-            
+
             return {
-                "texto": f"Perfecto, sector **{categoria_info['nombre']}**. ¿Qué tipo específico es?",
-                "botones": botones,
-                "stage": "tipo_especifico",
-                "state": self.conversation_state,
-                "progreso": "2/5"
-            }
-        
-        # 3. SELECCIÓN TIPO -> PREGUNTAR ÁREA
-        elif stage == "area" or (stage == "tipo_especifico" and message):
-            if stage == "tipo_especifico":
-                data["tipo_especifico"] = message
-            
-            self.conversation_state["stage"] = "pisos"
-            
-            return {
-                "texto": f"Entendido, es un **{data.get('tipo_especifico', 'establecimiento')}**.\n\n¿Cuál es el área total en m²?\n_(Escribe solo el número, ej: 150)_",
+                "texto": f"Entendido, es un **{message}**.\n\n¿Cuál es el área total en m²?\n_(Escribe solo el número, ej: 150)_",
                 "stage": "area",
                 "state": self.conversation_state,
                 "progreso": "3/5"
             }
-        
-        # 4. ÁREA -> PREGUNTAR PISOS
-        elif stage == "pisos":
+
+        # 3. ÁREA -> PREGUNTAR PISOS
+        elif stage == "area":
             # Validar área
             es_valido, area, error = self._validar_numero(message, 'float', 10, 10000)
             if not es_valido:
@@ -3673,19 +3732,19 @@ Selecciona tu tipo de establecimiento:""",
                     "stage": "area",
                     "state": self.conversation_state
                 }
-            
+
             data["area"] = area
-            self.conversation_state["stage"] = "quotation"
-            
+            self.conversation_state["stage"] = "pisos"
+
             return {
                 "texto": f"📐 Área: **{area} m²**\n\n¿Cuántos pisos tiene el establecimiento?",
                 "stage": "pisos",
                 "state": self.conversation_state,
                 "progreso": "4/5"
             }
-            
-        # 5. PISOS -> GENERAR COTIZACIÓN
-        elif stage == "quotation":
+
+        # 4. PISOS -> GENERAR COTIZACIÓN
+        elif stage == "pisos":
             # Validar pisos
             es_valido, pisos, error = self._validar_numero(message, 'entero', 1, 50)
             if not es_valido:
@@ -3694,8 +3753,9 @@ Selecciona tu tipo de establecimiento:""",
                     "stage": "pisos",
                     "state": self.conversation_state
                 }
-            
+
             data["pisos"] = pisos
+            self.conversation_state["stage"] = "quotation"
             
             # CALCULAR RIESGO Y PRECIO
             riesgo, razon = self._calcular_riesgo(data)
@@ -3743,27 +3803,37 @@ Selecciona tu tipo de establecimiento:""",
                 "stage": "completed",
                 "state": self.conversation_state,
                 "progreso": "5/5",
-                # IMPORTANTE: Retornamos datos_generados para que el frontend active el botón "Finalizar"
+                # ✅ DATOS_GENERADOS en formato tabla "Detalle de la Cotización"
                 "datos_generados": {
-                    "tipo_flujo": "cotizacion-simple",
-                    "servicio": "Certificado de Inspección Técnica (ITSE)",
+                    "proyecto": {
+                        "nombre": f"Certificado ITSE - {data.get('categoria', 'COMERCIO')}",
+                        "area_m2": data.get("area", 0),
+                        "pisos": data.get("pisos", 1),
+                        "nivel_riesgo": riesgo
+                    },
                     "items": [
-                        {"descripcion": f"Derecho Municipal ITSE ({riesgo})", "cantidad": 1, "precio_unitario": precios_muni.get('precio', 0), "total": precios_muni.get('precio', 0)},
-                        {"descripcion": f"Servicio Técnico Tesla ({riesgo})", "cantidad": 1, "precio_unitario": precios_tesla.get('max', 0), "total": precios_tesla.get('max', 0)}
+                        {
+                            "descripcion": f"Certificado ITSE - Nivel {riesgo}",
+                            "cantidad": 1,
+                            "unidad": "servicio",
+                            "precio_unitario": precios_muni.get('precio', 0)
+                        },
+                        {
+                            "descripcion": f"Servicio técnico profesional - {precios_tesla.get('incluye', 'Gestión completa')}",
+                            "cantidad": 1,
+                            "unidad": "servicio",
+                            "precio_unitario": (precios_tesla.get('min', 0) + precios_tesla.get('max', 0)) / 2
+                        },
+                        {
+                            "descripcion": "Visita técnica gratuita",
+                            "cantidad": 1,
+                            "unidad": "servicio",
+                            "precio_unitario": 0
+                        }
                     ],
-                    "total": total_max,
-                    "moneda": "PEN",
-                    "observaciones": [
-                        "Servicio conforme al Nuevo Reglamento de Inspecciones ITSE",
-                        "Incluye asesoría técnica durante la Visita de Inspección",
-                        "Levantamiento de observaciones documentarias incluidas",
-                        "No incluye costos de reparaciones físicas o implementaciones mayores",
-                        "Precios referenciales sujetos a verificación en visita técnica"
-                    ]
-                },
-                "cotizacion_generada": {  # Flag explícito para activar botón
-                    "total": total_max,
-                    "items": []
+                    "subtotal": precios_muni.get('precio', 0) + (precios_tesla.get('min', 0) + precios_tesla.get('max', 0)) / 2,
+                    "igv": (precios_muni.get('precio', 0) + (precios_tesla.get('min', 0) + precios_tesla.get('max', 0)) / 2) * 0.18,
+                    "total": (precios_muni.get('precio', 0) + (precios_tesla.get('min', 0) + precios_tesla.get('max', 0)) / 2) * 1.18
                 }
             }
             
