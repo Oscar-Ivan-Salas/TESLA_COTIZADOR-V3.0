@@ -147,3 +147,11 @@ storage/generados/*
 !storage/generados/documento_azul_tesla.docx
 !storage/generados/documento_rojo_energia.docx
 !storage/generados/documento_verde_ecologico.docx
+
+# ===================================
+# Testing / Demo Outputs
+# ===================================
+cotizacion_*.json
+informe_*.txt
+cotizacion_*.docx
+cotizacion_*.pdf
