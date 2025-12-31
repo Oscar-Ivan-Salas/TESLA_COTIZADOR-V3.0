@@ -65,6 +65,26 @@ pili_brain = PILIBrain()
 router = APIRouter()
 
 # ═══════════════════════════════════════════════════════════════
+# 🤖 PILI ITSE - IMPORTAR CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+import sys
+from pathlib import Path
+
+# Agregar carpeta raíz al path
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+try:
+    from Pili_ChatBot.pili_itse_chatbot import PILIITSEChatBot
+    # Crear instancia global de la caja negra
+    pili_itse_bot = PILIITSEChatBot()
+    logger.info("✅ Caja negra PILI ITSE inicializada correctamente")
+except Exception as e:
+    logger.error(f"❌ Error importando caja negra PILI ITSE: {e}")
+    pili_itse_bot = None
+
+# ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0
 # ═══════════════════════════════════════════════════════════════
 
