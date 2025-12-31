@@ -185,6 +185,7 @@ class ChatRequest(BaseModel):
     contexto: Optional[List[ChatMessage]] = Field(None, description="Historial de chat")
     cliente: Optional[str] = Field(None, description="Nombre del cliente")
     proyecto: Optional[str] = Field(None, description="Nombre del proyecto")
+    conversation_state: Optional[dict] = Field(None, description="Estado de la conversación para chatbots stateless")
 
 class ChatResponse(BaseModel):
     """Schema de respuesta del chat"""
