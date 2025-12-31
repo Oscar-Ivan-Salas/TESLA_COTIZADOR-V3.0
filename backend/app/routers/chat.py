@@ -4684,7 +4684,7 @@ async def chat_pili_itse(request: ChatRequest):
         
         # Extraer datos del request
         mensaje = request.mensaje
-        estado = request.conversation_state if hasattr(request, 'conversation_state') else None
+        estado = request.conversation_state or {}  # ✅ FIX: Usar dict vacío si es None
         
         logger.info(f"📥 REQUEST COMPLETO:")
         logger.info(f"   - mensaje: '{mensaje}'")
