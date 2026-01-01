@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
@@ -1796,11 +1796,7 @@ const CotizadorTesla30 = () => {
                   {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' ? (
                     <div className="col-span-6">
                       <PiliITSEChat
-                        onCotizacionGenerada={(cot) => {
-                          setCotizacion(cot);
-                          setDatosEditables(cot);
-                          setMostrarPreview(true);
-                        }}
+                        onDatosGenerados={(datos) => { console.log(' DATOS RECIBIDOS DE ITSE:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}

@@ -4709,7 +4709,7 @@ async def chat_pili_itse(request: ChatRequest):
         logger.info(f"✅ RESULTADO DE CAJA NEGRA:")
         logger.info(f"   - success: {resultado['success']}")
         logger.info(f"   - respuesta (primeros 100 chars): {resultado['respuesta'][:100]}...")
-        logger.info(f"   - botones: {len(resultado.get('botones', []))} botones")
+        # logger.info(f"   - botones: {len(resultado.get('botones') or [])} botones")
         logger.info(f"   - cotizacion: {'SÍ' if resultado.get('cotizacion') else 'NO'}")
         
         logger.info(f"📊 ESTADO DEVUELTO POR CAJA NEGRA:")
@@ -4731,6 +4731,9 @@ async def chat_pili_itse(request: ChatRequest):
             logger.warning(f"⚠️ NO HAY datos_generados en resultado")
 
         # Formatear respuesta
+        # La caja negra devuelve 'cotizacion', pero el frontend espera 'datos_generados'
+        cotizacion_data = resultado.get('cotizacion')
+        
         response = {
             "success": resultado['success'],
             "respuesta": resultado['respuesta'],
@@ -4738,11 +4741,12 @@ async def chat_pili_itse(request: ChatRequest):
             "botones": resultado.get('botones'),
             "state": resultado['estado'],
             "conversation_state": resultado['estado'],
-            "datos_generados": resultado.get('datos_generados'),  # ✅ CORREGIDO: usar datos_generados, no cotizacion
-            "cotizacion": resultado.get('cotizacion'),  # Mantener cotizacion separada
-            "cotizacion_generada": resultado.get('cotizacion') is not None,
+            "datos_generados": cotizacion_data,  # ✅ Mapear cotizacion → datos_generados
+            "cotizacion": cotizacion_data,
+            "cotizacion_generada": cotizacion_data is not None,
             "agente_pili": "PILI ITSE"
         }
+
         
         return response
         

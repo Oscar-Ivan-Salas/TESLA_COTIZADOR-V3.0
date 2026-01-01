@@ -11,7 +11,31 @@ import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
  * - Conectado con backend Python (/api/chat/chat-contextualizado)
  */
 const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
-    const [conversacion, setConversacion] = useState([]);
+    const [conversacion, setConversacion] = useState([
+        {
+            sender: 'bot',
+            text: `¡Hola! 👋 Soy **Pili**, tu especialista en certificados ITSE de **Tesla Electricidad - Huancayo**.
+
+🎯 Te ayudo a obtener tu certificado ITSE con:
+✅ Visita técnica GRATUITA
+✅ Precios oficiales TUPA Huancayo
+✅ Trámite 100% gestionado
+✅ Entrega en 7 días hábiles
+
+**Selecciona tu tipo de establecimiento:**`,
+            buttons: [
+                { text: '🏥 Salud', value: 'SALUD' },
+                { text: '🎓 Educación', value: 'EDUCACION' },
+                { text: '🏨 Hospedaje', value: 'HOSPEDAJE' },
+                { text: '🏪 Comercio', value: 'COMERCIO' },
+                { text: '🍽️ Restaurante', value: 'RESTAURANTE' },
+                { text: '🏢 Oficina', value: 'OFICINA' },
+                { text: '🏭 Industrial', value: 'INDUSTRIAL' },
+                { text: '🎭 Encuentro', value: 'ENCUENTRO' }
+            ],
+            timestamp: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+        }
+    ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [conversationState, setConversationState] = useState(null); // Estado de conversación del backend
@@ -27,39 +51,11 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
         gold_highlight: '#facc15' // tesla-gold-400 (Brillo)
     };
 
-    const initialized = useRef(false);
-
-    useEffect(() => {
-        if (initialized.current) return;
-        initialized.current = true;
-
-        // Mensaje de bienvenida inicial
-        addBotMessage(
-            `¡Hola! 👋 Soy **Pili**, tu especialista en certificados ITSE de **Tesla Electricidad - Huancayo**.
-
-🎯 Te ayudo a obtener tu certificado ITSE con:
-✅ Visita técnica GRATUITA
-✅ Precios oficiales TUPA Huancayo
-✅ Trámite 100% gestionado
-✅ Entrega en 7 días hábiles
-
-**Selecciona tu tipo de establecimiento:**`,
-            [
-                { text: '🏥 Salud', value: 'SALUD' },
-                { text: '🎓 Educación', value: 'EDUCACION' },
-                { text: '🏨 Hospedaje', value: 'HOSPEDAJE' },
-                { text: '🏪 Comercio', value: 'COMERCIO' },
-                { text: '🍽️ Restaurante', value: 'RESTAURANTE' },
-                { text: '🏢 Oficina', value: 'OFICINA' },
-                { text: '🏭 Industrial', value: 'INDUSTRIAL' },
-                { text: '🎭 Encuentro', value: 'ENCUENTRO' }
-            ]
-        );
-    }, []);
-
+    // Scroll automático al final de la conversación
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [conversacion]);
+
 
     const addBotMessage = (text, buttons = null) => {
         const mensaje = {
