@@ -98,6 +98,76 @@ except Exception as e:
     pili_electricidad_bot = None
 
 # ═══════════════════════════════════════════════════════════════
+# 🤖 PILI PUESTA A TIERRA - IMPORTAR CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_puesta_tierra_chatbot import PILIPuestaTierraChatBot
+    # Crear instancia global de la caja negra
+    pili_puesta_tierra_bot = PILIPuestaTierraChatBot()
+    logger.info("✅ Caja negra PILI PUESTA A TIERRA inicializada correctamente")
+except Exception as e:
+    logger.error(f"❌ Error importando caja negra PILI PUESTA A TIERRA: {e}")
+    pili_puesta_tierra_bot = None
+
+# ═══════════════════════════════════════════════════════════════
+# 🔥 PILI CONTRA INCENDIOS - IMPORTAR CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_contra_incendios_chatbot import PILIContraIncendiosChatBot
+    pili_contra_incendios_bot = PILIContraIncendiosChatBot()
+    logger.info("✅ Caja negra PILI CONTRA INCENDIOS inicializada correctamente")
+except Exception as e:
+    logger.error(f"❌ Error importando caja negra PILI CONTRA INCENDIOS: {e}")
+    pili_contra_incendios_bot = None
+
+# ═══════════════════════════════════════════════════════════════
+# 🏠 PILI DOMÓTICA - IMPORTAR CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_domotica_chatbot import PILIDomoticaChatBot
+    pili_domotica_bot = PILIDomoticaChatBot()
+    logger.info("✅ Caja negra PILI DOMÓTICA inicializada correctamente")
+except Exception as e:
+    logger.error(f"❌ Error importando caja negra PILI DOMÓTICA: {e}")
+    pili_domotica_bot = None
+
+try:
+    from Pili_ChatBot.pili_cctv_chatbot import PILICCTVChatBot
+    pili_cctv_bot = PILICCTVChatBot()
+    logger.info("✅ Caja negra PILI CCTV inicializada correctamente")
+except Exception as e:
+    logger.error(f"❌ Error importando caja negra PILI CCTV: {e}")
+    pili_cctv_bot = None
+
+try:
+    from Pili_ChatBot.pili_redes_chatbot import PILIRedesChatBot
+    pili_redes_bot = PILIRedesChatBot()
+    logger.info("✅ PILI REDES OK")
+except Exception as e:
+    pili_redes_bot = None
+
+try:
+    from Pili_ChatBot.pili_automatizacion_chatbot import PILIAutomatizacionChatBot
+    pili_automatizacion_bot = PILIAutomatizacionChatBot()
+    logger.info("✅ PILI AUTOMATIZACIÓN OK")
+except: pili_automatizacion_bot = None
+
+try:
+    from Pili_ChatBot.pili_expedientes_chatbot import PILIExpedientesChatBot
+    pili_expedientes_bot = PILIExpedientesChatBot()
+    logger.info("✅ PILI EXPEDIENTES OK")
+except: pili_expedientes_bot = None
+
+try:
+    from Pili_ChatBot.pili_saneamiento_chatbot import PILISaneamientoChatBot
+    pili_saneamiento_bot = PILISaneamientoChatBot()
+    logger.info("✅ PILI SANEAMIENTO OK")
+except: pili_saneamiento_bot = None
+
+# ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0
 # ═══════════════════════════════════════════════════════════════
 
@@ -4863,3 +4933,171 @@ async def chat_pili_electricidad(request: ChatRequest):
             "cotizacion_generada": False,
             "agente_pili": "PILI ELECTRICIDAD"
         }
+
+# ═══════════════════════════════════════════════════════════════
+# 🌍 ENDPOINT PILI PUESTA A TIERRA - CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+@router.post("/pili-puesta-tierra")
+async def chat_pili_puesta_tierra(request: ChatRequest):
+    """Endpoint para chat de PUESTA A TIERRA usando caja negra"""
+    try:
+        logger.info(f"🌍 PILI PUESTA A TIERRA - Mensaje recibido: '{request.mensaje[:50]}...'")
+        
+        if pili_puesta_tierra_bot is None:
+            logger.error("❌ Caja negra PILI PUESTA A TIERRA no está inicializada")
+            return {
+                "success": False,
+                "respuesta": "El servicio de puesta a tierra no está disponible temporalmente.",
+                "botones_sugeridos": None,
+                "botones": None,
+                "state": {},
+                "conversation_state": {},
+                "datos_generados": None,
+                "cotizacion_generada": False,
+                "agente_pili": "PILI PUESTA A TIERRA"
+            }
+        
+        estado = request.conversation_state
+        resultado = pili_puesta_tierra_bot.procesar(request.mensaje, estado)
+        
+        logger.info(f"✅ Resultado: success={resultado['success']}, etapa={resultado['estado'].get('etapa')}")
+        
+        datos_gen = resultado.get('datos_generados')
+        if datos_gen:
+            logger.info(f"📋 Datos generados: {len(datos_gen.get('items', []))} items, total={datos_gen.get('total')}")
+        
+        cotizacion_data = resultado.get('cotizacion')
+        
+        response = {
+            "success": resultado['success'],
+            "respuesta": resultado['respuesta'],
+            "botones_sugeridos": resultado.get('botones'),
+            "botones": resultado.get('botones'),
+            "state": resultado['estado'],
+            "conversation_state": resultado['estado'],
+            "datos_generados": datos_gen or cotizacion_data,
+            "cotizacion": cotizacion_data,
+            "cotizacion_generada": cotizacion_data is not None,
+            "agente_pili": "PILI PUESTA A TIERRA"
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error en PILI PUESTA A TIERRA: {e}", exc_info=True)
+        return {
+            "success": False,
+            "respuesta": "Lo siento, hubo un error. Por favor intenta de nuevo.",
+            "botones_sugeridos": None,
+            "botones": None,
+            "state": estado or {},
+            "conversation_state": estado or {},
+            "datos_generados": None,
+            "cotizacion_generada": False,
+            "agente_pili": "PILI PUESTA A TIERRA"
+        }
+
+# ═══════════════════════════════════════════════════════════════
+# 🔥 ENDPOINT PILI CONTRA INCENDIOS
+# ═══════════════════════════════════════════════════════════════
+
+@router.post("/pili-contra-incendios")
+async def chat_pili_contra_incendios(request: ChatRequest):
+    try:
+        logger.info(f"🔥 PILI CONTRA INCENDIOS - Mensaje: '{request.mensaje[:50]}...'")
+        
+        if pili_contra_incendios_bot is None:
+            return {"success": False, "respuesta": "Servicio no disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI CONTRA INCENDIOS"}
+        
+        estado = request.conversation_state
+        resultado = pili_contra_incendios_bot.procesar(request.mensaje, estado)
+        
+        datos_gen = resultado.get('datos_generados')
+        cotizacion_data = resultado.get('cotizacion')
+        
+        return {
+            "success": resultado['success'],
+            "respuesta": resultado['respuesta'],
+            "botones_sugeridos": resultado.get('botones'),
+            "botones": resultado.get('botones'),
+            "state": resultado['estado'],
+            "conversation_state": resultado['estado'],
+            "datos_generados": datos_gen or cotizacion_data,
+            "cotizacion": cotizacion_data,
+            "cotizacion_generada": cotizacion_data is not None,
+            "agente_pili": "PILI CONTRA INCENDIOS"
+        }
+    except Exception as e:
+        logger.error(f"❌ Error: {e}", exc_info=True)
+        return {"success": False, "respuesta": "Error", "botones": None, "state": estado or {}, "conversation_state": estado or {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI CONTRA INCENDIOS"}
+
+@router.post("/pili-domotica")
+async def chat_pili_domotica(request: ChatRequest):
+    try:
+        if pili_domotica_bot is None:
+            return {"success": False, "respuesta": "Servicio no disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI DOMÓTICA"}
+        estado = request.conversation_state
+        resultado = pili_domotica_bot.procesar(request.mensaje, estado)
+        datos_gen = resultado.get('datos_generados')
+        cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI DOMÓTICA"}
+    except Exception as e:
+        logger.error(f"❌ Error: {e}")
+        return {"success": False, "respuesta": "Error", "botones": None, "state": estado or {}, "conversation_state": estado or {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI DOMÓTICA"}
+
+@router.post("/pili-cctv")
+async def chat_pili_cctv(request: ChatRequest):
+    try:
+        if pili_cctv_bot is None:
+            return {"success": False, "respuesta": "Servicio no disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI CCTV"}
+        estado = request.conversation_state
+        resultado = pili_cctv_bot.procesar(request.mensaje, estado)
+        datos_gen = resultado.get('datos_generados')
+        cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI CCTV"}
+    except Exception as e:
+        logger.error(f"❌ Error: {e}")
+        return {"success": False, "respuesta": "Error", "botones": None, "state": estado or {}, "conversation_state": estado or {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI CCTV"}
+
+@router.post("/pili-redes")
+async def chat_pili_redes(request: ChatRequest):
+    try:
+        if pili_redes_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI REDES"}
+        estado = request.conversation_state
+        resultado = pili_redes_bot.procesar(request.mensaje, estado)
+        datos_gen = resultado.get('datos_generados')
+        cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI REDES"}
+    except Exception as e:
+        return {"success": False, "respuesta": "Error", "botones": None, "state": estado or {}, "conversation_state": estado or {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI REDES"}
+
+@router.post("/pili-automatizacion")
+async def chat_pili_automatizacion(request: ChatRequest):
+    try:
+        if pili_automatizacion_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI AUTOMATIZACIÓN"}
+        estado = request.conversation_state; resultado = pili_automatizacion_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI AUTOMATIZACIÓN"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI AUTOMATIZACIÓN"}
+
+@router.post("/pili-expedientes")
+async def chat_pili_expedientes(request: ChatRequest):
+    try:
+        if pili_expedientes_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI EXPEDIENTES"}
+        estado = request.conversation_state; resultado = pili_expedientes_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI EXPEDIENTES"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI EXPEDIENTES"}
+
+@router.post("/pili-saneamiento")
+async def chat_pili_saneamiento(request: ChatRequest):
+    try:
+        if pili_saneamiento_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI SANEAMIENTO"}
+        estado = request.conversation_state; resultado = pili_saneamiento_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI SANEAMIENTO"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI SANEAMIENTO"}
+
+
+
+
+
+

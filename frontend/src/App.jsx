@@ -5,6 +5,11 @@ import PiliAvatar from './components/PiliAvatar';
 import ChatIA from './components/ChatIA';
 import PiliITSEChat from './components/PiliITSEChat';
 import PiliElectricidadChat from './components/PiliElectricidadChat';
+import PiliPuestaTierraChat from './components/PiliPuestaTierraChat';
+import PiliContraIncendiosChat from './components/PiliContraIncendiosChat';
+import PiliDomoticaChat from './components/PiliDomoticaChat';
+import PiliCCTVChat from './components/PiliCCTVChat';
+import PiliRedesChat from './components/PiliRedesChat';
 import VistaPreviaProfesional from './components/VistaPreviaProfesional';
 
 const CotizadorTesla30 = () => {
@@ -1812,6 +1817,37 @@ const CotizadorTesla30 = () => {
                         onFinish={() => setPaso(3)}
                       />
                     </div>
+                  ) : servicioSeleccionado === 'puesta-tierra' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6">
+                      <PiliPuestaTierraChat
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS RECIBIDOS DE PUESTA A TIERRA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
+                    </div>
+                  ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6">
+                      <PiliContraIncendiosChat
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
+                    </div>
+                  ) : servicioSeleccionado === 'domotica' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6">
+                      <PiliDomoticaChat
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
+                    </div>
+                  ) : servicioSeleccionado === 'cctv' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'redes' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
