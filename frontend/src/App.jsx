@@ -4,6 +4,7 @@ import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Sav
 import PiliAvatar from './components/PiliAvatar';
 import ChatIA from './components/ChatIA';
 import PiliITSEChat from './components/PiliITSEChat';
+import PiliElectricidadChat from './components/PiliElectricidadChat';
 import VistaPreviaProfesional from './components/VistaPreviaProfesional';
 
 const CotizadorTesla30 = () => {
@@ -1797,6 +1798,15 @@ const CotizadorTesla30 = () => {
                     <div className="col-span-6">
                       <PiliITSEChat
                         onDatosGenerados={(datos) => { console.log(' DATOS RECIBIDOS DE ITSE:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
+                    </div>
+                  ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6">
+                      <PiliElectricidadChat
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS RECIBIDOS DE ELECTRICIDAD:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}

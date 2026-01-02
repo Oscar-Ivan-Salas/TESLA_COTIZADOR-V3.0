@@ -85,6 +85,19 @@ except Exception as e:
     pili_itse_bot = None
 
 # ═══════════════════════════════════════════════════════════════
+# 🤖 PILI ELECTRICIDAD - IMPORTAR CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_electricidad_chatbot import PILIElectricidadChatBot
+    # Crear instancia global de la caja negra
+    pili_electricidad_bot = PILIElectricidadChatBot()
+    logger.info("✅ Caja negra PILI ELECTRICIDAD inicializada correctamente")
+except Exception as e:
+    logger.error(f"❌ Error importando caja negra PILI ELECTRICIDAD: {e}")
+    pili_electricidad_bot = None
+
+# ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0
 # ═══════════════════════════════════════════════════════════════
 
@@ -4762,4 +4775,91 @@ async def chat_pili_itse(request: ChatRequest):
             "datos_generados": None,
             "cotizacion_generada": False,
             "agente_pili": "PILI ITSE"
+        }
+
+# ═══════════════════════════════════════════════════════════════
+# 🔌 ENDPOINT PILI ELECTRICIDAD - CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+@router.post("/pili-electricidad")
+async def chat_pili_electricidad(request: ChatRequest):
+    """
+    Endpoint para chat de ELECTRICIDAD usando caja negra
+    
+    Args:
+        request: ChatRequest con mensaje y conversation_state
+    
+    Returns:
+        Respuesta con datos de cotización eléctrica
+    """
+    try:
+        logger.info(f"🔌 PILI ELECTRICIDAD - Mensaje recibido: '{request.mensaje[:50]}...'")
+        
+        # Verificar que la caja negra esté inicializada
+        if pili_electricidad_bot is None:
+            logger.error("❌ Caja negra PILI ELECTRICIDAD no está inicializada")
+            return {
+                "success": False,
+                "respuesta": "El servicio de electricidad no está disponible temporalmente.",
+                "botones_sugeridos": None,
+                "botones": None,
+                "state": {},
+                "conversation_state": {},
+                "datos_generados": None,
+                "cotizacion_generada": False,
+                "agente_pili": "PILI ELECTRICIDAD"
+            }
+        
+        # Obtener estado de la conversación
+        estado = request.conversation_state
+        
+        logger.info(f"📊 Estado actual: {estado}")
+        
+        # Llamar a la caja negra
+        resultado = pili_electricidad_bot.procesar(request.mensaje, estado)
+        
+        logger.info(f"✅ Resultado de caja negra:")
+        logger.info(f"   - success: {resultado['success']}")
+        logger.info(f"   - etapa: {resultado['estado'].get('etapa')}")
+        logger.info(f"   - tipo_instalacion: {resultado['estado'].get('tipo_instalacion')}")
+        logger.info(f"   - area: {resultado['estado'].get('area')}")
+        
+        # Verificar datos_generados
+        datos_gen = resultado.get('datos_generados')
+        if datos_gen:
+            logger.info(f"📋 DATOS_GENERADOS ENCONTRADOS:")
+            logger.info(f"   - items: {len(datos_gen.get('items', []))} items")
+            logger.info(f"   - subtotal: {datos_gen.get('subtotal')}")
+            logger.info(f"   - total: {datos_gen.get('total')}")
+        
+        # Formatear respuesta
+        cotizacion_data = resultado.get('cotizacion')
+        
+        response = {
+            "success": resultado['success'],
+            "respuesta": resultado['respuesta'],
+            "botones_sugeridos": resultado.get('botones'),
+            "botones": resultado.get('botones'),
+            "state": resultado['estado'],
+            "conversation_state": resultado['estado'],
+            "datos_generados": datos_gen or cotizacion_data,
+            "cotizacion": cotizacion_data,
+            "cotizacion_generada": cotizacion_data is not None,
+            "agente_pili": "PILI ELECTRICIDAD"
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error en PILI ELECTRICIDAD: {e}", exc_info=True)
+        return {
+            "success": False,
+            "respuesta": "Lo siento, hubo un error. Por favor intenta de nuevo.",
+            "botones_sugeridos": None,
+            "botones": None,
+            "state": estado or {},
+            "conversation_state": estado or {},
+            "datos_generados": None,
+            "cotizacion_generada": False,
+            "agente_pili": "PILI ELECTRICIDAD"
         }
