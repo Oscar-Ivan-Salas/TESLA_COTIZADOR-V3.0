@@ -238,6 +238,17 @@ app.add_middleware(
 )
 
 # ═══════════════════════════════════════════════════════════════
+# ARCHIVOS ESTÁTICOS (Avatares PILI)
+# ═══════════════════════════════════════════════════════════════
+
+static_path = Path(__file__).parent.parent / "static"
+if static_path.exists():
+    app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+    logger.info(f"✅ Archivos estáticos montados en /static desde {static_path}")
+else:
+    logger.warning(f"⚠️ Directorio static no encontrado en {static_path}")
+
+# ═══════════════════════════════════════════════════════════════
 # 🔧 REGISTRO DE ROUTERS AVANZADOS (REPARADO)
 # ═══════════════════════════════════════════════════════════════
 
@@ -798,10 +809,18 @@ async def generar_documento_directo(
             "esquema_colores": esquema_colores,
             "fuente": fuente,
             "tamaño_fuente": tamaño_fuente,
-            "mostrar_logo": mostrar_logo and datos.get("logo_base64"),  # Solo si hay logo
+            "mostrar_logo": mostrar_logo,
             "ocultar_igv": ocultar_igv,
-            "ocultar_precios_unitarios": ocultar_precios_unitarios
+            "ocultar_precios_unitarios": ocultar_precios_unitarios,
+            "logo_base64": opciones_personalizacion.get("logo_base64") or datos.get("logo_base64")  # ✅ CORREGIDO: Buscar en opciones primero
         }
+        
+        # 🔍 DEBUG: Logging de opciones
+        logger.info(f"🎨 Personalizacion detectada:")
+        logger.info(f"   - Esquema colores: {esquema_colores}")
+        logger.info(f"   - Fuente: {fuente} {tamaño_fuente}pt")
+        logger.info(f"   - Mostrar logo: {mostrar_logo}")
+        logger.info(f"   - Logo presente: {bool(opciones_personalizacion.get('logo_base64'))}")
 
         # Generar archivo
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -819,6 +838,10 @@ async def generar_documento_directo(
             }
 
             logger.info(f"🔄 Usando WordGenerator (PILI) para: {tipo_documento}")
+            
+            # 🔍 DEBUG: Logging de opciones que se pasan al generador
+            logger.info(f"🎨 main.py - opciones_personalizacion a enviar: {opciones_personalizacion}")
+            logger.info(f"🎨 main.py - datos_enriquecidos['_opciones_personalizacion']: {datos_enriquecidos.get('_opciones_personalizacion')}")
             
             resultado = word_generator.generar_desde_json_pili(
                 datos_json=datos_pili,
