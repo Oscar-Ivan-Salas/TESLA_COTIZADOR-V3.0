@@ -1,11 +1,10 @@
 import React from 'react';
-import { Bot } from 'lucide-react';
 
 /**
  * 👑 PILI Avatar - La cara bonita del proyecto
  *
  * Avatar de PILI (Procesadora Inteligente de Licitaciones Industriales)
- * con su corona distintiva de reina de la inteligencia
+ * con su imagen personalizada de Caperucita
  */
 const PiliAvatar = ({ size = 24, className = "", showCrown = true }) => {
   const containerSize = size + 8;
@@ -28,19 +27,20 @@ const PiliAvatar = ({ size = 24, className = "", showCrown = true }) => {
         </div>
       )}
 
-      {/* Bot Icon de PILI */}
-      <div className="relative">
-        <Bot
-          size={size}
-          className="text-black animate-pulse"
-          strokeWidth={2.5}
+      {/* Avatar de PILI Caperucita */}
+      <div className="relative rounded-full overflow-hidden" style={{ width: size, height: size }}>
+        <img
+          src="http://localhost:8000/static/avatars/pili-avatar-caperucita.png"
+          alt="PILI"
+          className="w-full h-full object-cover"
+          style={{ imageRendering: 'crisp-edges' }}
         />
 
-        {/* Brillo especial en los "ojos" de PILI */}
+        {/* Brillo especial */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 40% 40%, rgba(255,215,0,0.4) 0%, transparent 60%)'
+            background: 'radial-gradient(circle at 40% 40%, rgba(255,215,0,0.2) 0%, transparent 60%)'
           }}
         />
       </div>
@@ -58,8 +58,14 @@ export const PiliAvatarLarge = ({ showCrown = true }) => (
         👑
       </div>
     )}
-    <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 p-4 rounded-full shadow-2xl border-4 border-yellow-300 relative overflow-hidden">
-      <Bot size={48} className="text-black relative z-10" strokeWidth={2.5} />
+    <div className="bg-gradient-to-br from-red-400 via-red-500 to-red-600 p-2 rounded-full shadow-2xl border-4 border-red-300 relative overflow-hidden">
+      <div className="w-16 h-16 rounded-full overflow-hidden relative z-10">
+        <img
+          src="http://localhost:8000/static/avatars/pili-avatar-caperucita.png"
+          alt="PILI"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       {/* Efecto de brillo animado */}
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white to-transparent opacity-30 animate-pulse" />
