@@ -10,6 +10,14 @@ import PiliContraIncendiosChat from './components/PiliContraIncendiosChat';
 import PiliDomoticaChat from './components/PiliDomoticaChat';
 import PiliCCTVChat from './components/PiliCCTVChat';
 import PiliRedesChat from './components/PiliRedesChat';
+import PiliAutomatizacionChat from './components/PiliAutomatizacionChat';
+import PiliExpedientesChat from './components/PiliExpedientesChat';
+import PiliSaneamientoChat from './components/PiliSaneamientoChat';
+import PiliElectricidadComplejoChat from './components/PiliElectricidadComplejoChat';
+import PiliAutomatizacionComplejoChat from './components/PiliAutomatizacionComplejoChat';
+import PiliContraIncendiosComplejoChat from './components/PiliContraIncendiosComplejoChat';
+import PiliElectricidadProyectoSimpleChat from './components/PiliElectricidadProyectoSimpleChat';
+import PiliElectricidadProyectoComplejoPMIChat from './components/PiliElectricidadProyectoComplejoPMIChat';
 import VistaPreviaProfesional from './components/VistaPreviaProfesional';
 
 const CotizadorTesla30 = () => {
@@ -67,6 +75,7 @@ const CotizadorTesla30 = () => {
   const [nombreProyecto, setNombreProyecto] = useState('');
   const [clienteProyecto, setClienteProyecto] = useState('');
   const [presupuestoEstimado, setPresupuestoEstimado] = useState('');
+  const [monedaProyecto, setMonedaProyecto] = useState('PEN'); // ✅ NUEVO: Moneda del proyecto
   const [duracionMeses, setDuracionMeses] = useState('');
 
   // Estados específicos para informes
@@ -95,6 +104,9 @@ const CotizadorTesla30 = () => {
   const chatContainerRef = useRef(null);
   const fileInputLogoRef = useRef(null);
   const previewRef = useRef(null);
+
+  // ✅ REF para datos editables - SIEMPRE actualizado (solución profesional)
+  const datosEditablesRef = useRef(null);
 
   // ============================================
   // DATOS DE CONFIGURACIÓN
@@ -200,6 +212,15 @@ const CotizadorTesla30 = () => {
     setHtmlPreview('');
     setMostrarPreview(false);
     setDatosEditables(null);
+    datosEditablesRef.current = null;  // ✅ También limpiar ref
+  };
+
+  // ✅ FUNCIÓN HELPER: Actualizar datos editables (state + ref)
+  const actualizarDatosEditables = (nuevosDatos) => {
+    setDatosEditables(nuevosDatos);
+    datosEditablesRef.current = nuevosDatos;  // ✅ Mantener ref sincronizado
+    console.log('✅ Datos editables actualizados:', nuevosDatos);
+    console.log('💰 Moneda en datos:', nuevosDatos?.moneda);
   };
 
   // ============================================
@@ -605,9 +626,17 @@ const CotizadorTesla30 = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            datos: datosParaEnviar,
-            html_editado: htmlEditado,
-            tipo_plantilla: tipoFlujo  // ej: "cotizacion-simple"
+            ...datosParaEnviar,
+            opciones_personalizacion: datosParaEnviar.personalizacion || {
+              esquema_colores: esquemaColores,
+              fuente: fuenteDocumento,
+              tamano_fuente: tamañoFuente,
+              mostrar_logo: mostrarLogo,
+              posicion_logo: posicionLogo,
+              logo_base64: logoBase64 || null,
+              ocultar_igv: ocultarIGV,
+              ocultar_precios_unitarios: ocultarPreciosUnitarios
+            }
           })
         }
       );
@@ -966,16 +995,21 @@ const CotizadorTesla30 = () => {
       console.log(`📄 Generando ${formato.toUpperCase()} con V2 (sin HTML parsing)...`);
       setExito(`Generando ${formato.toUpperCase()}...`);
 
-      // Usar datos editables si existen
-      const datosFinales = datosEditables || entidad;
+      // ✅ SOLUCIÓN PROFESIONAL: Usar REF para datos SIEMPRE actualizados
+      // El ref se actualiza en tiempo real, el state puede estar desactualizado
+      const datosFinales = datosEditablesRef.current || datosEditables || entidad;
       const itemsActuales = datosFinales?.items || [];
 
       // 🐛 DEBUG: Ver qué datos tenemos
       console.log('🔍 DEBUG COMPLETO handleDescargar:');
       console.log('  datosEditables:', datosEditables);
+      console.log('  💰 datosEditables.moneda:', datosEditables?.moneda);  // ✅ DEBUG
+      console.log('  ✅ datosEditablesRef.current:', datosEditablesRef.current);  // ✅ NUEVO
+      console.log('  💰 datosEditablesRef.current.moneda:', datosEditablesRef.current?.moneda);  // ✅ NUEVO
       console.log('  datosEditables?.items:', datosEditables?.items);
       console.log('  entidad:', entidad);
       console.log('  datosFinales:', datosFinales);
+      console.log('  💰 datosFinales.moneda:', datosFinales?.moneda);  // ✅ DEBUG
       console.log('  itemsActuales:', itemsActuales);
 
       // Recalcular totales
@@ -1026,22 +1060,30 @@ const CotizadorTesla30 = () => {
         // Estructura para PROYECTOS
         datosLimpios = {
           tipo_documento: tipoFlujo,
-          nombre: datosFinales?.nombre || datosFinales?.nombre_proyecto || "[Proyecto]",
-          codigo: datosFinales?.codigo || datosFinales?.codigo_proyecto || `PROY-${Date.now()}`,
+          numero: datosFinales?.numero || `PROY-${Date.now()}`,
+          codigo_proyecto: datosFinales?.numero || datosFinales?.codigo || `PROY-${Date.now()}`,
+          nombre_proyecto: datosFinales?.nombre_proyecto || datosFinales?.nombre || nombreProyecto || "[Proyecto]",  // ✅ FUSIÓN
+          codigo: datosFinales?.codigo || datosFinales?.numero || `PROY-${Date.now()}`,
+          nombre: datosFinales?.nombre || datosFinales?.nombre_proyecto || nombreProyecto || "[Proyecto]",  // ✅ FUSIÓN
           cliente: {
-            nombre: datosCliente.nombre || '[Cliente]',
-            ruc: datosCliente.ruc || '',
-            direccion: datosCliente.direccion || '',
-            telefono: datosCliente.telefono || '',
-            email: datosCliente.email || ''
+            // ✅ FUSIÓN: Priorizar datos editables > datos formulario > default
+            nombre: datosFinales?.cliente?.nombre || datosCliente.nombre || clienteProyecto || '[Cliente]',
+            ruc: datosFinales?.cliente?.ruc || datosCliente.ruc || '',
+            direccion: datosFinales?.cliente?.direccion || datosCliente.direccion || '',
+            telefono: datosFinales?.cliente?.telefono || datosCliente.telefono || '',
+            email: datosFinales?.cliente?.email || datosCliente.email || ''
           },
-          presupuesto: datosFinales?.presupuesto || 0,
-          duracion_total: datosFinales?.duracion_total || datosFinales?.duracion || 30,
-          fecha_inicio: datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
-          fecha_fin: datosFinales?.fecha_fin || "",
-          alcance: datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
+          presupuesto: datosFinales?.presupuesto || presupuestoEstimado || 0,  // ✅ FUSIÓN
+          moneda: datosFinales?.moneda || monedaProyecto || 'PEN',  // ✅ FUSIÓN
+          duracion_total: datosFinales?.cronograma?.duracion_total || datosFinales?.duracion_total || datosFinales?.duracion || (duracionMeses ? `${duracionMeses} meses` : "30 días"),  // ✅ FUSIÓN
+          fecha_inicio: datosFinales?.cronograma?.fecha_inicio || datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
+          fecha_fin: datosFinales?.cronograma?.fecha_fin || datosFinales?.fecha_fin || "",
+          alcance: datosFinales?.resumen || datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
+          alcance_proyecto: datosFinales?.resumen || datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
           fases: datosFinales?.fases || [],
+          recursos: datosFinales?.recursos || { humanos: [], materiales: [] },
           normativa: datosFinales?.normativa || "CNE Suministro 2011",
+          normativa_aplicable: datosFinales?.normativa || "CNE Suministro 2011",
           personalizacion: {
             esquema_colores: esquemaColores,
             fuente: fuenteDocumento,
@@ -1051,6 +1093,25 @@ const CotizadorTesla30 = () => {
             logo_base64: logoBase64 || null
           }
         };
+
+        // ✅ LOGGING: Verificar fusión de datos
+        console.log('🔍 FUSIÓN DE DATOS PROYECTO:');
+        console.log('  📋 Formulario inicial:');
+        console.log('    - nombreProyecto:', nombreProyecto);
+        console.log('    - presupuestoEstimado:', presupuestoEstimado);
+        console.log('    - monedaProyecto:', monedaProyecto);
+        console.log('    - clienteProyecto:', clienteProyecto);
+        console.log('    - datosCliente:', datosCliente);
+        console.log('  📝 Datos editables:');
+        console.log('    - datosFinales.nombre_proyecto:', datosFinales?.nombre_proyecto);
+        console.log('    - datosFinales.presupuesto:', datosFinales?.presupuesto);
+        console.log('    - datosFinales.moneda:', datosFinales?.moneda);
+        console.log('    - datosFinales.cliente:', datosFinales?.cliente);
+        console.log('  ✅ Datos finales (fusionados):');
+        console.log('    - nombre_proyecto:', datosLimpios.nombre_proyecto);
+        console.log('    - presupuesto:', datosLimpios.presupuesto);
+        console.log('    - moneda:', datosLimpios.moneda);
+        console.log('    - cliente:', datosLimpios.cliente);
       } else {
         // Estructura para COTIZACIONES (default)
         datosLimpios = {
@@ -1104,6 +1165,7 @@ const CotizadorTesla30 = () => {
       } else if (tipoDocumento === 'proyecto') {
         console.log('  - Código:', datosLimpios.codigo);
         console.log('  - Presupuesto:', datosLimpios.presupuesto);
+        console.log('  💰 Moneda:', datosLimpios.moneda);  // ✅ DEBUG: Ver moneda
       }
       console.log('  - Personalización:', datosLimpios.personalizacion);
 
@@ -1626,15 +1688,29 @@ const CotizadorTesla30 = () => {
                           placeholder="Ej: Constructora ABC S.A.C."
                         />
                       </div>
-                      <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado (S/)</label>
-                        <input
-                          type="number"
-                          value={presupuestoEstimado}
-                          onChange={(e) => setPresupuestoEstimado(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
-                          placeholder="50000"
-                        />
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-2">
+                          <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado</label>
+                          <input
+                            type="number"
+                            value={presupuestoEstimado}
+                            onChange={(e) => setPresupuestoEstimado(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                            placeholder="50000"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-blue-400 font-semibold mb-2">Moneda</label>
+                          <select
+                            value={monedaProyecto}
+                            onChange={(e) => setMonedaProyecto(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
+                          >
+                            <option value="PEN">S/ (PEN)</option>
+                            <option value="USD">$ (USD)</option>
+                            <option value="EUR">€ (EUR)</option>
+                          </select>
+                        </div>
                       </div>
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
@@ -1795,6 +1871,8 @@ const CotizadorTesla30 = () => {
             {/* PASO 2: CHAT + VISTA PREVIA SPLIT-SCREEN */}
             {paso === 2 && (
               <div className="max-w-full mx-auto h-[calc(100vh-200px)]">
+                {/* ✅ SCROLL INDEPENDIENTE: Cada columna tiene su propio overflow */}
+                {/* ✅ CRÍTICO: h-full para que funcione el scroll */}
                 <div className="grid grid-cols-12 h-full gap-4">
 
 
@@ -1829,7 +1907,7 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-simple' ? (
                     <div className="col-span-6">
                       <PiliContraIncendiosChat
-                        onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
@@ -1838,16 +1916,32 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'domotica' && tipoFlujo === 'cotizacion-simple' ? (
                     <div className="col-span-6">
                       <PiliDomoticaChat
-                        onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
                       />
                     </div>
                   ) : servicioSeleccionado === 'cctv' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'redes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6"><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'expedientes' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6"><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'saneamiento' && tipoFlujo === 'cotizacion-simple' ? (
+                    <div className="col-span-6"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-compleja' ? (
+                    <div className="col-span-6"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-compleja' ? (
+                    <div className="col-span-6"><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-compleja' ? (
+                    <div className="col-span-6"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
+                    <div className="col-span-6"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); actualizarDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                  ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
+                    <div className="col-span-6"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); actualizarDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
@@ -2005,7 +2099,8 @@ const CotizadorTesla30 = () => {
                   )}
 
                   {/* VISTA PREVIA (DERECHA) */}
-                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
+                  {/* ✅ SCROLL INDEPENDIENTE: h-full y overflow-hidden para contener scroll interno */}
+                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col h-full overflow-hidden">
                     <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 rounded-t-2xl flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <Eye className="w-6 h-6 text-white" />
@@ -2054,6 +2149,7 @@ const CotizadorTesla30 = () => {
                         console.log('🔍 DEBUG - datosEditables?.items:', datosEditables?.items);
 
                         // ✅ RENDERIZAR VistaPreviaProfesional en Paso 2
+                        // ⚠️ SIN onDatosChange para prevenir loop infinito
                         return (
                           <VistaPreviaProfesional
                             cotizacion={cotizacion || proyecto || informe || datosEditables}
