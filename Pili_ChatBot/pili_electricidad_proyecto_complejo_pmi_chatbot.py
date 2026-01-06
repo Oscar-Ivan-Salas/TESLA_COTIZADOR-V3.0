@@ -40,29 +40,37 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             moneda = estado.get("moneda", "USD")
             duracion_meses = estado.get("duracion_meses")
             
-            # ✅ FLUJO NORMAL: Preguntar todo paso a paso
-            estado["etapa"] = "ubicacion"
-            return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
-
-━━━━━━━━━━━━━━━━━━━━━━━
-**DATOS DETECTADOS DEL FORMULARIO**
-━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ Cliente: **{cliente_nombre or 'No especificado'}**
-✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
-✅ Presupuesto: **{moneda} {presupuesto:,.2f if presupuesto else 'No especificado'}**
-✅ Duración: **{duracion_meses} meses** if duracion_meses else 'No especificado'
-
-Ahora necesito información adicional para crear el Project Charter completo.
-
-━━━━━━━━━━━━━━━━━━━━━━━
-**UBICACIÓN DEL PROYECTO**
-━━━━━━━━━━━━━━━━━━━━━━━
-
-📍 **¿Dónde se realizará el proyecto?**
-_Ejemplo: Lima, Perú / Concepción, Chile_""", 'botones': None, 'estado': estado}
-        
-        # ============================================
+            # ✅ MODO RÁPIDO: Si tiene datos del formulario, generar directamente
+            if cliente_nombre and proyecto_nombre and presupuesto and duracion_meses:
+                # Calcular duración en días
+                duracion_dias = duracion_meses * 30 if duracion_meses else 100
+                
+                # Pre-rellenar datos con valores razonables
+                estado["ubicacion"] = estado.get("cliente_direccion", "Lima, Perú")
+                estado["area_m2"] = 1000  # Valor por defecto
+                estado["descripcion"] = f"Proyecto eléctrico industrial para {cliente_nombre}"
+                estado["normativa"] = "CNE Suministro 2011"
+                estado["fecha_inicio"] = datetime.now().strftime("%d/%m/%Y")
+                estado["duracion_total"] = duracion_dias
+                
+                # KPIs por defecto (valores óptimos PMI)
+                estado["spi"] = 1.05
+                estado["cpi"] = 0.98
+                estado["ev_k"] = int(presupuesto * 0.30 / 1000)  # 30% del presupuesto
+                estado["pv_k"] = int(presupuesto * 0.43 / 1000)  # 43% del presupuesto
+                estado["ac_k"] = int(presupuesto * 0.46 / 1000)  # 46% del presupuesto
+                
+                # Alcance por defecto
+                estado["alcance"] = f"Diseño, suministro e instalación de sistema eléctrico completo para {proyecto_nombre}"
+                
+                # Cronograma por defecto (distribución inteligente)
+                dias_ingenieria = int(duracion_dias * 0.25)  # 25% del tiempo
+                dias_ejecucion = int(duracion_dias * 0.50)   # 50% del tiempo
+                estado["dias_ingenieria"] = max(20, dias_ingenieria)
+                estado["dias_ejecucion"] = max(40, dias_ejecucion)
+                
+                # Riesgos por defecto (Top 3 más comunes)
+                estado["riesgos"] = [
                     {
                         "id": "R01",
                         "descripcion": "Retrasos en entrega de equipos importados",
@@ -415,27 +423,26 @@ _• Garantía de 24 meses_
         elif etapa == "alcance":
             estado["alcance"] = mensaje
             estado["etapa"] = "dias_ingenieria"
-            
-            # 🎯 ENVIAR FORMULARIO DE ENTREGABLES
-            return {
-                'success': True, 
-                'respuesta': """✅ Alcance definido
+            return {'success': True, 'respuesta': f"""✅ Alcance definido
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**ENTREGABLES DEL PROYECTO**
+**CRONOGRAMA GANTT (6 FASES)**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-📦 **Selecciona los entregables necesarios:**""",
-                'botones': None,
-                'estado': estado,
-                # ✨ FORMULARIO: Entregables
-                'formulario': {
-                    'tipo': 'entregables',
-                    'tipoProyecto': estado.get('tipo_proyecto', 'industrial'),
-                    'presupuesto': estado.get('presupuesto', 0),
-                    'area': estado.get('area_m2', 0)
-                }
-            }
+El cronograma PMI tiene 6 fases:
+
+**Fases fijas:**
+1. Inicio y Planificación: **10 días**
+2. Gestión Stakeholders: **3 días**
+3. Ingeniería y Diseño: **[VARIABLE]**
+4. Ejecución: **[VARIABLE]**
+5. Pruebas y Puesta en Marcha: **8 días**
+6. Cierre: **5 días**
+
+Solo necesito que definas las fases variables.
+
+⏱️ **Días para Ingeniería y Diseño:**
+_Sugerencia: 20-30 días_""", 'botones': None, 'estado': estado}
         
         # ============================================
         # ETAPA: Días Ingeniería
@@ -618,11 +625,7 @@ _Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""
             else:
                 # Todos los riesgos completados
                 estado["etapa"] = "recursos_humanos"
-                
-                # 🎯 ENVIAR FORMULARIO en lugar de texto libre
-                return {
-                    'success': True, 
-                    'respuesta': """✅ Plan de mitigación guardado
+                return {'success': True, 'respuesta': f"""✅ Plan de mitigación guardado
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✅ **TODOS LOS RIESGOS COMPLETADOS**
@@ -630,17 +633,8 @@ _Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""
 
 Ahora necesito información sobre los recursos del proyecto.
 
-👥 **Selecciona el equipo profesional necesario:**""",
-                    'botones': None,
-                    'estado': estado,
-                    # ✨ NUEVO: Enviar formulario interactivo
-                    'formulario': {
-                        'tipo': 'profesionales',
-                        'tipoProyecto': estado.get('tipo_proyecto', 'industrial'),
-                        'presupuesto': estado.get('presupuesto', 0),
-                        'area': estado.get('area_m2', 0)
-                    }
-                }
+👥 **Equipo humano (roles separados por coma):**
+_Ejemplo: Project Manager, Ing. Residente, Ing. Eléctrico, Técnicos (3), Inspector QA_""", 'botones': None, 'estado': estado}
         
         return {'success': False, 'respuesta': "❌ Campo de riesgo no reconocido", 'botones': None, 'estado': estado}
     
