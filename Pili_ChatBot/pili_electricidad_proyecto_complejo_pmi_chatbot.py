@@ -40,142 +40,28 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             moneda = estado.get("moneda", "USD")
             duracion_meses = estado.get("duracion_meses")
             
-            # ✅ MODO RÁPIDO: Si tiene datos del formulario, generar directamente
-            if cliente_nombre and proyecto_nombre and presupuesto and duracion_meses:
-                # Calcular duración en días
-                duracion_dias = duracion_meses * 30 if duracion_meses else 100
-                
-                # Pre-rellenar datos con valores razonables
-                estado["ubicacion"] = estado.get("cliente_direccion", "Lima, Perú")
-                estado["area_m2"] = 1000  # Valor por defecto
-                estado["descripcion"] = f"Proyecto eléctrico industrial para {cliente_nombre}"
-                estado["normativa"] = "CNE Suministro 2011"
-                estado["fecha_inicio"] = datetime.now().strftime("%d/%m/%Y")
-                estado["duracion_total"] = duracion_dias
-                
-                # KPIs por defecto (valores óptimos PMI)
-                estado["spi"] = 1.05
-                estado["cpi"] = 0.98
-                estado["ev_k"] = int(presupuesto * 0.30 / 1000)  # 30% del presupuesto
-                estado["pv_k"] = int(presupuesto * 0.43 / 1000)  # 43% del presupuesto
-                estado["ac_k"] = int(presupuesto * 0.46 / 1000)  # 46% del presupuesto
-                
-                # Alcance por defecto
-                estado["alcance"] = f"Diseño, suministro e instalación de sistema eléctrico completo para {proyecto_nombre}"
-                
-                # Cronograma por defecto (distribución inteligente)
-                dias_ingenieria = int(duracion_dias * 0.25)  # 25% del tiempo
-                dias_ejecucion = int(duracion_dias * 0.50)   # 50% del tiempo
-                estado["dias_ingenieria"] = max(20, dias_ingenieria)
-                estado["dias_ejecucion"] = max(40, dias_ejecucion)
-                
-                # Riesgos por defecto (Top 3 más comunes)
-                estado["riesgos"] = [
-                    {
-                        "id": "R01",
-                        "descripcion": "Retrasos en entrega de equipos importados",
-                        "probabilidad": "Media",
-                        "impacto": "Alto",
-                        "severidad": "Alta",
-                        "mitigacion": "Compra anticipada con proveedores alternativos certificados"
-                    },
-                    {
-                        "id": "R02",
-                        "descripcion": "Cambios en alcance solicitados por cliente",
-                        "probabilidad": "Media",
-                        "impacto": "Medio",
-                        "severidad": "Media",
-                        "mitigacion": "Control de cambios formal con aprobación escrita y ajuste de cronograma"
-                    },
-                    {
-                        "id": "R03",
-                        "descripcion": "Condiciones climáticas adversas",
-                        "probabilidad": "Baja",
-                        "impacto": "Medio",
-                        "severidad": "Baja",
-                        "mitigacion": "Planificación de actividades críticas en temporada seca"
-                    }
-                ]
-                
-                # Recursos por defecto
-                estado["recursos_humanos"] = ["Project Manager PMI", "Ing. Residente", "Ing. Eléctrico", "Técnicos (3)", "Inspector QA"]
-                estado["materiales"] = ["Tableros eléctricos certificados", "Cables THW/THHN", "Protecciones termomagnéticas", "Sistema de puesta a tierra", "Luminarias LED"]
-                
-                # ✅ GENERAR PROYECTO DIRECTAMENTE
-                simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
-                return {
-                    'success': True,
-                    'respuesta': f"""🎉 **PROJECT CHARTER GENERADO AUTOMÁTICAMENTE**
+            # ✅ FLUJO NORMAL: Preguntar todo paso a paso (modo rápido desactivado)
+            estado["etapa"] = "ubicacion"
+            simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+            return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **DATOS DETECTADOS DEL FORMULARIO**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Cliente: **{cliente_nombre}**
-✅ Proyecto: **{proyecto_nombre}**
-✅ Presupuesto: **{simbolo} {presupuesto:,.2f}**
-✅ Duración: **{duracion_meses} meses ({duracion_dias} días)**
+✅ Cliente: **{cliente_nombre or 'No especificado'}**
+✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
+✅ Presupuesto: **{simbolo} {presupuesto:,.2f if presupuesto else 0}**
+✅ Duración: **{duracion_meses} meses** if duracion_meses else 'No especificado'
+
+Ahora necesito información adicional para crear el Project Charter completo.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**PROYECTO COMPLETO GENERADO**
+**UBICACIÓN DEL PROYECTO**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-He creado un PROJECT CHARTER profesional con:
-• ✅ KPIs PMI optimizados (SPI: 1.05, CPI: 0.98)
-• ✅ Cronograma Gantt (6 fases, {duracion_dias} días)
-• ✅ 3 Stakeholders principales
-• ✅ Top 3 Riesgos identificados
-• ✅ Equipo de 5 roles + Materiales certificados
-
-**KPIs CALCULADOS:**
-• EV: {simbolo}{estado['ev_k']}K | PV: {simbolo}{estado['pv_k']}K | AC: {simbolo}{estado['ac_k']}K
-
-✅ **Documento listo para generar**
-
-Haz clic en "Finalizar" para ver la vista previa y generar el PROJECT CHARTER en Word/PDF.""",
-                    'botones': None,
-                    'estado': estado,
-                    'datos_generados': self._generar_proyecto(estado)['datos_generados']
-                }
-            
-            # Modo manual si faltan datos
-            if cliente_nombre and proyecto_nombre and presupuesto:
-                estado["etapa"] = "ubicacion"
-                simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
-                return {'success': True, 'respuesta': f"""¡Hola! 👋 **PILI** - Proyecto Complejo PMI
-
-📋 **GENERACIÓN DE PROJECT CHARTER PROFESIONAL**
-_Según metodología PMI PMBOK 7th Edition_
-
-He detectado los siguientes datos:
-✅ Cliente: **{cliente_nombre}**
-✅ Proyecto: **{proyecto_nombre}**
-✅ Presupuesto: **{simbolo} {presupuesto:,.2f}**
-✅ Moneda: **{moneda}**
-
-Vamos a crear un PROJECT CHARTER completo con:
-• KPIs de gestión (SPI, CPI, EV, PV, AC)
-• Cronograma Gantt (6 fases)
-• Registro de Stakeholders
-• Matriz RACI
-• Registro de Riesgos (Top 5)
-• 13 Entregables principales
-
-━━━━━━━━━━━━━━━━━━━━━━━
-**INFORMACIÓN TÉCNICA DEL PROYECTO**
-━━━━━━━━━━━━━━━━━━━━━━━
-
-📍 **¿Ubicación exacta del proyecto?**
-_Ejemplo: Av. Principal 123, San Isidro, Lima_""", 'botones': None, 'estado': estado}
-            else:
-                estado["etapa"] = "ubicacion"
-                return {'success': True, 'respuesta': """¡Hola! 👋 **PILI** - Proyecto Complejo PMI
-
-📋 **GENERACIÓN DE PROJECT CHARTER PROFESIONAL**
-
-Necesito información básica del proyecto.
-
-📍 **¿Ubicación exacta del proyecto?**""", 'botones': None, 'estado': estado}
+📍 **¿Dónde se realizará el proyecto?**
+_Ejemplo: Lima, Perú / Concepción, Chile_""", 'botones': None, 'estado': estado}
         
         # ============================================
         # ETAPA: Ubicación
