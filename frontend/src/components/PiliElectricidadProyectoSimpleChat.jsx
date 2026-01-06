@@ -94,9 +94,15 @@ const PiliElectricidadProyectoSimpleChat = ({
       <div className="bg-gradient-to-r from-slate-800 to-blue-900 p-4 border-b-2 border-cyan-500/50 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <PiliAvatarLarge showCrown={true} />
+            <PiliAvatarLarge showCrown={false} />
             <div>
-              <h3 className="text-xl font-bold text-cyan-400">PILI Proyecto Simple</h3>
+              <h3 className="text-xl font-bold text-cyan-400">
+                <span className="relative inline-block">
+                  P
+                  <span className="absolute -top-4 -left-2 text-xl animate-bounce filter drop-shadow-md text-yellow-400">👑</span>
+                </span>
+                ILI Proyecto Simple
+              </h3>
               <p className="text-xs text-cyan-200">Electricidad • Experta IA</p>
             </div>
           </div>

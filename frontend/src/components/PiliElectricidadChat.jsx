@@ -156,9 +156,14 @@ const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotone
             <div className="bg-gradient-to-r from-blue-800 to-blue-900 p-4 border-b-2 border-yellow-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <PiliAvatarLarge showCrown={true} />
+                        <PiliAvatarLarge showCrown={false} />
                         <div>
-                            <h3 className="text-xl font-bold text-yellow-400">PILI Electricidad</h3>
+                            <h3 className="text-xl font-bold text-yellow-400">
+                                <span className="relative inline-block">
+                                    P
+                                    <span className="absolute -top-4 -left-2 text-xl animate-bounce filter drop-shadow-md">👑</span>
+                                </span>ILI Electricidad
+                            </h3>
                             <p className="text-xs text-blue-200">Especialista en Instalaciones Eléctricas</p>
                         </div>
                     </div>

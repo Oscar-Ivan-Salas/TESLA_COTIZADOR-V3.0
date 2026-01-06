@@ -118,8 +118,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                                     <span className="relative inline-block text-purple-400">
                                         P
                                         <span className="absolute -top-4 -left-2 text-2xl animate-bounce filter drop-shadow-md opacity-100 text-yellow-400">👑</span>
-                                    </span>
-                                    ILI Proyecto Complejo PMI
+                                    </span>ILI Proyecto Complejo PMI
                                     <TrendingUp className="w-5 h-5 text-yellow-400" />
                                 </h3>
                                 <p className="text-sm text-purple-300/80">Electricidad • Metodología PMI PMBOK 7th</p>

@@ -54,16 +54,17 @@ const PiliAvatar = ({ size = 24, className = "", showCrown = true }) => {
 export const PiliAvatarLarge = ({ showCrown = true }) => (
   <div className="relative inline-block">
     {showCrown && (
-      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10 text-4xl animate-bounce">
+      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20 text-4xl animate-bounce filter drop-shadow-lg">
         👑
       </div>
     )}
-    <div className="bg-gradient-to-br from-red-400 via-red-500 to-red-600 p-1 rounded-full shadow-2xl border-2 border-red-300 relative overflow-hidden transition-transform transform hover:scale-110">
+    <div className="bg-gradient-to-br from-red-400 via-red-500 to-red-600 p-0.5 rounded-full shadow-2xl border border-red-300 relative overflow-hidden transition-transform transform hover:scale-105">
       <div className="w-20 h-20 rounded-full overflow-hidden relative z-10 bg-white">
         <img
           src="http://localhost:8000/static/avatars/pili.png"
           alt="PILI"
-          className="w-full h-full object-cover scale-110"
+          className="w-full h-full object-cover object-top"
+          style={{ objectPosition: 'center 10%' }}
         />
       </div>
 
