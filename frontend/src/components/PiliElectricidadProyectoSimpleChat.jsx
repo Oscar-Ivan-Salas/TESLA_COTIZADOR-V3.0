@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, FileText, Phone, MapPin, Clock } from 'lucide-react';
+import { PiliAvatarLarge } from './PiliAvatar';
 
-const PiliElectricidadProyectoSimpleChat = ({ 
-  datosCliente, 
-  nombreProyecto, 
-  clienteProyecto, 
-  presupuestoEstimado, 
-  monedaProyecto, 
-  duracionMeses, 
-  onDatosGenerados, 
-  onBotonesUpdate, 
-  onBack, 
-  onFinish 
+const PiliElectricidadProyectoSimpleChat = ({
+  datosCliente,
+  nombreProyecto,
+  clienteProyecto,
+  presupuestoEstimado,
+  monedaProyecto,
+  duracionMeses,
+  onDatosGenerados,
+  onBotonesUpdate,
+  onBack,
+  onFinish
 }) => {
   const [conversacion, setConversacion] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -28,7 +29,7 @@ const PiliElectricidadProyectoSimpleChat = ({
   useEffect(() => {
     if (!hasSentInitialMessage.current) {
       hasSentInitialMessage.current = true;
-      
+
       const estadoInicial = {
         cliente_nombre: datosCliente?.nombre || clienteProyecto || null,
         cliente_ruc: datosCliente?.ruc || null,
@@ -40,7 +41,7 @@ const PiliElectricidadProyectoSimpleChat = ({
         moneda: monedaProyecto || 'PEN',
         duracion_meses: duracionMeses ? parseInt(duracionMeses) : null
       };
-      
+
       setConversationState(estadoInicial);
       enviarMensaje('', estadoInicial);
     }
@@ -59,7 +60,7 @@ const PiliElectricidadProyectoSimpleChat = ({
   const enviarMensaje = async (mensaje, estadoCustom = null) => {
     if (isTyping) return;
     setIsTyping(true);
-    
+
     try {
       const res = await fetch('http://localhost:8000/api/chat/pili-electricidad-proyecto-simple', {
         method: 'POST',
@@ -69,13 +70,13 @@ const PiliElectricidadProyectoSimpleChat = ({
           conversation_state: estadoCustom || conversationState
         })
       });
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         addMessage('bot', data.respuesta, data.botones);
         setConversationState(data.conversation_state);
-        
+
         if (data.datos_generados) {
           setHasQuote(true);
           if (onDatosGenerados) onDatosGenerados(data.datos_generados);
@@ -93,9 +94,7 @@ const PiliElectricidadProyectoSimpleChat = ({
       <div className="bg-gradient-to-r from-slate-800 to-blue-900 p-4 border-b-2 border-cyan-500/50 shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-              <FileText className="w-7 h-7 text-white" />
-            </div>
+            <PiliAvatarLarge showCrown={true} />
             <div>
               <h3 className="text-xl font-bold text-cyan-400">PILI Proyecto Simple</h3>
               <p className="text-xs text-cyan-200">Electricidad • Experta IA</p>
@@ -113,15 +112,14 @@ const PiliElectricidadProyectoSimpleChat = ({
         {conversacion.map((msg, i) => (
           <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
             <div className="max-w-[80%]">
-              <div className={`rounded-2xl p-4 shadow-lg ${
-                msg.sender === 'user' 
-                  ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white' 
-                  : 'bg-slate-800/70 backdrop-blur-sm text-white border border-cyan-500/30'
-              }`}>
-                <div dangerouslySetInnerHTML={{ 
+              <div className={`rounded-2xl p-4 shadow-lg ${msg.sender === 'user'
+                ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white'
+                : 'bg-slate-800/70 backdrop-blur-sm text-white border border-cyan-500/30'
+                }`}>
+                <div dangerouslySetInnerHTML={{
                   __html: (msg.text || '')
                     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-300">$1</strong>')
-                    .replace(/\n/g, '<br />') 
+                    .replace(/\n/g, '<br />')
                 }} />
               </div>
               {msg.buttons && (
@@ -147,7 +145,7 @@ const PiliElectricidadProyectoSimpleChat = ({
             </div>
           </div>
         ))}
-        
+
         {isTyping && (
           <div className="flex justify-start animate-fadeIn">
             <div className="bg-slate-800/70 backdrop-blur-sm rounded-2xl p-4 border border-cyan-500/30">
@@ -163,7 +161,7 @@ const PiliElectricidadProyectoSimpleChat = ({
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -202,7 +200,7 @@ const PiliElectricidadProyectoSimpleChat = ({
             Enviar
           </button>
         </div>
-        
+
         {hasQuote && onFinish && (
           <button
             onClick={onFinish}

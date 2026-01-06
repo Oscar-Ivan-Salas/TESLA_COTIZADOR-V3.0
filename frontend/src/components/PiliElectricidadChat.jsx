@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
+import { PiliAvatarLarge } from './PiliAvatar';
 
 /**
  * 🔌 PiliElectricidadChat - Componente para PILI especialista en Electricidad
@@ -155,9 +156,7 @@ const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotone
             <div className="bg-gradient-to-r from-blue-800 to-blue-900 p-4 border-b-2 border-yellow-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-                            <Zap className="w-7 h-7 text-blue-900" />
-                        </div>
+                        <PiliAvatarLarge showCrown={true} />
                         <div>
                             <h3 className="text-xl font-bold text-yellow-400">PILI Electricidad</h3>
                             <p className="text-xs text-blue-200">Especialista en Instalaciones Eléctricas</p>
@@ -182,8 +181,8 @@ const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotone
                             {/* Burbuja de mensaje */}
                             <div
                                 className={`rounded-2xl p-4 shadow-lg ${msg.sender === 'user'
-                                        ? 'bg-gradient-to-br from-yellow-500 to-yellow-600 text-blue-900'
-                                        : 'bg-gradient-to-br from-blue-800 to-blue-900 text-white border-2 border-blue-600'
+                                    ? 'bg-gradient-to-br from-yellow-500 to-yellow-600 text-blue-900'
+                                    : 'bg-gradient-to-br from-blue-800 to-blue-900 text-white border-2 border-blue-600'
                                     }`}
                             >
                                 <div
