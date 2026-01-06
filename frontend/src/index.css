@@ -62,10 +62,46 @@ code {
   background: linear-gradient(180deg, #b8941f 0%, #D4AF37 100%);
 }
 
-/* Firefox */
+/* Firefox y Global def */
 * {
   scrollbar-width: thin;
   scrollbar-color: #D4AF37 #1f2937;
+}
+
+/* ===================================
+   Clases de Utilidad para Scrollbars (Manuales)
+   =================================== */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Más fino */
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.5);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Variante Púrpura (Chat) */
+.scrollbar-purple::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #a855f7, #6366f1);
+  border: 1px solid #4c1d95;
+}
+.scrollbar-purple::-webkit-scrollbar-track {
+  background: rgba(88, 28, 135, 0.2);
+}
+
+/* Variante Dorada (App/Preview) */
+.scrollbar-gold::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #D4AF37, #b8941f);
+  border: 1px solid #713f12;
+}
+.scrollbar-gold::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.8);
 }
 
 /* ===================================

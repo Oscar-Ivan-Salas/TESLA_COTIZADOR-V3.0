@@ -1850,7 +1850,7 @@ const CotizadorTesla30 = () => {
 
             {/* PASO 2: CHAT + VISTA PREVIA SPLIT-SCREEN */}
             {paso === 2 && (
-              <div className="max-w-full mx-auto h-[calc(100vh-200px)] scrollbar-thin scrollbar-thumb-yellow-600 scrollbar-track-gray-800 overflow-y-auto">
+              <div className="max-w-full mx-auto h-[calc(100vh-200px)] custom-scrollbar scrollbar-gold overflow-y-auto">
                 <div className="grid grid-cols-12 h-full gap-4">
 
 
