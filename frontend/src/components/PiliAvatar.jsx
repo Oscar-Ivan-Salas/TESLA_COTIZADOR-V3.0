@@ -30,7 +30,7 @@ const PiliAvatar = ({ size = 24, className = "", showCrown = true }) => {
       {/* Avatar de PILI Caperucita */}
       <div className="relative rounded-full overflow-hidden" style={{ width: size, height: size }}>
         <img
-          src="http://localhost:8000/static/avatars/PILIi Avatar.png"
+          src="http://localhost:8000/static/avatars/PILi_Avatar.png"
           alt="PILI"
           className="w-full h-full object-cover"
           style={{ imageRendering: 'crisp-edges' }}
