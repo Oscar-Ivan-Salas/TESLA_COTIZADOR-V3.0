@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
+import { Send, Zap, Phone, MapPin, Clock, ArrowLeft } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
 
 /**
@@ -162,24 +162,21 @@ const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotone
                                 <span className="relative inline-block">
                                     P
                                     <span className="absolute -top-4 -left-2 text-xl animate-bounce filter drop-shadow-md">👑</span>
-                                </span>ILI Electricidad
+                                </span>PILI Electricidad
                             </h3>
                             <p className="text-xs text-blue-200">Especialista en Instalaciones Eléctricas</p>
                         </div>
                     </div>
                     {onBack && (
-                        <button
-                            onClick={onBack}
-                            className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all"
-                        >
-                            ← Volver
+                        <button onClick={onBack} className="text-white hover:text-yellow-400 transition-colors">
+                            <ArrowLeft className="w-6 h-6" />
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-950 to-black">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar scrollbar-gold bg-gradient-to-b from-blue-950 to-black">
                 {conversacion.map((msg, index) => (
                     <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>

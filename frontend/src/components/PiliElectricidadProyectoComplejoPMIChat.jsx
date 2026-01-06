@@ -97,7 +97,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     };
 
     return (
-        <div className="flex flex-col h-full relative overflow-hidden">
+        <div className="flex flex-col h-full bg-gradient-to-br from-purple-900/40 via-blue-900/40 to-slate-900/40 rounded-3xl shadow-2xl backdrop-blur-2xl border border-white/10 overflow-hidden">
             {/* Background Premium con gradiente complejo */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950 to-blue-950">
                 <div className="absolute inset-0 opacity-10" style={{
@@ -114,12 +114,12 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                         <div className="flex items-center gap-4">
                             <PiliAvatarLarge showCrown={false} />
                             <div>
-                                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
+                                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent flex items-center">
                                     <span className="relative inline-block text-purple-400">
                                         P
                                         <span className="absolute -top-4 -left-2 text-2xl animate-bounce filter drop-shadow-md opacity-100 text-yellow-400">👑</span>
                                     </span>ILI Proyecto Complejo PMI
-                                    <TrendingUp className="w-5 h-5 text-yellow-400" />
+                                    <TrendingUp className="w-5 h-5 text-yellow-400 ml-2" />
                                 </h3>
                                 <p className="text-sm text-purple-300/80">Electricidad • Metodología PMI PMBOK 7th</p>
                             </div>
@@ -137,7 +137,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 relative z-10 custom-scrollbar scrollbar-purple">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 relative z-10 custom-scrollbar scrollbar-purple h-full">
                 {conversacion.map((msg, i) => (
                     <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
                         <div className="max-w-[85%]">

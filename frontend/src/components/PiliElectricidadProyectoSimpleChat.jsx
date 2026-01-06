@@ -100,8 +100,7 @@ const PiliElectricidadProyectoSimpleChat = ({
                 <span className="relative inline-block">
                   P
                   <span className="absolute -top-4 -left-2 text-xl animate-bounce filter drop-shadow-md text-yellow-400">👑</span>
-                </span>
-                ILI Proyecto Simple
+                </span>ILI Proyecto Simple
               </h3>
               <p className="text-xs text-cyan-200">Electricidad • Experta IA</p>
             </div>
@@ -114,7 +113,7 @@ const PiliElectricidadProyectoSimpleChat = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-slate-950 to-black">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar scrollbar-gold bg-gradient-to-b from-slate-950 to-black">
         {conversacion.map((msg, i) => (
           <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
             <div className="max-w-[80%]">

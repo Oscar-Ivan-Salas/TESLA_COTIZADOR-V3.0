@@ -1850,7 +1850,7 @@ const CotizadorTesla30 = () => {
 
             {/* PASO 2: CHAT + VISTA PREVIA SPLIT-SCREEN */}
             {paso === 2 && (
-              <div className="max-w-full mx-auto h-[calc(100vh-200px)] custom-scrollbar scrollbar-gold overflow-y-auto">
+              <div className="max-w-full mx-auto h-[calc(100vh-200px)] overflow-hidden">
                 <div className="grid grid-cols-12 h-full gap-4">
 
 
@@ -1911,15 +1911,15 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'saneamiento' && tipoFlujo === 'cotizacion-simple' ? (
                     <div className="col-span-6"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6"><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full"><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
-                    <div className="col-span-6"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
@@ -2077,8 +2077,8 @@ const CotizadorTesla30 = () => {
                   )}
 
                   {/* VISTA PREVIA (DERECHA) */}
-                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 rounded-t-2xl flex justify-between items-center">
+                  <div className="col-span-6 h-full min-h-0 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 shrink-0 flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <Eye className="w-6 h-6 text-white" />
                         <h3 className="text-xl font-bold text-white">Vista Previa</h3>
@@ -2111,7 +2111,7 @@ const CotizadorTesla30 = () => {
                       )}
                     </div>
 
-                    <div className="flex-grow p-4 overflow-y-auto bg-white">
+                    <div className="flex-1 overflow-y-auto min-h-0 p-4 bg-white custom-scrollbar scrollbar-gold">
                       {!mostrarPreview ? (
                         <div className="text-center text-gray-500 mt-20">
                           <Eye className="w-16 h-16 mx-auto mb-4 text-gray-300" />

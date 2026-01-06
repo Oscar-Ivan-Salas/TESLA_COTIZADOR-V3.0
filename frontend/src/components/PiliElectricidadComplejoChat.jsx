@@ -65,7 +65,7 @@ const PiliElectricidadComplejoChat = ({ onDatosGenerados, onBotonesUpdate, onBac
                     {onBack && <button onClick={onBack} className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
                 </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-950 to-black">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-950 to-black custom-scrollbar scrollbar-gold">
                 {conversacion.map((msg, i) => (
                     <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className="max-w-[80%]">
