@@ -1,169 +1,809 @@
 """
-⚡ PILI ELECTRICIDAD COMPLEJO ChatBot v2.0
-Cotización Compleja con Ingeniería de Detalle
-"""
-from typing import Dict, Optional
-import math
+PILI ChatBot - Proyecto Complejo PMI (Electricidad)
+Versión: 1.0
+Metodología: PMI PMBOK 7th Edition
 
-class PILIElectricidadComplejoChatBot:
+Genera PROJECT CHARTER profesional con:
+- KPIs de gestión (SPI, CPI, EV, PV, AC)
+- Cronograma Gantt (6 fases)
+- Registro de Stakeholders
+- Matriz RACI
+- Registro de Riesgos (Top 5)
+- 13 Entregables principales
+"""
+
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
+class PILIElectricidadProyectoComplejoPMIChatBot:
     def __init__(self):
-        self.kb = {
-            "tipos": {
-                "RESIDENCIAL": {"nombre": "Instalación Residencial", "fd": 0.7, "fp": 0.9, "v": 220},
-                "COMERCIAL": {"nombre": "Instalación Comercial", "fd": 0.85, "fp": 0.85, "v": 220},
-                "INDUSTRIAL": {"nombre": "Instalación Industrial Trifásica", "fd": 0.95, "fp": 0.8, "v": 380}
-            },
-            "cables": {"2.5": {"cap": 21, "p": 2.5}, "4": {"cap": 28, "p": 3.8}, "6": {"cap": 36, "p": 5.2}, "10": {"cap": 50, "p": 8.5}, "16": {"cap": 68, "p": 13.5}, "25": {"cap": 89, "p": 21.0}},
-            "prot": {"10A": 45, "16A": 48, "20A": 52, "25A": 58, "32A": 65, "40A": 75, "50A": 85, "63A": 95}
-        }
-    
-    def procesar(self, mensaje: str, estado: Optional[Dict] = None) -> Dict:
-        if estado is None: estado = {"etapa": "inicial", "tipo": None, "area": None, "cargas": {}}
+        self.version = "1.0 - PMI PMBOK 7th"
+        self.contador = 1
+        
+    def procesar(self, mensaje: str, estado: Dict) -> Dict:
+        """Procesa el mensaje del usuario y retorna respuesta"""
+        
+        # Inicializar estado si es necesario
+        if not estado:
+            estado = {}
+        
         etapa = estado.get("etapa", "inicial")
         
-        if etapa == "inicial": return self._etapa_inicial(estado)
-        elif etapa == "tipo": return self._etapa_tipo(mensaje, estado)
-        elif etapa == "area": return self._etapa_area(mensaje, estado)
-        elif etapa == "iluminacion": return self._etapa_iluminacion(mensaje, estado)
-        elif etapa == "tomacorrientes": return self._etapa_tomacorrientes(mensaje, estado)
-        elif etapa == "equipos": return self._etapa_equipos(mensaje, estado)
-        elif etapa == "cotizacion": return self._etapa_cotizacion(mensaje, estado)
-        return {'success': False, 'respuesta': 'Error', 'botones': None, 'estado': estado}
-    
-    def _etapa_inicial(self, estado: Dict) -> Dict:
-        estado["etapa"] = "tipo"
-        return {'success': True, 'respuesta': """¡Hola! 👋 Soy **Pili**, especialista en instalaciones eléctricas **COMPLEJAS**.
+        # ============================================
+        # ETAPA: Inicial - Bienvenida
+        # ============================================
+        if etapa == "inicial":
+            # Auto-detectar datos del frontend
+            cliente_nombre = estado.get("cliente_nombre")
+            proyecto_nombre = estado.get("proyecto_nombre")
+            presupuesto = estado.get("presupuesto")
+            moneda = estado.get("moneda", "USD")
+            duracion_meses = estado.get("duracion_meses")
+            
+            # ✅ FLUJO NORMAL: Preguntar todo paso a paso
+            estado["etapa"] = "ubicacion"
+            return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
-⚡ **COTIZACIÓN TÉCNICA DETALLADA**
-✅ Cálculo de cargas eléctricas
-✅ Dimensionamiento de cables
-✅ Selección de protecciones
-✅ Cronograma de 4 fases
-✅ Memoria de cálculo
+━━━━━━━━━━━━━━━━━━━━━━━
+**DATOS DETECTADOS DEL FORMULARIO**
+━━━━━━━━━━━━━━━━━━━━━━━
 
-**¿Tipo de instalación?**""", 'botones': [{"text": "🏠 Residencial", "value": "RESIDENCIAL"}, {"text": "🏪 Comercial", "value": "COMERCIAL"}, {"text": "🏭 Industrial", "value": "INDUSTRIAL"}], 'estado': estado, 'cotizacion': None}
-    
-    def _etapa_tipo(self, mensaje: str, estado: Dict) -> Dict:
-        estado["tipo"] = mensaje
-        estado["etapa"] = "area"
-        return {'success': True, 'respuesta': f"""**Tipo:** {self.kb['tipos'][mensaje]['nombre']}\n\n📐 **¿Área total en m²?**\n_Ejemplo: 150_""", 'botones': None, 'estado': estado}
-    
-    def _etapa_area(self, mensaje: str, estado: Dict) -> Dict:
-        try:
-            estado["area"] = float(mensaje)
-            estado["etapa"] = "iluminacion"
-            return {'success': True, 'respuesta': f"""Área: **{estado['area']} m²**\n\n💡 **¿Cuántos puntos de luz?**\n_Ejemplo: 25_""", 'botones': None, 'estado': estado}
-        except: return {'success': False, 'respuesta': "Número inválido", 'botones': None, 'estado': estado}
-    
-    def _etapa_iluminacion(self, mensaje: str, estado: Dict) -> Dict:
-        try:
-            estado["cargas"]["luz"] = {"n": int(mensaje), "w": int(mensaje) * 18}
-            estado["etapa"] = "tomacorrientes"
-            return {'success': True, 'respuesta': f"""✅ Iluminación: {int(mensaje)} puntos\n\n🔌 **¿Cuántos tomacorrientes?**\n_Ejemplo: 30_""", 'botones': None, 'estado': estado}
-        except: return {'success': False, 'respuesta': "Número inválido", 'botones': None, 'estado': estado}
-    
-    def _etapa_tomacorrientes(self, mensaje: str, estado: Dict) -> Dict:
-        try:
-            estado["cargas"]["toma"] = {"n": int(mensaje), "w": int(mensaje) * 180}
-            estado["etapa"] = "equipos"
-            return {'success': True, 'respuesta': f"""✅ Tomacorrientes: {int(mensaje)}\n\n⚙️ **¿Equipos especiales?**\n(Aires, hornos, motores)""", 'botones': [{"text": "✅ Sí", "value": "SI"}, {"text": "❌ No", "value": "NO"}], 'estado': estado}
-        except: return {'success': False, 'respuesta': "Número inválido", 'botones': None, 'estado': estado}
-    
-    def _etapa_equipos(self, mensaje: str, estado: Dict) -> Dict:
-        tipo = estado["tipo"]
-        if mensaje == "SI":
-            estado["cargas"]["eq"] = {"w": 3000 if tipo == "RESIDENCIAL" else 5000 if tipo == "COMERCIAL" else 10000}
-        else:
-            estado["cargas"]["eq"] = {"w": 0}
-        return self._generar_cotizacion(estado)
-    
-    def _generar_cotizacion(self, estado: Dict) -> Dict:
-        tipo, area, cargas = estado["tipo"], estado["area"], estado["cargas"]
-        info = self.kb["tipos"][tipo]
+✅ Cliente: **{cliente_nombre or 'No especificado'}**
+✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
+✅ Presupuesto: **{moneda} {presupuesto:,.2f if presupuesto else 'No especificado'}**
+✅ Duración: **{duracion_meses} meses** if duracion_meses else 'No especificado'
+
+Ahora necesito información adicional para crear el Project Charter completo.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**UBICACIÓN DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 **¿Dónde se realizará el proyecto?**
+_Ejemplo: Lima, Perú / Concepción, Chile_""", 'botones': None, 'estado': estado}
         
-        # Cálculos
-        w_total = cargas["luz"]["w"] + cargas["toma"]["w"] + cargas["eq"]["w"]
-        w_demanda = w_total * info["fd"]
-        i_calc = w_demanda / (math.sqrt(3) * info["v"] * info["fp"]) if tipo == "INDUSTRIAL" else w_demanda / (info["v"] * info["fp"])
-        cable = self._sel_cable(i_calc * 1.25)
-        prot = self._sel_prot(i_calc)
+        # ============================================
+                    {
+                        "id": "R01",
+                        "descripcion": "Retrasos en entrega de equipos importados",
+                        "probabilidad": "Media",
+                        "impacto": "Alto",
+                        "severidad": "Alta",
+                        "mitigacion": "Compra anticipada con proveedores alternativos certificados"
+                    },
+                    {
+                        "id": "R02",
+                        "descripcion": "Cambios en alcance solicitados por cliente",
+                        "probabilidad": "Media",
+                        "impacto": "Medio",
+                        "severidad": "Media",
+                        "mitigacion": "Control de cambios formal con aprobación escrita y ajuste de cronograma"
+                    },
+                    {
+                        "id": "R03",
+                        "descripcion": "Condiciones climáticas adversas",
+                        "probabilidad": "Baja",
+                        "impacto": "Medio",
+                        "severidad": "Baja",
+                        "mitigacion": "Planificación de actividades críticas en temporada seca"
+                    }
+                ]
+                
+                # Recursos por defecto
+                estado["recursos_humanos"] = ["Project Manager PMI", "Ing. Residente", "Ing. Eléctrico", "Técnicos (3)", "Inspector QA"]
+                estado["materiales"] = ["Tableros eléctricos certificados", "Cables THW/THHN", "Protecciones termomagnéticas", "Sistema de puesta a tierra", "Luminarias LED"]
+                
+                # ✅ GENERAR PROYECTO DIRECTAMENTE
+                simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+                return {
+                    'success': True,
+                    'respuesta': f"""🎉 **PROJECT CHARTER GENERADO AUTOMÁTICAMENTE**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**DATOS DETECTADOS DEL FORMULARIO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Cliente: **{cliente_nombre}**
+✅ Proyecto: **{proyecto_nombre}**
+✅ Presupuesto: **{simbolo} {presupuesto:,.2f}**
+✅ Duración: **{duracion_meses} meses ({duracion_dias} días)**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**PROYECTO COMPLETO GENERADO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+He creado un PROJECT CHARTER profesional con:
+• ✅ KPIs PMI optimizados (SPI: 1.05, CPI: 0.98)
+• ✅ Cronograma Gantt (6 fases, {duracion_dias} días)
+• ✅ 3 Stakeholders principales
+• ✅ Top 3 Riesgos identificados
+• ✅ Equipo de 5 roles + Materiales certificados
+
+**KPIs CALCULADOS:**
+• EV: {simbolo}{estado['ev_k']}K | PV: {simbolo}{estado['pv_k']}K | AC: {simbolo}{estado['ac_k']}K
+
+✅ **Documento listo para generar**
+
+Haz clic en "Finalizar" para ver la vista previa y generar el PROJECT CHARTER en Word/PDF.""",
+                    'botones': None,
+                    'estado': estado,
+                    'datos_generados': self._generar_proyecto(estado)['datos_generados']
+                }
+            
+            # Modo manual si faltan datos
+            if cliente_nombre and proyecto_nombre and presupuesto:
+                estado["etapa"] = "ubicacion"
+                simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+                return {'success': True, 'respuesta': f"""¡Hola! 👋 **PILI** - Proyecto Complejo PMI
+
+📋 **GENERACIÓN DE PROJECT CHARTER PROFESIONAL**
+_Según metodología PMI PMBOK 7th Edition_
+
+He detectado los siguientes datos:
+✅ Cliente: **{cliente_nombre}**
+✅ Proyecto: **{proyecto_nombre}**
+✅ Presupuesto: **{simbolo} {presupuesto:,.2f}**
+✅ Moneda: **{moneda}**
+
+Vamos a crear un PROJECT CHARTER completo con:
+• KPIs de gestión (SPI, CPI, EV, PV, AC)
+• Cronograma Gantt (6 fases)
+• Registro de Stakeholders
+• Matriz RACI
+• Registro de Riesgos (Top 5)
+• 13 Entregables principales
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**INFORMACIÓN TÉCNICA DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 **¿Ubicación exacta del proyecto?**
+_Ejemplo: Av. Principal 123, San Isidro, Lima_""", 'botones': None, 'estado': estado}
+            else:
+                estado["etapa"] = "ubicacion"
+                return {'success': True, 'respuesta': """¡Hola! 👋 **PILI** - Proyecto Complejo PMI
+
+📋 **GENERACIÓN DE PROJECT CHARTER PROFESIONAL**
+
+Necesito información básica del proyecto.
+
+📍 **¿Ubicación exacta del proyecto?**""", 'botones': None, 'estado': estado}
         
-        # Items
-        items = [
-            {"descripcion": f"Punto luz LED 18W + cable {cable}mm²", "cantidad": cargas["luz"]["n"], "unidad": "pto", "precio_unitario": 85.0},
-            {"descripcion": f"Tomacorriente doble + cable {cable}mm²", "cantidad": cargas["toma"]["n"], "unidad": "pto", "precio_unitario": 95.0},
-            {"descripcion": f"Tablero {'trifásico 380V' if tipo=='INDUSTRIAL' else 'monofásico 220V'} - {prot}", "cantidad": 1, "unidad": "und", "precio_unitario": 3500 if tipo=="INDUSTRIAL" else 1800 if tipo=="COMERCIAL" else 1200},
-            {"descripcion": f"Cable THW {cable}mm²", "cantidad": area * 0.3, "unidad": "m", "precio_unitario": self.kb["cables"][cable]["p"]},
-            {"descripcion": f"Interruptores {prot}", "cantidad": 8, "unidad": "und", "precio_unitario": self.kb["prot"][prot]},
-            {"descripcion": "Mano de obra", "cantidad": (cargas["luz"]["n"] + cargas["toma"]["n"]) * 0.5, "unidad": "h", "precio_unitario": 45.0}
-        ]
+        # ============================================
+        # ETAPA: Ubicación
+        # ============================================
+        elif etapa == "ubicacion":
+            estado["ubicacion"] = mensaje
+            estado["etapa"] = "area"
+            return {'success': True, 'respuesta': f"""✅ Ubicación: **{mensaje}**
+
+📐 **¿Área total del proyecto (m²)?**
+_Ejemplo: 5000_""", 'botones': None, 'estado': estado}
         
-        subtotal = sum(i["cantidad"] * i["precio_unitario"] for i in items)
-        igv, total = subtotal * 0.18, subtotal * 1.18
+        # ============================================
+        # ETAPA: Área
+        # ============================================
+        elif etapa == "area":
+            try:
+                area = float(mensaje.replace(',', ''))
+                estado["area_m2"] = area
+                estado["etapa"] = "descripcion"
+                return {'success': True, 'respuesta': f"""✅ Área: **{area:,.0f} m²**
+
+📝 **Descripción técnica detallada del proyecto:**
+_Incluye: tipo de instalación, sistemas, equipos principales, etc._
+_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Área inválida. Por favor ingresa solo números.", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Descripción
+        # ============================================
+        elif etapa == "descripcion":
+            estado["descripcion"] = mensaje
+            estado["etapa"] = "normativa"
+            return {'success': True, 'respuesta': f"""✅ Descripción guardada
+
+📋 **Normativa aplicable:**
+_Selecciona la normativa principal_
+
+[CNE Suministro 2011] [NEC 2020] [IEC] [Otra]""", 'botones': [
+                {'text': 'CNE Suministro 2011', 'value': 'CNE Suministro 2011'},
+                {'text': 'NEC 2020', 'value': 'NEC 2020'},
+                {'text': 'IEC', 'value': 'IEC'},
+                {'text': 'Otra', 'value': 'OTRA'}
+            ], 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Normativa
+        # ============================================
+        elif etapa == "normativa":
+            if mensaje == "OTRA":
+                estado["etapa"] = "normativa_otra"
+                return {'success': True, 'respuesta': "📋 **Especifica la normativa:**", 'botones': None, 'estado': estado}
+            else:
+                estado["normativa"] = mensaje
+                estado["etapa"] = "fecha_inicio"
+                return {'success': True, 'respuesta': f"""✅ Normativa: **{mensaje}**
+
+📅 **Fecha de inicio estimada (DD/MM/YYYY):**
+_Ejemplo: 01/02/2026_""", 'botones': None, 'estado': estado}
+        
+        elif etapa == "normativa_otra":
+            estado["normativa"] = mensaje
+            estado["etapa"] = "fecha_inicio"
+            return {'success': True, 'respuesta': f"""✅ Normativa: **{mensaje}**
+
+📅 **Fecha de inicio estimada (DD/MM/YYYY):**""", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Fecha inicio
+        # ============================================
+        elif etapa == "fecha_inicio":
+            try:
+                fecha = datetime.strptime(mensaje, "%d/%m/%Y")
+                estado["fecha_inicio"] = mensaje
+                estado["etapa"] = "kpi_spi"
+                return {'success': True, 'respuesta': f"""✅ Fecha inicio: **{mensaje}**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**KPIs DE GESTIÓN PMI**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Como proyecto complejo PMI, necesitamos definir los KPIs de gestión.
+Te ayudaré con valores recomendados según mejores prácticas.
+
+📊 **SPI (Schedule Performance Index)**
+_Mide el desempeño del cronograma_
+
+Valores:
+• **1.0** = En tiempo (recomendado)
+• > 1.0 = Adelantado
+• < 1.0 = Retrasado
+
+Rango válido: 0.8 - 1.2
+
+**¿Valor de SPI?**
+_Ejemplo: 1.0_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Formato de fecha inválido. Usa DD/MM/YYYY", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: KPI - SPI
+        # ============================================
+        elif etapa == "kpi_spi":
+            try:
+                spi = float(mensaje)
+                if spi < 0.5 or spi > 1.5:
+                    return {'success': False, 'respuesta': "⚠️ SPI fuera de rango razonable (0.5-1.5). Por favor verifica.", 'botones': None, 'estado': estado}
+                estado["spi"] = spi
+                estado["etapa"] = "kpi_cpi"
+                return {'success': True, 'respuesta': f"""✅ SPI: **{spi}**
+
+📊 **CPI (Cost Performance Index)**
+_Mide el desempeño del costo_
+
+Valores:
+• **1.0** = En presupuesto (recomendado)
+• > 1.0 = Bajo presupuesto
+• < 1.0 = Sobre presupuesto
+
+Rango válido: 0.8 - 1.2
+
+**¿Valor de CPI?**
+_Ejemplo: 1.05_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número decimal (ej: 1.0)", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: KPI - CPI
+        # ============================================
+        elif etapa == "kpi_cpi":
+            try:
+                cpi = float(mensaje)
+                if cpi < 0.5 or cpi > 1.5:
+                    return {'success': False, 'respuesta': "⚠️ CPI fuera de rango razonable (0.5-1.5). Por favor verifica.", 'botones': None, 'estado': estado}
+                estado["cpi"] = cpi
+                estado["etapa"] = "kpi_ev"
+                
+                presupuesto = estado.get("presupuesto", 100000)
+                sugerencia_ev = int(presupuesto * 0.70 / 1000)
+                
+                return {'success': True, 'respuesta': f"""✅ CPI: **{cpi}**
+
+📊 **EV (Earned Value)**
+_Valor ganado del proyecto en miles_
+
+Sugerencia: **${sugerencia_ev}K** (70% del presupuesto)
+
+**¿Valor de EV en miles?**
+_Ejemplo: {sugerencia_ev}_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número decimal (ej: 1.05)", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: KPI - EV
+        # ============================================
+        elif etapa == "kpi_ev":
+            try:
+                ev = int(mensaje)
+                estado["ev_k"] = ev
+                estado["etapa"] = "kpi_pv"
+                
+                presupuesto = estado.get("presupuesto", 100000)
+                sugerencia_pv = int(presupuesto * 0.75 / 1000)
+                
+                return {'success': True, 'respuesta': f"""✅ EV: **${ev}K**
+
+📊 **PV (Planned Value)**
+_Valor planificado del proyecto en miles_
+
+Sugerencia: **${sugerencia_pv}K** (75% del presupuesto)
+
+**¿Valor de PV en miles?**
+_Ejemplo: {sugerencia_pv}_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número entero.", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: KPI - PV
+        # ============================================
+        elif etapa == "kpi_pv":
+            try:
+                pv = int(mensaje)
+                estado["pv_k"] = pv
+                estado["etapa"] = "kpi_ac"
+                
+                presupuesto = estado.get("presupuesto", 100000)
+                sugerencia_ac = int(presupuesto * 0.65 / 1000)
+                
+                return {'success': True, 'respuesta': f"""✅ PV: **${pv}K**
+
+📊 **AC (Actual Cost)**
+_Costo real del proyecto en miles_
+
+Sugerencia: **${sugerencia_ac}K** (65% del presupuesto)
+
+**¿Valor de AC en miles?**
+_Ejemplo: {sugerencia_ac}_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número entero.", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: KPI - AC
+        # ============================================
+        elif etapa == "kpi_ac":
+            try:
+                ac = int(mensaje)
+                estado["ac_k"] = ac
+                estado["etapa"] = "alcance"
+                
+                return {'success': True, 'respuesta': f"""✅ AC: **${ac}K**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ **KPIs PMI COMPLETADOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+SPI: {estado.get('spi')} | CPI: {estado.get('cpi')}
+EV: ${estado.get('ev_k')}K | PV: ${estado.get('pv_k')}K | AC: ${ac}K
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**ALCANCE DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 **Descripción detallada del alcance (WBS Level 1):**
+
+Incluye todos los entregables principales del proyecto.
+
+_Ejemplo:_
+_• Diseño e ingeniería eléctrica completa_
+_• Suministro de materiales certificados_
+_• Instalación de sistema eléctrico_
+_• Sistema de automatización y control SCADA_
+_• Pruebas FAT/SAT_
+_• Documentación técnica as-built_
+_• Capacitación al personal_
+_• Garantía de 24 meses_
+
+**Tu alcance:**""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número entero.", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Alcance
+        # ============================================
+        elif etapa == "alcance":
+            estado["alcance"] = mensaje
+            estado["etapa"] = "dias_ingenieria"
+            
+            # 🎯 ENVIAR FORMULARIO DE ENTREGABLES
+            return {
+                'success': True, 
+                'respuesta': """✅ Alcance definido
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**ENTREGABLES DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 **Selecciona los entregables necesarios:**""",
+                'botones': None,
+                'estado': estado,
+                # ✨ FORMULARIO: Entregables
+                'formulario': {
+                    'tipo': 'entregables',
+                    'tipoProyecto': estado.get('tipo_proyecto', 'industrial'),
+                    'presupuesto': estado.get('presupuesto', 0),
+                    'area': estado.get('area_m2', 0)
+                }
+            }
+        
+        # ============================================
+        # ETAPA: Días Ingeniería
+        # ============================================
+        elif etapa == "dias_ingenieria":
+            try:
+                dias = int(mensaje)
+                if dias < 5 or dias > 90:
+                    return {'success': False, 'respuesta': "⚠️ Duración fuera de rango razonable (5-90 días).", 'botones': None, 'estado': estado}
+                estado["dias_ingenieria"] = dias
+                estado["etapa"] = "dias_ejecucion"
+                return {'success': True, 'respuesta': f"""✅ Ingeniería y Diseño: **{dias} días**
+
+⏱️ **Días para Ejecución:**
+_Sugerencia: 40-60 días_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa solo el número de días.", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Días Ejecución
+        # ============================================
+        elif etapa == "dias_ejecucion":
+            try:
+                dias = int(mensaje)
+                if dias < 10 or dias > 180:
+                    return {'success': False, 'respuesta': "⚠️ Duración fuera de rango razonable (10-180 días).", 'botones': None, 'estado': estado}
+                estado["dias_ejecucion"] = dias
+                
+                # Calcular duración total
+                duracion_total = 10 + 3 + estado.get("dias_ingenieria", 25) + dias + 8 + 5
+                estado["duracion_total"] = duracion_total
+                
+                estado["etapa"] = "riesgo1_desc"
+                return {'success': True, 'respuesta': f"""✅ Ejecución: **{dias} días**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ **CRONOGRAMA COMPLETADO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Duración total: **{duracion_total} días**
+
+1. Inicio y Planificación: 10 días
+2. Gestión Stakeholders: 3 días
+3. Ingeniería y Diseño: {estado.get('dias_ingenieria')} días
+4. Ejecución: {dias} días
+5. Pruebas y Puesta en Marcha: 8 días
+6. Cierre: 5 días
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**REGISTRO DE RIESGOS (TOP 5)**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Identificaremos los 5 riesgos principales del proyecto.
+
+Para cada riesgo necesito:
+• Descripción
+• Probabilidad (Alta/Media/Baja)
+• Impacto (Alto/Medio/Bajo)
+• Plan de Mitigación
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**RIESGO 1 de 5**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 **Descripción del riesgo:**
+_Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa solo el número de días.", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Riesgos (Loop de 5)
+        # ============================================
+        elif etapa.startswith("riesgo"):
+            return self._procesar_riesgo(mensaje, estado)
+        
+        # ============================================
+        # ETAPA: Recursos Humanos
+        # ============================================
+        elif etapa == "recursos_humanos":
+            recursos = [r.strip() for r in mensaje.split(',') if r.strip()]
+            estado["recursos_humanos"] = recursos
+            estado["etapa"] = "materiales"
+            return {'success': True, 'respuesta': f"""✅ Equipo: **{len(recursos)} roles** definidos
+
+🔧 **Materiales principales (separados por coma):**
+_Ejemplo: Tableros eléctricos, Cables THW, Protecciones termomagnéticas, Sistema SCADA, UPS_""", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Materiales
+        # ============================================
+        elif etapa == "materiales":
+            materiales = [m.strip() for m in mensaje.split(',') if m.strip()]
+            estado["materiales"] = materiales
+            return self._generar_proyecto(estado)
+        
+        return {'success': False, 'respuesta': "❌ Etapa no reconocida", 'botones': None, 'estado': estado}
+    
+    def _procesar_riesgo(self, mensaje: str, estado: Dict) -> Dict:
+        """Procesa el loop de 5 riesgos"""
+        etapa = estado.get("etapa")
+        
+        # Inicializar lista de riesgos si no existe
+        if "riesgos" not in estado:
+            estado["riesgos"] = []
+        
+        # Extraer número de riesgo y campo
+        partes = etapa.split("_")
+        num_riesgo = int(partes[0].replace("riesgo", ""))
+        campo = "_".join(partes[1:])
+        
+        # Inicializar riesgo temporal si no existe
+        if "riesgo_temp" not in estado:
+            estado["riesgo_temp"] = {}
+        
+        if campo == "desc":
+            estado["riesgo_temp"]["descripcion"] = mensaje
+            estado["etapa"] = f"riesgo{num_riesgo}_prob"
+            return {'success': True, 'respuesta': f"""✅ Descripción: **{mensaje}**
+
+📊 **Probabilidad del riesgo:**
+
+[Alta] [Media] [Baja]""", 'botones': [
+                {'text': 'Alta', 'value': 'Alta'},
+                {'text': 'Media', 'value': 'Media'},
+                {'text': 'Baja', 'value': 'Baja'}
+            ], 'estado': estado}
+        
+        elif campo == "prob":
+            estado["riesgo_temp"]["probabilidad"] = mensaje
+            estado["etapa"] = f"riesgo{num_riesgo}_imp"
+            return {'success': True, 'respuesta': f"""✅ Probabilidad: **{mensaje}**
+
+💥 **Impacto del riesgo:**
+
+[Alto] [Medio] [Bajo]""", 'botones': [
+                {'text': 'Alto', 'value': 'Alto'},
+                {'text': 'Medio', 'value': 'Medio'},
+                {'text': 'Bajo', 'value': 'Bajo'}
+            ], 'estado': estado}
+        
+        elif campo == "imp":
+            estado["riesgo_temp"]["impacto"] = mensaje
+            estado["etapa"] = f"riesgo{num_riesgo}_mit"
+            
+            # Calcular severidad
+            prob = estado["riesgo_temp"]["probabilidad"]
+            imp = mensaje
+            severidad = self._calcular_severidad(prob, imp)
+            estado["riesgo_temp"]["severidad"] = severidad
+            
+            return {'success': True, 'respuesta': f"""✅ Impacto: **{mensaje}**
+✅ Severidad calculada: **{severidad}**
+
+🛡️ **Plan de Mitigación:**
+_Describe las acciones para reducir o eliminar el riesgo_
+_Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""", 'botones': None, 'estado': estado}
+        
+        elif campo == "mit":
+            estado["riesgo_temp"]["mitigacion"] = mensaje
+            estado["riesgo_temp"]["id"] = f"R{num_riesgo:02d}"
+            
+            # Guardar riesgo completo
+            estado["riesgos"].append(estado["riesgo_temp"].copy())
+            estado.pop("riesgo_temp")
+            
+            # Verificar si hay más riesgos
+            if num_riesgo < 5:
+                estado["etapa"] = f"riesgo{num_riesgo + 1}_desc"
+                return {'success': True, 'respuesta': f"""✅ Plan de mitigación guardado
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ **RIESGO {num_riesgo} COMPLETADO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**RIESGO {num_riesgo + 1} de 5**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 **Descripción del riesgo:**""", 'botones': None, 'estado': estado}
+            else:
+                # Todos los riesgos completados
+                estado["etapa"] = "recursos_humanos"
+                
+                # 🎯 ENVIAR FORMULARIO en lugar de texto libre
+                return {
+                    'success': True, 
+                    'respuesta': """✅ Plan de mitigación guardado
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ **TODOS LOS RIESGOS COMPLETADOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Ahora necesito información sobre los recursos del proyecto.
+
+👥 **Selecciona el equipo profesional necesario:**""",
+                    'botones': None,
+                    'estado': estado,
+                    # ✨ NUEVO: Enviar formulario interactivo
+                    'formulario': {
+                        'tipo': 'profesionales',
+                        'tipoProyecto': estado.get('tipo_proyecto', 'industrial'),
+                        'presupuesto': estado.get('presupuesto', 0),
+                        'area': estado.get('area_m2', 0)
+                    }
+                }
+        
+        return {'success': False, 'respuesta': "❌ Campo de riesgo no reconocido", 'botones': None, 'estado': estado}
+    
+    def _calcular_severidad(self, probabilidad: str, impacto: str) -> str:
+        """Calcula la severidad del riesgo según probabilidad e impacto"""
+        matriz = {
+            ('Alta', 'Alto'): 'Alta',
+            ('Alta', 'Medio'): 'Alta',
+            ('Alta', 'Bajo'): 'Media',
+            ('Media', 'Alto'): 'Alta',
+            ('Media', 'Medio'): 'Media',
+            ('Media', 'Bajo'): 'Baja',
+            ('Baja', 'Alto'): 'Media',
+            ('Baja', 'Medio'): 'Baja',
+            ('Baja', 'Bajo'): 'Baja'
+        }
+        return matriz.get((probabilidad, impacto), 'Media')
+    
+    def _generar_proyecto(self, estado: Dict) -> Dict:
+        """Genera el proyecto completo con todos los datos"""
+        
+        # Datos del cliente y proyecto
+        cliente = estado.get("cliente_nombre", "Cliente")
+        nombre = estado.get("proyecto_nombre", "Proyecto Eléctrico")
+        ubicacion = estado.get("ubicacion", "Lima, Perú")
+        area = estado.get("area_m2", 1000)
+        descripcion = estado.get("descripcion", "Proyecto eléctrico")
+        normativa = estado.get("normativa", "CNE Suministro 2011")
+        presupuesto = estado.get("presupuesto", 100000)
+        moneda = estado.get("moneda", "USD")
+        
+        # Fechas y duración
+        fecha_inicio = datetime.strptime(estado.get("fecha_inicio", "01/01/2026"), "%d/%m/%Y")
+        duracion_total = estado.get("duracion_total", 100)
+        fecha_fin = fecha_inicio + timedelta(days=duracion_total)
+        
+        # Código proyecto
+        codigo = f"PROY-PMI-{fecha_inicio.year}-{self.contador:03d}"
+        self.contador += 1
+        
+        # KPIs
+        spi = estado.get("spi", 1.0)
+        cpi = estado.get("cpi", 1.0)
+        ev_k = estado.get("ev_k", 70)
+        pv_k = estado.get("pv_k", 75)
+        ac_k = estado.get("ac_k", 65)
+        
+        # Alcance
+        alcance = estado.get("alcance", "Alcance del proyecto")
         
         # Cronograma
-        total_ptos = cargas["luz"]["n"] + cargas["toma"]["n"]
-        d_ing = max(3, min(10, int(area / 50)))
-        d_adq = max(5, min(15, int(total_ptos / 10)))
-        d_inst = max(3, int((total_ptos * 0.5) / 8))
-        d_prue = 2 if tipo == "RESIDENCIAL" else 3 if tipo == "COMERCIAL" else 5
+        dias_ingenieria = estado.get("dias_ingenieria", 25)
+        dias_ejecucion = estado.get("dias_ejecucion", 50)
         
-        # Descripción auto-generada
-        desc = f"""Instalación eléctrica {info['nombre'].lower()} de {area}m² que comprende:
-
-• Sistema de iluminación con {cargas['luz']['n']} puntos LED de bajo consumo
-• Red de tomacorrientes con {cargas['toma']['n']} puntos con línea a tierra
-• Tablero eléctrico con protecciones termomagnéticas
-• Sistema de puesta a tierra según normativa
-• Cableado con conductor THW {cable}mm²
-• Carga total instalada: {round(w_total/1000, 2)}kW
-• Carga de demanda: {round(w_demanda/1000, 2)}kW
-
-El proyecto incluye ingeniería de detalle, suministro de materiales, instalación, pruebas y puesta en marcha."""
+        # Stakeholders (siempre los 3 básicos)
+        stakeholders = [
+            {
+                "nombre": cliente,
+                "rol": "Cliente / Patrocinador Principal",
+                "poder": "Alto",
+                "interes": "Alto"
+            },
+            {
+                "nombre": "Jefe de Proyecto",
+                "rol": "Project Manager / Responsable de Ejecución",
+                "poder": "Alto",
+                "interes": "Alto"
+            },
+            {
+                "nombre": "Equipo Técnico",
+                "rol": "Ingenieros y Técnicos Instaladores",
+                "poder": "Medio",
+                "interes": "Alto"
+            }
+        ]
         
+        # Riesgos
+        riesgos = estado.get("riesgos", [])
+        
+        # Recursos
+        recursos_humanos = estado.get("recursos_humanos", ["Project Manager", "Ing. Residente", "Técnicos"])
+        materiales = estado.get("materiales", ["Tableros eléctricos", "Cables", "Protecciones"])
+        
+        # Generar datos completos
         datos_generados = {
-            "proyecto": {"nombre": f"Instalación Eléctrica {info['nombre']}", "area_m2": area, "carga_total_kW": round(w_total/1000, 2)},
-            "items": items, "subtotal": subtotal, "igv": igv, "total": total,
-            "datos_tecnicos": {"carga_total_watts": w_total, "carga_demanda_watts": w_demanda, "corriente_A": round(i_calc, 2), "cable_mm2": cable, "proteccion": prot, "tension_V": info["v"]},
-            "descripcion_proyecto": desc,
-            "normativa_aplicable": "Código Nacional de Electricidad - Utilización 2011 (CNE)",
-            "dias_ingenieria": d_ing, "dias_adquisiciones": d_adq, "dias_instalacion": d_inst, "dias_pruebas": d_prue,
-            "tipo_documento": "COTIZACION_COMPLEJA"
+            "codigo": codigo,
+            "nombre": nombre,
+            "cliente": {
+                "nombre": estado.get("cliente_nombre", cliente),
+                "ruc": estado.get("cliente_ruc"),
+                "direccion": estado.get("cliente_direccion"),
+                "telefono": estado.get("cliente_telefono"),
+                "email": estado.get("cliente_email")
+            },
+            "ubicacion": ubicacion,
+            "area_m2": area,
+            "descripcion": descripcion,
+            "normativa": normativa,
+            "cronograma": {
+                "fecha_inicio": fecha_inicio.strftime("%d/%m/%Y"),
+                "fecha_fin": fecha_fin.strftime("%d/%m/%Y"),
+                "duracion_total": duracion_total
+            },
+            "presupuesto": presupuesto,
+            "moneda": moneda,
+            "kpis": {
+                "spi": spi,
+                "cpi": cpi,
+                "ev_k": ev_k,
+                "pv_k": pv_k,
+                "ac_k": ac_k
+            },
+            "alcance": alcance,
+            "fases_gantt": [
+                {"nombre": "Inicio y Planificación", "duracion": 10},
+                {"nombre": "Gestión Stakeholders", "duracion": 3},
+                {"nombre": "Ingeniería y Diseño", "duracion": dias_ingenieria},
+                {"nombre": "Ejecución", "duracion": dias_ejecucion},
+                {"nombre": "Pruebas y Puesta en Marcha", "duracion": 8},
+                {"nombre": "Cierre", "duracion": 5}
+            ],
+            "stakeholders": stakeholders,
+            "riesgos": riesgos,
+            "recursos": {
+                "humanos": recursos_humanos,
+                "materiales": materiales
+            }
         }
         
-        estado["etapa"] = "cotizacion"
-        return {'success': True, 'respuesta': f"""📊 **COTIZACIÓN TÉCNICA COMPLETA**
+        simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+        
+        return {
+            'success': True,
+            'respuesta': f"""🎉 **PROJECT CHARTER GENERADO**
 
-**DATOS TÉCNICOS:**
-• Carga: {w_total}W ({round(w_total/1000,2)}kW)
-• Corriente: {round(i_calc,2)}A
-• Cable: {cable}mm² | Protección: {prot}
+━━━━━━━━━━━━━━━━━━━━━━━
+**RESUMEN DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 **Código:** {codigo}
+🏢 **Cliente:** {cliente}
+📍 **Ubicación:** {ubicacion}
+📐 **Área:** {area:,.0f} m²
 
 **CRONOGRAMA:**
-• Ingeniería: {d_ing}d | Adquisiciones: {d_adq}d
-• Instalación: {d_inst}d | Pruebas: {d_prue}d
-**TOTAL: {d_ing+d_adq+d_inst+d_prue} días**
+• Inicio: {fecha_inicio.strftime("%d/%m/%Y")}
+• Fin: {fecha_fin.strftime("%d/%m/%Y")}
+• Duración: {duracion_total} días
 
-**INVERSIÓN:**
-Subtotal: S/ {subtotal:.2f}
-IGV: S/ {igv:.2f}
-**TOTAL: S/ {total:.2f}**
+**PRESUPUESTO:**
+• Total: {simbolo} {presupuesto:,.2f}
 
-✅ Incluye: Ingeniería + Materiales + Instalación
-📋 Normativa: CNE 2011
+**KPIs PMI:**
+• SPI: {spi} | CPI: {cpi}
+• EV: ${ev_k}K | PV: ${pv_k}K | AC: ${ac_k}K
 
-¿Qué deseas hacer?""", 'botones': [{"text": "📅 Agendar", "value": "AGENDAR"}, {"text": "🔄 Nueva", "value": "REINICIAR"}], 'estado': estado, 'cotizacion': datos_generados, 'datos_generados': datos_generados}
-    
-    def _sel_cable(self, i: float) -> str:
-        for s, d in self.kb["cables"].items():
-            if d["cap"] >= i: return s
-        return "25"
-    
-    def _sel_prot(self, i: float) -> str:
-        for p in ["10A", "16A", "20A", "25A", "32A", "40A", "50A", "63A"]:
-            if int(p.replace("A", "")) >= i: return p
-        return "63A"
-    
-    def _etapa_cotizacion(self, mensaje: str, estado: Dict) -> Dict:
-        if mensaje == "REINICIAR": return self.procesar("", None)
-        return {'success': True, 'respuesta': "¡Gracias!", 'botones': None, 'estado': estado}
+**RIESGOS:** {len(riesgos)} identificados
+**STAKEHOLDERS:** {len(stakeholders)} registrados
+
+✅ **Documento listo para generar**
+
+Haz clic en "Finalizar" para ver la vista previa y generar el PROJECT CHARTER en Word/PDF.""",
+            'botones': None,
+            'estado': estado,
+            'datos_generados': datos_generados
+        }
