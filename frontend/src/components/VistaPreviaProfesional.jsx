@@ -28,20 +28,36 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
     fuenteDocumento = 'Calibri',
     ocultarIGV = false,
     ocultarPreciosUnitarios = false,
-    ocultarTotalesPorItem = false
+    ocultarTotalesPorItem = false,
+    onDatosChange // ✨ NUEVO: Callback del padre
   } = props;
 
   console.log('🎬 VistaPreviaProfesional RENDERIZANDO');
   console.log('📦 Props:', { tipoDocumento, esquemaColores, tieneCotizacion: !!cotizacion });
 
-  // Estado editable de la cotización/proyecto/informe
+  // Estado editable de la cotizacion/proyecto/informe
   const [datosEditables, setDatosEditables] = useState(cotizacion || proyecto || informe || {});
   const documentoRef = useRef(null);
+
+  // ✅ SINCRONIZACIÓN: Actualizar cuando cambien los datos del chat
+  // ⚠️ CRÍTICO: Prevenir loop infinito comparando datos
+  React.useEffect(() => {
+    const nuevosDatos = cotizacion || proyecto || informe;
+    if (nuevosDatos && JSON.stringify(nuevosDatos) !== JSON.stringify(datosEditables)) {
+      console.log('🔄 Sincronizando datos de props a vista previa:', nuevosDatos);
+      setDatosEditables(nuevosDatos);
+    }
+  }, [cotizacion, proyecto, informe]); // NO incluir datosEditables aquí
 
   // Callback para recibir cambios del componente EDITABLE
   const handleDatosChange = (nuevosDatos) => {
     console.log('📝 Datos actualizados desde componente EDITABLE:', nuevosDatos);
     setDatosEditables(nuevosDatos);
+
+    // ✨ NUEVO: Notificar al padre (App.jsx) de los cambios
+    if (onDatosChange) {
+      onDatosChange(nuevosDatos);
+    }
   };
 
   // Exponer métodos al componente padre

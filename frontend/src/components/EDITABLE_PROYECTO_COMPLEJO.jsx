@@ -43,7 +43,13 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
     };
     const colores = COLORES[esquemaColores] || COLORES['azul-tesla'];
 
-    useEffect(() => { onDatosChange(datosEditables); }, [datosEditables]);
+    // ✅ Incluir moneda en los datos que se envían al padre
+    useEffect(() => {
+        onDatosChange({
+            ...datosEditables,
+            moneda: moneda === 'S/' ? 'PEN' : moneda === '$' ? 'USD' : 'EUR'
+        });
+    }, [datosEditables, moneda]);  // ✅ Agregar moneda como dependencia
 
     const getBadgeStyle = (nivel) => {
         const styles = {
@@ -133,9 +139,9 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                     {[
                         { label: 'SPI', value: datosEditables.spi, desc: 'Schedule Performance', field: 'spi' },
                         { label: 'CPI', value: datosEditables.cpi, desc: 'Cost Performance', field: 'cpi' },
-                        { label: 'EV', value: `$${datosEditables.ev_k}K`, desc: 'Earned Value', field: 'ev_k' },
-                        { label: 'PV', value: `$${datosEditables.pv_k}K`, desc: 'Planned Value', field: 'pv_k' },
-                        { label: 'AC', value: `$${datosEditables.ac_k}K`, desc: 'Actual Cost', field: 'ac_k' }
+                        { label: 'EV', value: `${moneda}${datosEditables.ev_k}K`, desc: 'Earned Value', field: 'ev_k' },
+                        { label: 'PV', value: `${moneda}${datosEditables.pv_k}K`, desc: 'Planned Value', field: 'pv_k' },
+                        { label: 'AC', value: `${moneda}${datosEditables.ac_k}K`, desc: 'Actual Cost', field: 'ac_k' }
                     ].map((kpi, i) => (
                         <div key={i} style={{ padding: '20px', background: 'white', border: `2px solid ${colores.claroBorde}`, borderRadius: '8px', textAlign: 'center' }}>
                             <div style={{ fontSize: '12px', color: '#6B7280', fontWeight: '600', marginBottom: '10px' }}>{kpi.label}</div>

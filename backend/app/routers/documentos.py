@@ -700,3 +700,78 @@ async def generar_informe_analisis_pdf(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al generar PDF: {str(e)}"
         )
+
+# ============================================
+# 🆕 ENDPOINT DE GENERACIÓN DE PROYECTOS
+# ============================================
+
+@router.post("/generar-proyecto")
+async def generar_proyecto(
+    datos: Dict = Body(...),
+    personalizacion: Optional[Dict] = Body(None),
+    tipo: str = Body("simple")  # "simple" o "complejo"
+):
+    """
+    Generar documento de proyecto (Simple o Complejo)
+    
+    Args:
+        datos: Datos del proyecto generados por el chatbot
+        personalizacion: Configuración de personalización (logo, colores, fuente)
+        tipo: Tipo de proyecto ("simple" o "complejo")
+    
+    Returns:
+        Archivo Word para descarga
+    """
+    try:
+        logger.info(f"Generando proyecto {tipo}: {datos.get('numero', 'SIN-CODIGO')}")
+        
+        # Generar documento Word usando el generador existente
+        from app.services.word_generator import word_generator
+        
+        nombre_archivo = f"proyecto_{datos.get('numero', 'PROY')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+        ruta_salida = os.path.join(settings.GENERATED_DIR, nombre_archivo)
+        
+        # Asegurar que el directorio existe
+        os.makedirs(settings.GENERATED_DIR, exist_ok=True)
+        
+        # Preparar opciones de personalización
+        opciones = {
+            'mostrar_logo': personalizacion.get('mostrar_logo', True) if personalizacion else True,
+            'esquema_colores': personalizacion.get('esquema_colores', 'azul-tesla') if personalizacion else 'azul-tesla',
+            'fuente': personalizacion.get('fuente', 'Calibri') if personalizacion else 'Calibri'
+        }
+        
+        # Logo en base64
+        logo_base64 = personalizacion.get('logo_base64') if personalizacion else None
+        
+        # Generar documento
+        word_generator.generar_proyecto(
+            datos=datos,
+            ruta_salida=ruta_salida,
+            tipo=tipo,
+            opciones=opciones,
+            logo_base64=logo_base64
+        )
+        
+        if not os.path.exists(ruta_salida):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No se pudo generar el documento"
+            )
+        
+        logger.info(f"✅ Proyecto generado: {nombre_archivo}")
+        
+        return FileResponse(
+            path=ruta_salida,
+            filename=nombre_archivo,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al generar proyecto: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar proyecto: {str(e)}"
+        )

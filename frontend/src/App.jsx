@@ -1062,20 +1062,19 @@ const CotizadorTesla30 = () => {
           tipo_documento: tipoFlujo,
           numero: datosFinales?.numero || `PROY-${Date.now()}`,
           codigo_proyecto: datosFinales?.numero || datosFinales?.codigo || `PROY-${Date.now()}`,
-          nombre_proyecto: datosFinales?.nombre_proyecto || datosFinales?.nombre || nombreProyecto || "[Proyecto]",  // ✅ FUSIÓN
+          nombre_proyecto: datosFinales?.nombre_proyecto || datosFinales?.nombre || "[Proyecto]",
           codigo: datosFinales?.codigo || datosFinales?.numero || `PROY-${Date.now()}`,
-          nombre: datosFinales?.nombre || datosFinales?.nombre_proyecto || nombreProyecto || "[Proyecto]",  // ✅ FUSIÓN
+          nombre: datosFinales?.nombre || datosFinales?.nombre_proyecto || "[Proyecto]",
           cliente: {
-            // ✅ FUSIÓN: Priorizar datos editables > datos formulario > default
-            nombre: datosFinales?.cliente?.nombre || datosCliente.nombre || clienteProyecto || '[Cliente]',
-            ruc: datosFinales?.cliente?.ruc || datosCliente.ruc || '',
-            direccion: datosFinales?.cliente?.direccion || datosCliente.direccion || '',
-            telefono: datosFinales?.cliente?.telefono || datosCliente.telefono || '',
-            email: datosFinales?.cliente?.email || datosCliente.email || ''
+            nombre: datosCliente.nombre || datosFinales?.cliente?.nombre || '[Cliente]',
+            ruc: datosCliente.ruc || '',
+            direccion: datosCliente.direccion || '',
+            telefono: datosCliente.telefono || '',
+            email: datosCliente.email || ''
           },
-          presupuesto: datosFinales?.presupuesto || presupuestoEstimado || 0,  // ✅ FUSIÓN
-          moneda: datosFinales?.moneda || monedaProyecto || 'PEN',  // ✅ FUSIÓN
-          duracion_total: datosFinales?.cronograma?.duracion_total || datosFinales?.duracion_total || datosFinales?.duracion || (duracionMeses ? `${duracionMeses} meses` : "30 días"),  // ✅ FUSIÓN
+          presupuesto: datosFinales?.presupuesto || 0,
+          moneda: datosFinales?.moneda || monedaProyecto || 'PEN', // ✅ AGREGAR: Moneda del proyecto
+          duracion_total: datosFinales?.cronograma?.duracion_total || datosFinales?.duracion_total || datosFinales?.duracion || "30 días",
           fecha_inicio: datosFinales?.cronograma?.fecha_inicio || datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
           fecha_fin: datosFinales?.cronograma?.fecha_fin || datosFinales?.fecha_fin || "",
           alcance: datosFinales?.resumen || datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
@@ -1093,25 +1092,6 @@ const CotizadorTesla30 = () => {
             logo_base64: logoBase64 || null
           }
         };
-
-        // ✅ LOGGING: Verificar fusión de datos
-        console.log('🔍 FUSIÓN DE DATOS PROYECTO:');
-        console.log('  📋 Formulario inicial:');
-        console.log('    - nombreProyecto:', nombreProyecto);
-        console.log('    - presupuestoEstimado:', presupuestoEstimado);
-        console.log('    - monedaProyecto:', monedaProyecto);
-        console.log('    - clienteProyecto:', clienteProyecto);
-        console.log('    - datosCliente:', datosCliente);
-        console.log('  📝 Datos editables:');
-        console.log('    - datosFinales.nombre_proyecto:', datosFinales?.nombre_proyecto);
-        console.log('    - datosFinales.presupuesto:', datosFinales?.presupuesto);
-        console.log('    - datosFinales.moneda:', datosFinales?.moneda);
-        console.log('    - datosFinales.cliente:', datosFinales?.cliente);
-        console.log('  ✅ Datos finales (fusionados):');
-        console.log('    - nombre_proyecto:', datosLimpios.nombre_proyecto);
-        console.log('    - presupuesto:', datosLimpios.presupuesto);
-        console.log('    - moneda:', datosLimpios.moneda);
-        console.log('    - cliente:', datosLimpios.cliente);
       } else {
         // Estructura para COTIZACIONES (default)
         datosLimpios = {
@@ -1871,8 +1851,6 @@ const CotizadorTesla30 = () => {
             {/* PASO 2: CHAT + VISTA PREVIA SPLIT-SCREEN */}
             {paso === 2 && (
               <div className="max-w-full mx-auto h-[calc(100vh-200px)]">
-                {/* ✅ SCROLL INDEPENDIENTE: Cada columna tiene su propio overflow */}
-                {/* ✅ CRÍTICO: h-full para que funcione el scroll */}
                 <div className="grid grid-cols-12 h-full gap-4">
 
 
@@ -1907,7 +1885,7 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-simple' ? (
                     <div className="col-span-6">
                       <PiliContraIncendiosChat
-                        onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
@@ -1916,32 +1894,32 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'domotica' && tipoFlujo === 'cotizacion-simple' ? (
                     <div className="col-span-6">
                       <PiliDomoticaChat
-                        onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
                       />
                     </div>
                   ) : servicioSeleccionado === 'cctv' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'redes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'expedientes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'saneamiento' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6"><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); actualizarDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
-                    <div className="col-span-6"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); actualizarDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); actualizarDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
@@ -2099,8 +2077,7 @@ const CotizadorTesla30 = () => {
                   )}
 
                   {/* VISTA PREVIA (DERECHA) */}
-                  {/* ✅ SCROLL INDEPENDIENTE: h-full y overflow-hidden para contener scroll interno */}
-                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col h-full overflow-hidden">
+                  <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                     <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 rounded-t-2xl flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <Eye className="w-6 h-6 text-white" />
@@ -2149,7 +2126,6 @@ const CotizadorTesla30 = () => {
                         console.log('🔍 DEBUG - datosEditables?.items:', datosEditables?.items);
 
                         // ✅ RENDERIZAR VistaPreviaProfesional en Paso 2
-                        // ⚠️ SIN onDatosChange para prevenir loop infinito
                         return (
                           <VistaPreviaProfesional
                             cotizacion={cotizacion || proyecto || informe || datosEditables}

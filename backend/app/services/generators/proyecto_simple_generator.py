@@ -49,9 +49,17 @@ class ProyectoSimpleGenerator(BaseDocumentGenerator):
             cliente = cliente_data.get('nombre', '')
         else:
             cliente = str(cliente_data) if cliente_data else ''
-        duracion = self.datos.get('duracion_total', 45)
-        fecha_inicio = self.datos.get('fecha_inicio', '01/01/2025')
-        fecha_fin = self.datos.get('fecha_fin', '28/02/2025')
+        
+        # ✅ CORREGIDO: Leer de cronograma anidado primero, fallback a raíz
+        cronograma = self.datos.get('cronograma', {})
+        duracion = cronograma.get('duracion_total', self.datos.get('duracion_total', '45 días'))
+        fecha_inicio = cronograma.get('fecha_inicio', self.datos.get('fecha_inicio', '01/01/2025'))
+        fecha_fin = cronograma.get('fecha_fin', self.datos.get('fecha_fin', '28/02/2025'))
+        
+        # Extraer solo número si viene como "60 días"
+        if isinstance(duracion, str):
+            duracion_num = ''.join(filter(str.isdigit, duracion)) or '45'
+            duracion = duracion_num
         
         # Crear tabla 1x4 para simular grid
         table = self.doc.add_table(rows=1, cols=4)
@@ -92,6 +100,16 @@ class ProyectoSimpleGenerator(BaseDocumentGenerator):
     def _agregar_presupuesto(self):
         """Agrega presupuesto destacado"""
         presupuesto = self.datos.get('presupuesto', '25,000')
+        moneda = self.datos.get('moneda', 'PEN')
+        
+        # Obtener símbolo de moneda
+        simbolos_moneda = {
+            'PEN': 'S/',
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£'
+        }
+        simbolo = simbolos_moneda.get(moneda, 'S/')
         
         p_label = self.doc.add_paragraph()
         p_label.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -101,7 +119,7 @@ class ProyectoSimpleGenerator(BaseDocumentGenerator):
         
         p_valor = self.doc.add_paragraph()
         p_valor.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_valor = p_valor.add_run(f'$ {presupuesto}')
+        run_valor = p_valor.add_run(f'{simbolo} {presupuesto:,}' if isinstance(presupuesto, (int, float)) else f'{simbolo} {presupuesto}')
         run_valor.font.size = Pt(32)
         run_valor.font.color.rgb = self.COLOR_PRIMARIO
         run_valor.font.bold = True
@@ -149,42 +167,59 @@ class ProyectoSimpleGenerator(BaseDocumentGenerator):
              'entregable': 'Proyecto cerrado'}
         ])
         
-        for fase in fases:
-            # Título de fase
+        for idx, fase in enumerate(fases, 1):
+            # Título de fase - usar índice si no hay campo 'numero'
+            numero_fase = fase.get('numero', idx)
             p_fase = self.doc.add_paragraph()
-            run_num = p_fase.add_run(f"{fase['numero']}. {fase['nombre']}")
+            run_num = p_fase.add_run(f"{numero_fase}. {fase['nombre']}")
             run_num.font.size = Pt(16)
             run_num.font.bold = True
             run_num.font.color.rgb = self.COLOR_PRIMARIO
             
-            run_dur = p_fase.add_run(f" ({fase['duracion']} días)")
+            # Duración - extraer número si es string "X días"
+            duracion = fase.get('duracion', '0')
+            if isinstance(duracion, str):
+                # Extraer número de "5 días" -> 5
+                duracion_num = ''.join(filter(str.isdigit, duracion)) or '0'
+            else:
+                duracion_num = str(duracion)
+            
+            run_dur = p_fase.add_run(f" ({duracion_num} días)")
             run_dur.font.size = Pt(12)
             run_dur.font.color.rgb = RGBColor(255, 255, 255)
             run_dur.font.bold = True
             
-            # Actividades
-            p_act_titulo = self.doc.add_paragraph()
-            run_act_titulo = p_act_titulo.add_run('Actividades:')
-            run_act_titulo.font.size = Pt(13)
-            run_act_titulo.font.color.rgb = self.COLOR_SECUNDARIO
-            run_act_titulo.font.bold = True
+            # Actividades - usar descripción si no hay actividades
+            actividades = fase.get('actividades', [])
+            if not actividades and 'descripcion' in fase:
+                # Si no hay actividades pero hay descripción, usarla
+                actividades = [fase['descripcion']]
             
-            for actividad in fase.get('actividades', []):
-                p_act = self.doc.add_paragraph(f'▶ {actividad}')
-                p_act.runs[0].font.size = Pt(12)
-                p_act.runs[0].font.color.rgb = RGBColor(55, 65, 81)
-                p_act.paragraph_format.left_indent = Inches(0.25)
+            if actividades:
+                p_act_titulo = self.doc.add_paragraph()
+                run_act_titulo = p_act_titulo.add_run('Actividades:')
+                run_act_titulo.font.size = Pt(13)
+                run_act_titulo.font.color.rgb = self.COLOR_SECUNDARIO
+                run_act_titulo.font.bold = True
+                
+                for actividad in actividades:
+                    p_act = self.doc.add_paragraph(f'▶ {actividad}')
+                    p_act.runs[0].font.size = Pt(12)
+                    p_act.runs[0].font.color.rgb = RGBColor(55, 65, 81)
+                    p_act.paragraph_format.left_indent = Inches(0.25)
             
-            # Entregable
-            p_ent = self.doc.add_paragraph()
-            run_ent_label = p_ent.add_run('Entregable: ')
-            run_ent_label.font.size = Pt(12)
-            run_ent_label.font.bold = True
-            run_ent_label.font.color.rgb = self.COLOR_PRIMARIO
-            
-            run_ent_value = p_ent.add_run(fase.get('entregable', ''))
-            run_ent_value.font.size = Pt(12)
-            run_ent_value.font.color.rgb = RGBColor(55, 65, 81)
+            # Entregable - usar responsable si no hay entregable
+            entregable = fase.get('entregable', fase.get('responsable', ''))
+            if entregable:
+                p_ent = self.doc.add_paragraph()
+                run_ent_label = p_ent.add_run('Entregable: ')
+                run_ent_label.font.size = Pt(12)
+                run_ent_label.font.bold = True
+                run_ent_label.font.color.rgb = self.COLOR_PRIMARIO
+                
+                run_ent_value = p_ent.add_run(entregable)
+                run_ent_value.font.size = Pt(12)
+                run_ent_value.font.color.rgb = RGBColor(55, 65, 81)
             
             self.doc.add_paragraph()
     
@@ -196,12 +231,30 @@ class ProyectoSimpleGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        recursos = self.datos.get('recursos', [
-            {'rol': 'Jefe de Proyecto', 'cantidad': 1, 'dedicacion': '25%', 'responsabilidad': 'Coordinación general'},
-            {'rol': 'Ingeniero Residente', 'cantidad': 1, 'dedicacion': '100%', 'responsabilidad': 'Ejecución técnica'},
-            {'rol': 'Técnicos Instaladores', 'cantidad': 3, 'dedicacion': '100%', 'responsabilidad': 'Instalación'},
-            {'rol': 'Inspector de Calidad', 'cantidad': 1, 'dedicacion': '50%', 'responsabilidad': 'Control de calidad'}
-        ])
+        # ✅ CORREGIDO: Aceptar recursos como dict {humanos: [], materiales: []} o array
+        recursos_data = self.datos.get('recursos', {})
+        if isinstance(recursos_data, dict):
+            # Convertir de {humanos: [strings], materiales: [strings]} a formato grid
+            humanos = recursos_data.get('humanos', [])
+            recursos = []
+            for h in humanos[:4]:  # Máximo 4 para grid 2x2
+                recursos.append({
+                    'rol': h,
+                    'cantidad': 1,
+                    'dedicacion': '100%',
+                    'responsabilidad': '-'
+                })
+        elif isinstance(recursos_data, list):
+            # Ya está en formato correcto
+            recursos = recursos_data
+        else:
+            # Fallback a valores por defecto
+            recursos = [
+                {'rol': 'Jefe de Proyecto', 'cantidad': 1, 'dedicacion': '25%', 'responsabilidad': 'Coordinación general'},
+                {'rol': 'Ingeniero Residente', 'cantidad': 1, 'dedicacion': '100%', 'responsabilidad': 'Ejecución técnica'},
+                {'rol': 'Técnicos Instaladores', 'cantidad': 3, 'dedicacion': '100%', 'responsabilidad': 'Instalación'},
+                {'rol': 'Inspector de Calidad', 'cantidad': 1, 'dedicacion': '50%', 'responsabilidad': 'Control de calidad'}
+            ]
         
         # Crear tabla 2x2 para grid
         table = self.doc.add_table(rows=2, cols=2)

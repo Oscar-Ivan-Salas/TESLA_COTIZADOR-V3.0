@@ -41,7 +41,14 @@ const EDITABLE_COTIZACION_SIMPLE = ({
     };
     const totales = calcularTotales();
 
-    useEffect(() => { onDatosChange({ ...datosEditables, ...totales }); }, [datosEditables]);
+    // ✅ Incluir moneda en los datos que se envían al padre
+    useEffect(() => {
+        onDatosChange({
+            ...datosEditables,
+            ...totales,
+            moneda: moneda === 'S/' ? 'PEN' : moneda === '$' ? 'USD' : 'EUR'
+        });
+    }, [datosEditables, moneda]);  // ✅ Agregar moneda como dependencia
 
     const actualizarItem = (index, campo, valor) => {
         const nuevosItems = [...datosEditables.items];

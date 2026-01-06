@@ -34,6 +34,11 @@ class BaseDocumentGenerator:
         self.opciones = opciones or {}
         self.doc = Document()
         
+        # 🔍 DEBUG: Logging de opciones recibidas
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"🎨 BaseDocumentGenerator.__init__() - Opciones recibidas: {self.opciones}")
+        
         # Aplicar esquema de colores personalizado
         self._aplicar_colores()
         
@@ -54,6 +59,12 @@ class BaseDocumentGenerator:
     def _aplicar_colores(self):
         """Aplica esquema de colores según opciones"""
         esquema = self.opciones.get('esquema_colores', 'azul-tesla')
+        
+        # 🔍 DEBUG: Logging de esquema aplicado
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"🎨 BaseDocumentGenerator._aplicar_colores() - Esquema: {esquema}")
+        logger.info(f"🎨 BaseDocumentGenerator._aplicar_colores() - self.opciones: {self.opciones}")
         
         esquemas = {
             'azul-tesla': {

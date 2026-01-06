@@ -276,9 +276,14 @@ async def generar_documento_v2(
             'mostrar_logo': personalizacion.get('mostrar_logo', True),
             'logo_path': logo_path,  # Usar ruta de archivo temporal
             'ocultar_igv': personalizacion.get('ocultar_igv', False),
-            'ocultar_precios_unitarios': personalizacion.get('ocultar_precios_unitarios', False)
+            'ocultar_precios_unitarios': personalizacion.get('ocultar_precios_unitarios', False),
+            'moneda': datos.get('moneda', 'USD')  # ✅ AGREGAR: Moneda desde datos principales
         }
         logger.info(f"🎨 Opciones de personalización: {opciones.get('esquema_colores')}")
+        
+        # 🔍 DEBUG: Logging de moneda recibida
+        logger.info(f"💰 Moneda recibida del frontend: {datos.get('moneda')}")
+        logger.info(f"💰 Datos completos recibidos - moneda: {datos.get('moneda')}")
         
         # Determinar qué generador usar
         if 'informe' in tipo_documento:
@@ -309,7 +314,8 @@ async def generar_documento_v2(
                 filepath = storage_path / f"proyecto_complejo_{timestamp}.docx"
                 ruta_word = generar_proyecto_complejo_pmi(
                     datos=datos,
-                    ruta_salida=filepath
+                    ruta_salida=filepath,
+                    opciones=opciones  # ✅ AGREGAR: Pasar opciones de personalización
                 )
             else:
                 from app.services.generators.proyecto_simple_generator import generar_proyecto_simple
@@ -317,7 +323,8 @@ async def generar_documento_v2(
                 filepath = storage_path / f"proyecto_simple_{timestamp}.docx"
                 ruta_word = generar_proyecto_simple(
                     datos=datos,
-                    ruta_salida=filepath
+                    ruta_salida=filepath,
+                    opciones=opciones  # ✅ AGREGAR: Pasar opciones de personalización
                 )
         else:
             # Usar generador de cotizaciones (default)

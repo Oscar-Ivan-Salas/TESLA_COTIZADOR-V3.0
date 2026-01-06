@@ -180,7 +180,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     """Schema para request de chat conversacional"""
-    mensaje: str = Field(..., min_length=1, description="Mensaje del usuario")
+    mensaje: str = Field(..., min_length=0, description="Mensaje del usuario")  # ✅ CORREGIDO: min_length=0 para permitir inicialización
     cotizacion_id: Optional[int] = Field(None, description="ID de cotización existente")
     contexto: Optional[List[ChatMessage]] = Field(None, description="Historial de chat")
     cliente: Optional[str] = Field(None, description="Nombre del cliente")

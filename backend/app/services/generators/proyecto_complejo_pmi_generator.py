@@ -96,6 +96,12 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         """Agrega presupuesto destacado"""
         presupuesto = self.datos.get('presupuesto', '75,000')
         
+        # ✅ Extraer moneda de OPCIONES (no de datos)
+        moneda = self.opciones.get('moneda', 'USD')
+        
+        # Determinar símbolo de moneda
+        simbolo_moneda = 'S/ ' if moneda == 'PEN' else '€ ' if moneda == 'EUR' else '$ '
+        
         p_label = self.doc.add_paragraph()
         p_label.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run_label = p_label.add_run('PRESUPUESTO TOTAL DEL PROYECTO')
@@ -104,7 +110,7 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         
         p_valor = self.doc.add_paragraph()
         p_valor.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_valor = p_valor.add_run(f'$ {presupuesto}')
+        run_valor = p_valor.add_run(f'{simbolo_moneda}{presupuesto}')  # ✅ Usar moneda correcta
         run_valor.font.size = Pt(36)
         run_valor.font.color.rgb = self.COLOR_PRIMARIO
         run_valor.font.bold = True
@@ -125,15 +131,19 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         pv_k = self.datos.get('pv_k', '43')
         ac_k = self.datos.get('ac_k', '46')
         
+        # ✅ Extraer moneda de OPCIONES (no de datos)
+        moneda = self.opciones.get('moneda', 'USD')
+        simbolo_moneda = 'S/' if moneda == 'PEN' else '€' if moneda == 'EUR' else '$'
+        
         table = self.doc.add_table(rows=3, cols=5)
         table.style = 'Table Grid'
         
         kpis = [
             ('SPI', spi, 'Schedule Performance'),
             ('CPI', cpi, 'Cost Performance'),
-            ('EV', f'${ev_k}K', 'Earned Value'),
-            ('PV', f'${pv_k}K', 'Planned Value'),
-            ('AC', f'${ac_k}K', 'Actual Cost')
+            ('EV', f'{simbolo_moneda}{ev_k}K', 'Earned Value'),  # ✅ Usar moneda dinámica
+            ('PV', f'{simbolo_moneda}{pv_k}K', 'Planned Value'),  # ✅ Usar moneda dinámica
+            ('AC', f'{simbolo_moneda}{ac_k}K', 'Actual Cost')  # ✅ Usar moneda dinámica
         ]
         
         for idx, (label, value, desc) in enumerate(kpis):
