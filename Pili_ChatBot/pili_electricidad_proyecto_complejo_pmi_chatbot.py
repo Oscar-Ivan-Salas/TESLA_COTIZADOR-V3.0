@@ -51,8 +51,8 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
 
 ✅ Cliente: **{cliente_nombre or 'No especificado'}**
 ✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
-✅ Presupuesto: **{simbolo} {presupuesto:,.2f if presupuesto else 0}**
-✅ Duración: **{duracion_meses} meses** if duracion_meses else 'No especificado'
+✅ Presupuesto: **{simbolo} {presupuesto:,.2f}** if presupuesto else '**No especificado**'
+✅ Duración: **{duracion_meses} meses** if duracion_meses else '**No especificado**'
 
 Ahora necesito información adicional para crear el Project Charter completo.
 
