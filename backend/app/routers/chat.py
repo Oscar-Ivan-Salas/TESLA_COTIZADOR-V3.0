@@ -5170,10 +5170,8 @@ async def chat_pili_electricidad_proyecto_simple(request: ChatRequest):
 # ═══════════════════════════════════════════════════════════════
 
 try:
-    from Pili_ChatBot.pili_electricidad_complejo_chatbot import PILIElectricidadComplejoChatBot
-    # Crear alias para compatibilidad
-    PILIElectricidadProyectoComplejoPMIChatBot = PILIElectricidadComplejoChatBot
-    pili_electricidad_proyecto_complejo_pmi_bot = PILIElectricidadComplejoChatBot()
+    from Pili_ChatBot.pili_electricidad_proyecto_complejo_pmi_chatbot import PILIElectricidadProyectoComplejoPMIChatBot
+    pili_electricidad_proyecto_complejo_pmi_bot = PILIElectricidadProyectoComplejoPMIChatBot()
     logger.info("✅ PILI ELECTRICIDAD PROYECTO COMPLEJO PMI OK")
 except Exception as e:
     logger.error(f"❌ ERROR CARGANDO PILI ELECTRICIDAD PROYECTO COMPLEJO PMI: {str(e)}")
