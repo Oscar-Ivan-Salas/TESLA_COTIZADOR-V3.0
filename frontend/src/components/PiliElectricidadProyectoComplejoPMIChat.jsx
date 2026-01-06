@@ -137,7 +137,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 relative z-10">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 relative z-10 scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-purple-900/20">
                 {conversacion.map((msg, i) => (
                     <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
                         <div className="max-w-[85%]">
