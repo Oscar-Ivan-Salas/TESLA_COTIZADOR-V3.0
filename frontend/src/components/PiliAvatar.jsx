@@ -30,7 +30,7 @@ const PiliAvatar = ({ size = 24, className = "", showCrown = true }) => {
       {/* Avatar de PILI Caperucita */}
       <div className="relative rounded-full overflow-hidden" style={{ width: size, height: size }}>
         <img
-          src="http://localhost:8000/static/avatars/PILi_Avatar.png"
+          src="http://localhost:8000/static/avatars/pili.png"
           alt="PILI"
           className="w-full h-full object-cover"
           style={{ imageRendering: 'crisp-edges' }}
@@ -61,7 +61,7 @@ export const PiliAvatarLarge = ({ showCrown = true }) => (
     <div className="bg-gradient-to-br from-red-400 via-red-500 to-red-600 p-2 rounded-full shadow-2xl border-4 border-red-300 relative overflow-hidden">
       <div className="w-16 h-16 rounded-full overflow-hidden relative z-10">
         <img
-          src="http://localhost:8000/static/avatars/PILi_Avatar.png"
+          src="http://localhost:8000/static/avatars/pili.png"
           alt="PILI"
           className="w-full h-full object-cover"
         />
