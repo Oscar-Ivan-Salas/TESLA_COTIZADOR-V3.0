@@ -58,12 +58,12 @@ export const PiliAvatarLarge = ({ showCrown = true }) => (
         👑
       </div>
     )}
-    <div className="bg-gradient-to-br from-red-400 via-red-500 to-red-600 p-2 rounded-full shadow-2xl border-4 border-red-300 relative overflow-hidden">
-      <div className="w-16 h-16 rounded-full overflow-hidden relative z-10">
+    <div className="bg-gradient-to-br from-red-400 via-red-500 to-red-600 p-1 rounded-full shadow-2xl border-2 border-red-300 relative overflow-hidden transition-transform transform hover:scale-110">
+      <div className="w-20 h-20 rounded-full overflow-hidden relative z-10 bg-white">
         <img
           src="http://localhost:8000/static/avatars/pili.png"
           alt="PILI"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover scale-110"
         />
       </div>
 
