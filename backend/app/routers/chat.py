@@ -5096,6 +5096,100 @@ async def chat_pili_saneamiento(request: ChatRequest):
         return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI SANEAMIENTO"}
     except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI SANEAMIENTO"}
 
+# ═══════════════════════════════════════════════════════════════
+# ENDPOINTS COTIZACIÓN COMPLEJA
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_electricidad_complejo_chatbot import PILIElectricidadComplejoChatBot
+    pili_electricidad_complejo_bot = PILIElectricidadComplejoChatBot()
+    logger.info("✅ PILI ELECTRICIDAD COMPLEJO OK")
+except: pili_electricidad_complejo_bot = None
+
+try:
+    from Pili_ChatBot.pili_automatizacion_complejo_chatbot import PILIAutomatizacionComplejoChatBot
+    pili_automatizacion_complejo_bot = PILIAutomatizacionComplejoChatBot()
+    logger.info("✅ PILI AUTOMATIZACIÓN COMPLEJO OK")
+except: pili_automatizacion_complejo_bot = None
+
+try:
+    from Pili_ChatBot.pili_contra_incendios_complejo_chatbot import PILIContraIncendiosComplejoChatBot
+    pili_contra_incendios_complejo_bot = PILIContraIncendiosComplejoChatBot()
+    logger.info("✅ PILI CONTRA INCENDIOS COMPLEJO OK")
+except: pili_contra_incendios_complejo_bot = None
+
+@router.post("/pili-electricidad-complejo")
+async def chat_pili_electricidad_complejo(request: ChatRequest):
+    try:
+        if pili_electricidad_complejo_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD COMPLEJO"}
+        estado = request.conversation_state; resultado = pili_electricidad_complejo_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI ELECTRICIDAD COMPLEJO"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD COMPLEJO"}
+
+@router.post("/pili-automatizacion-complejo")
+async def chat_pili_automatizacion_complejo(request: ChatRequest):
+    try:
+        if pili_automatizacion_complejo_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI AUTOMATIZACIÓN COMPLEJO"}
+        estado = request.conversation_state; resultado = pili_automatizacion_complejo_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI AUTOMATIZACIÓN COMPLEJO"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI AUTOMATIZACIÓN COMPLEJO"}
+
+@router.post("/pili-contra-incendios-complejo")
+async def chat_pili_contra_incendios_complejo(request: ChatRequest):
+    try:
+        if pili_contra_incendios_complejo_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI CONTRA INCENDIOS COMPLEJO"}
+        estado = request.conversation_state; resultado = pili_contra_incendios_complejo_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI CONTRA INCENDIOS COMPLEJO"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI CONTRA INCENDIOS COMPLEJO"}
+
+# ═══════════════════════════════════════════════════════════════
+# ENDPOINTS PROYECTO SIMPLE
+# ═══════════════════════════════════════════════════════════════
+
+
+try:
+    from Pili_ChatBot.pili_electricidad_proyecto_simple_chatbot import PILIElectricidadProyectoSimpleChatBot
+    pili_electricidad_proyecto_simple_bot = PILIElectricidadProyectoSimpleChatBot()
+    logger.info("✅ PILI ELECTRICIDAD PROYECTO SIMPLE OK")
+except Exception as e:
+    logger.error(f"❌ ERROR CARGANDO PILI ELECTRICIDAD PROYECTO SIMPLE: {str(e)}")
+    pili_electricidad_proyecto_simple_bot = None
+
+
+@router.post("/pili-electricidad-proyecto-simple")
+async def chat_pili_electricidad_proyecto_simple(request: ChatRequest):
+    try:
+        if pili_electricidad_proyecto_simple_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD PROYECTO SIMPLE"}
+        estado = request.conversation_state; resultado = pili_electricidad_proyecto_simple_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI ELECTRICIDAD PROYECTO SIMPLE"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD PROYECTO SIMPLE"}
+
+
+# ═══════════════════════════════════════════════════════════════
+# ENDPOINTS PROYECTO COMPLEJO PMI
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_electricidad_complejo_chatbot import PILIElectricidadComplejoChatBot
+    # Crear alias para compatibilidad
+    PILIElectricidadProyectoComplejoPMIChatBot = PILIElectricidadComplejoChatBot
+    pili_electricidad_proyecto_complejo_pmi_bot = PILIElectricidadComplejoChatBot()
+    logger.info("✅ PILI ELECTRICIDAD PROYECTO COMPLEJO PMI OK")
+except Exception as e:
+    logger.error(f"❌ ERROR CARGANDO PILI ELECTRICIDAD PROYECTO COMPLEJO PMI: {str(e)}")
+    pili_electricidad_proyecto_complejo_pmi_bot = None
+
+
+@router.post("/pili-electricidad-proyecto-complejo-pmi")
+async def chat_pili_electricidad_proyecto_complejo_pmi(request: ChatRequest):
+    try:
+        if pili_electricidad_proyecto_complejo_pmi_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
+        estado = request.conversation_state; resultado = pili_electricidad_proyecto_complejo_pmi_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
+    except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
+
+
+
 
 
 
