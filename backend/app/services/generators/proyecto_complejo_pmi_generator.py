@@ -470,7 +470,12 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         logger = logging.getLogger(__name__)
         logger.info("🚀 INICIANDO GENERACIÓN PMI (MODO DEFENSIVO)...")
         
-        methods = [
+        # ✅ NUEVO: Detectar complejidad del proyecto
+        complejidad = self.datos.get('complejidad', 7)
+        logger.info(f"📊 Complejidad del proyecto: {complejidad} fases")
+        
+        # Secciones comunes (siempre se generan)
+        methods_comunes = [
             (self._agregar_header_basico, "Header Básico"),
             (self._agregar_titulo, "Título"),
             (self._agregar_info_grid, "Info Grid"),
@@ -479,14 +484,24 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
             (self._agregar_alcance, "Alcance"),
             (self._agregar_cronograma_gantt, "Gantt"),
             (self._agregar_stakeholders, "Stakeholders"),
-            (self._agregar_matriz_raci, "RACI"),
+        ]
+        
+        # ✅ Matriz RACI: Solo si complejidad >= 6
+        if complejidad >= 6:
+            logger.info("✅ Incluyendo Matriz RACI (complejidad >= 6)")
+            methods_comunes.append((self._agregar_matriz_raci, "RACI"))
+        else:
+            logger.info("⏭️ Omitiendo Matriz RACI (complejidad < 6)")
+        
+        # Continuar con secciones comunes
+        methods_comunes.extend([
             (self._agregar_riesgos, "Riesgos"),
             (self._agregar_entregables, "Entregables"),
             (self._agregar_normativa, "Normativa"),
             (self._agregar_footer_basico, "Footer")
-        ]
+        ])
 
-        for method, name in methods:
+        for method, name in methods_comunes:
             try:
                 logger.info(f"👉 Ejecutando: {name}")
                 method()
