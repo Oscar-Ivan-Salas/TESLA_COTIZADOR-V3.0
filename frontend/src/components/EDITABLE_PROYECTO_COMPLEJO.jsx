@@ -250,69 +250,71 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 ))}
             </div>
 
-            {/* MATRIZ RACI */}
-            <div style={{ margin: '30px 0' }}>
-                <h2 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', paddingBottom: '8px', borderBottom: `3px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>Matriz RACI (Responsabilidades)
-                </h2>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
-                    <thead style={{ background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white' }}>
-                        <tr>
-                            <th style={{ padding: '12px', textAlign: 'left' }}>Actividad</th>
-                            <th style={{ padding: '12px' }}>PM</th>
-                            <th style={{ padding: '12px' }}>Ing. Residente</th>
-                            <th style={{ padding: '12px' }}>Técnicos</th>
-                            <th style={{ padding: '12px' }}>Inspector QA</th>
-                            <th style={{ padding: '12px' }}>Cliente</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {datosEditables.raci_actividades.map((fila, i) => (
-                            <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#F9FAFB' }}>
-                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB' }}>
-                                    <input
-                                        type="text"
-                                        value={fila.actividad}
-                                        onChange={(e) => {
-                                            const nuevasActs = [...datosEditables.raci_actividades];
-                                            nuevasActs[i].actividad = e.target.value;
-                                            setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
-                                        }}
-                                        style={{ width: '100%', border: 'none', background: 'transparent' }}
-                                    />
-                                </td>
-                                {fila.roles.map((rol, j) => (
-                                    <td key={j} style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
+            {/* MATRIZ RACI - Solo si complejidad >= 6 */}
+            {complejidad >= 6 && (
+                <div style={{ margin: '30px 0' }}>
+                    <h2 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', paddingBottom: '8px', borderBottom: `3px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>Matriz RACI (Responsabilidades)
+                    </h2>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
+                        <thead style={{ background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white' }}>
+                            <tr>
+                                <th style={{ padding: '12px', textAlign: 'left' }}>Actividad</th>
+                                <th style={{ padding: '12px' }}>PM</th>
+                                <th style={{ padding: '12px' }}>Ing. Residente</th>
+                                <th style={{ padding: '12px' }}>Técnicos</th>
+                                <th style={{ padding: '12px' }}>Inspector QA</th>
+                                <th style={{ padding: '12px' }}>Cliente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {datosEditables.raci_actividades.map((fila, i) => (
+                                <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#F9FAFB' }}>
+                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB' }}>
                                         <input
                                             type="text"
-                                            value={rol}
+                                            value={fila.actividad}
                                             onChange={(e) => {
                                                 const nuevasActs = [...datosEditables.raci_actividades];
-                                                nuevasActs[i].roles[j] = e.target.value.toUpperCase().slice(0, 1);
+                                                nuevasActs[i].actividad = e.target.value;
                                                 setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
                                             }}
-                                            style={{ width: '30px', textAlign: 'center', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #ddd', ...getRACIStyle(rol) }}
+                                            style={{ width: '100%', border: 'none', background: 'transparent' }}
                                         />
                                     </td>
-                                ))}
-                            </tr>
+                                    {fila.roles.map((rol, j) => (
+                                        <td key={j} style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
+                                            <input
+                                                type="text"
+                                                value={rol}
+                                                onChange={(e) => {
+                                                    const nuevasActs = [...datosEditables.raci_actividades];
+                                                    nuevasActs[i].roles[j] = e.target.value.toUpperCase().slice(0, 1);
+                                                    setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
+                                                }}
+                                                style={{ width: '30px', textAlign: 'center', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #ddd', ...getRACIStyle(rol) }}
+                                            />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div style={{ marginTop: '15px', padding: '10px', background: '#F9FAFB', borderRadius: '4px', fontSize: '10px' }}>
+                        <strong>Leyenda:</strong>
+                        {['R', 'A', 'C', 'I'].map((letra, i) => (
+                            <span key={i} style={{ marginLeft: i > 0 ? '10px' : '5px' }}>
+                                <span style={{ padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', ...getRACIStyle(letra) }}>{letra}</span>
+                                {letra === 'R' && ' Responsable'}
+                                {letra === 'A' && ' Aprobador'}
+                                {letra === 'C' && ' Consultado'}
+                                {letra === 'I' && ' Informado'}
+                                {i < 3 && ' |'}
+                            </span>
                         ))}
-                    </tbody>
-                </table>
-                <div style={{ marginTop: '15px', padding: '10px', background: '#F9FAFB', borderRadius: '4px', fontSize: '10px' }}>
-                    <strong>Leyenda:</strong>
-                    {['R', 'A', 'C', 'I'].map((letra, i) => (
-                        <span key={i} style={{ marginLeft: i > 0 ? '10px' : '5px' }}>
-                            <span style={{ padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', ...getRACIStyle(letra) }}>{letra}</span>
-                            {letra === 'R' && ' Responsable'}
-                            {letra === 'A' && ' Aprobador'}
-                            {letra === 'C' && ' Consultado'}
-                            {letra === 'I' && ' Informado'}
-                            {i < 3 && ' |'}
-                        </span>
-                    ))}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* REGISTRO DE RIESGOS */}
             <div style={{ margin: '30px 0' }}>
