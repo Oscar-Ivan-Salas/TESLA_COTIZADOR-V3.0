@@ -883,11 +883,11 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         "raci_actividades": estado.get("raci_actividades", [])  # ✅ NUEVO
     }
         
-    simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
-    
-    return {
-        'success': True,
-        'respuesta': f"""🎉 **PROJECT CHARTER GENERADO**
+        simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+        
+        return {
+            'success': True,
+            'respuesta': f"""🎉 **PROJECT CHARTER GENERADO**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **RESUMEN DEL PROYECTO**
@@ -916,7 +916,7 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
 ✅ **Documento listo para generar**
 
 Haz clic en "Finalizar" para ver la vista previa y generar el PROJECT CHARTER en Word/PDF.""",
-        'botones': None,
-        'estado': estado,
-        'datos_generados': datos_generados
-    }
+            'botones': None,
+            'estado': estado,
+            'datos_generados': datos_generados
+        }
