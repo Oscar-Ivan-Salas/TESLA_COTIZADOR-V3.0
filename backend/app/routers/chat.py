@@ -5183,7 +5183,7 @@ async def chat_pili_electricidad_proyecto_complejo_pmi(request: ChatRequest):
     try:
         if pili_electricidad_proyecto_complejo_pmi_bot is None: return {"success": False, "respuesta": "No disponible", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
         estado = request.conversation_state; resultado = pili_electricidad_proyecto_complejo_pmi_bot.procesar(request.mensaje, estado); datos_gen = resultado.get('datos_generados'); cotizacion_data = resultado.get('cotizacion')
-        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
+        return {"success": resultado['success'], "respuesta": resultado['respuesta'], "botones_sugeridos": resultado.get('botones'), "botones": resultado.get('botones'), "formulario": resultado.get('formulario'), "state": resultado['estado'], "conversation_state": resultado['estado'], "datos_generados": datos_gen or cotizacion_data, "cotizacion": cotizacion_data, "cotizacion_generada": cotizacion_data is not None, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
     except: return {"success": False, "respuesta": "Error", "botones": None, "state": {}, "conversation_state": {}, "datos_generados": None, "cotizacion_generada": False, "agente_pili": "PILI ELECTRICIDAD PROYECTO COMPLEJO PMI"}
 
 

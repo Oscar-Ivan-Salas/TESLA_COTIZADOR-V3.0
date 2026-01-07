@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla', logoBase64 = null, fuenteDocumento = 'Calibri', onDatosChange = () => { } }) => {
+    // Estado inicial extendido con listas que antes eran estáticas
     const [datosEditables, setDatosEditables] = useState({
         nombre_proyecto: datos.nombre_proyecto || 'SISTEMA DE INSTALACIÓN ELÉCTRICA INDUSTRIAL',
         codigo_proyecto: datos.codigo_proyecto || 'PROY-PMI-001',
@@ -18,6 +19,7 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
         dias_ingenieria: datos.dias_ingenieria || 15,
         dias_ejecucion: datos.dias_ejecucion || 25,
         normativa_aplicable: datos.normativa_aplicable || 'CNE - Código Nacional de Electricidad',
+        subtitulo_normativa: datos.subtitulo_normativa || 'Gestión según PMBOK® Guide 7th Edition',
         stakeholders: datos.stakeholders || [
             { nombre: 'Cliente', rol: 'Cliente / Patrocinador Principal', poder: 'Alto', interes: 'Alto' },
             { nombre: 'Jefe de Proyecto', rol: 'Project Manager / Responsable de Ejecución', poder: 'Alto', interes: 'Alto' },
@@ -29,6 +31,23 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
             { id: 'R03', descripcion: 'Cambios en alcance del proyecto', probabilidad: 'Alta', impacto: 'Alto', severidad: 'Alta', mitigacion: 'Control de cambios riguroso con aprobaciones' },
             { id: 'R04', descripcion: 'Interferencias con otros contratistas', probabilidad: 'Alta', impacto: 'Medio', severidad: 'Media', mitigacion: 'Coordinación semanal con todos los actores' },
             { id: 'R05', descripcion: 'Fallas en equipos especializados', probabilidad: 'Baja', impacto: 'Alto', severidad: 'Media', mitigacion: 'Garantías extendidas y equipos de respaldo' }
+        ],
+        // ✅ NUEVO: Datos dinámicos para secciones antes estáticas
+        entregables: datos.entregables || ['📋 Project Charter', '📊 Plan de gestión', '👥 Registro stakeholders', '📝 WBS y diccionario', '📅 Cronograma Gantt', '📐 Planos instalación', '📄 Especif. técnicas', '✅ Plan de calidad', '⚠️ Registro de riesgos', '🔬 Protocolos FAT/SAT', '🏗️ Planos as-built', '📚 Lecciones aprendidas', '🎯 Acta de cierre'],
+        cronograma_fases: datos.cronograma_fases || [
+            { label: '1. Inicio y Planificación', width: '15%', dias: '10 días' },
+            { label: '2. Gestión Stakeholders', width: '8%', dias: '3 días' },
+            { label: '3. Ingeniería y Diseño', width: '25%', dias: '15 días' },
+            { label: '4. Ejecución', width: '40%', dias: '25 días' },
+            { label: '5. Pruebas y Puesta en Marcha', width: '10%', dias: '8 días' },
+            { label: '6. Cierre', width: '7%', dias: '5 días' }
+        ],
+        raci_actividades: datos.raci_actividades || [
+            { actividad: 'Planificación del Proyecto', roles: ['A', 'R', 'I', 'C', 'C'] },
+            { actividad: 'Diseño e Ingeniería', roles: ['A', 'R', 'C', 'C', 'I'] },
+            { actividad: 'Ejecución de Obra', roles: ['A', 'A', 'R', 'C', 'I'] },
+            { actividad: 'Control de Calidad', roles: ['A', 'C', 'C', 'R', 'I'] },
+            { actividad: 'Aprobación de Entregables', roles: ['R', 'C', 'I', 'C', 'A'] }
         ]
     });
 
@@ -170,18 +189,33 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                     <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>Cronograma del Proyecto (Diagrama Gantt)
                 </h2>
                 <div style={{ margin: '20px 0' }}>
-                    {[
-                        { label: '1. Inicio y Planificación', width: '15%', dias: '10 días' },
-                        { label: '2. Gestión Stakeholders', width: '8%', dias: '3 días' },
-                        { label: '3. Ingeniería y Diseño', width: '25%', dias: `${datosEditables.dias_ingenieria} días` },
-                        { label: '4. Ejecución', width: '40%', dias: `${datosEditables.dias_ejecucion} días` },
-                        { label: '5. Pruebas y Puesta en Marcha', width: '10%', dias: '8 días' },
-                        { label: '6. Cierre', width: '7%', dias: '5 días' }
-                    ].map((fase, i) => (
+                    {datosEditables.cronograma_fases.map((fase, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', margin: '10px 0', fontSize: '11px' }}>
-                            <div style={{ width: '200px', fontWeight: '600', color: '#374151' }}>{fase.label}</div>
+                            <div style={{ width: '200px', fontWeight: '600', color: '#374151' }}>
+                                <input
+                                    type="text"
+                                    value={fase.label}
+                                    onChange={(e) => {
+                                        const nuevasFases = [...datosEditables.cronograma_fases];
+                                        nuevasFases[i].label = e.target.value;
+                                        setDatosEditables({ ...datosEditables, cronograma_fases: nuevasFases });
+                                    }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 'bold' }}
+                                />
+                            </div>
                             <div style={{ flex: 1, height: '30px', background: '#F3F4F6', borderRadius: '4px', position: 'relative', overflow: 'hidden' }}>
-                                <div style={{ width: fase.width, height: '100%', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.acento} 100%)`, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: '600' }}>{fase.dias}</div>
+                                <div style={{ width: fase.width, height: '100%', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.acento} 100%)`, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: '600' }}>
+                                    <input
+                                        type="text"
+                                        value={fase.dias}
+                                        onChange={(e) => {
+                                            const nuevasFases = [...datosEditables.cronograma_fases];
+                                            nuevasFases[i].dias = e.target.value;
+                                            setDatosEditables({ ...datosEditables, cronograma_fases: nuevasFases });
+                                        }}
+                                        style={{ width: '100%', border: 'none', background: 'transparent', color: 'white', textAlign: 'center', fontWeight: 'bold' }}
+                                    />
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -230,18 +264,32 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                         </tr>
                     </thead>
                     <tbody>
-                        {[
-                            { actividad: 'Planificación del Proyecto', roles: ['A', 'R', 'I', 'C', 'C'] },
-                            { actividad: 'Diseño e Ingeniería', roles: ['A', 'R', 'C', 'C', 'I'] },
-                            { actividad: 'Ejecución de Obra', roles: ['A', 'A', 'R', 'C', 'I'] },
-                            { actividad: 'Control de Calidad', roles: ['A', 'C', 'C', 'R', 'I'] },
-                            { actividad: 'Aprobación de Entregables', roles: ['R', 'C', 'I', 'C', 'A'] }
-                        ].map((fila, i) => (
+                        {datosEditables.raci_actividades.map((fila, i) => (
                             <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#F9FAFB' }}>
-                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB' }}>{fila.actividad}</td>
+                                <td style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB' }}>
+                                    <input
+                                        type="text"
+                                        value={fila.actividad}
+                                        onChange={(e) => {
+                                            const nuevasActs = [...datosEditables.raci_actividades];
+                                            nuevasActs[i].actividad = e.target.value;
+                                            setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
+                                        }}
+                                        style={{ width: '100%', border: 'none', background: 'transparent' }}
+                                    />
+                                </td>
                                 {fila.roles.map((rol, j) => (
                                     <td key={j} style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
-                                        <span style={{ padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', display: 'inline-block', minWidth: '25px', ...getRACIStyle(rol) }}>{rol}</span>
+                                        <input
+                                            type="text"
+                                            value={rol}
+                                            onChange={(e) => {
+                                                const nuevasActs = [...datosEditables.raci_actividades];
+                                                nuevasActs[i].roles[j] = e.target.value.toUpperCase().slice(0, 1);
+                                                setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
+                                            }}
+                                            style={{ width: '30px', textAlign: 'center', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #ddd', ...getRACIStyle(rol) }}
+                                        />
                                     </td>
                                 ))}
                             </tr>
@@ -304,8 +352,19 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                     <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>Entregables Principales del Proyecto
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', margin: '20px 0' }}>
-                    {['📋 Project Charter', '📊 Plan de gestión', '👥 Registro stakeholders', '📝 WBS y diccionario', '📅 Cronograma Gantt', '📐 Planos instalación', '📄 Especif. técnicas', '✅ Plan de calidad', '⚠️ Registro de riesgos', '🔬 Protocolos FAT/SAT', '🏗️ Planos as-built', '📚 Lecciones aprendidas', '🎯 Acta de cierre'].map((entregable, i) => (
-                        <div key={i} style={{ padding: '10px', background: '#F9FAFB', borderLeft: `3px solid ${colores.primario}`, fontSize: '11px' }}>{entregable}</div>
+                    {datosEditables.entregables.map((entregable, i) => (
+                        <div key={i} style={{ padding: '10px', background: '#F9FAFB', borderLeft: `3px solid ${colores.primario}`, fontSize: '11px' }}>
+                            <input
+                                type="text"
+                                value={entregable}
+                                onChange={(e) => {
+                                    const nuevosEntregables = [...datosEditables.entregables];
+                                    nuevosEntregables[i] = e.target.value;
+                                    setDatosEditables({ ...datosEditables, entregables: nuevosEntregables });
+                                }}
+                                style={{ width: '100%', border: 'none', background: 'transparent', fontSize: '11px' }}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>
@@ -316,7 +375,14 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 <div style={{ fontSize: '14px', color: colores.primario, fontWeight: 'bold' }}>
                     <input type="text" value={datosEditables.normativa_aplicable} onChange={(e) => setDatosEditables({ ...datosEditables, normativa_aplicable: e.target.value })} style={{ width: '100%', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: '14px' }} />
                 </div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '5px' }}>Gestión según PMBOK® Guide 7th Edition</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '5px' }}>
+                    <input
+                        type="text"
+                        value={datosEditables.subtitulo_normativa || "Gestión según PMBOK® Guide 7th Edition"}
+                        onChange={(e) => setDatosEditables({ ...datosEditables, subtitulo_normativa: e.target.value })}
+                        style={{ width: '100%', border: 'none', background: 'transparent', color: '#6B7280' }}
+                    />
+                </div>
             </div>
 
             {/* FOOTER */}

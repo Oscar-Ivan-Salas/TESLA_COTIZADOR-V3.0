@@ -975,6 +975,13 @@ const CotizadorTesla30 = () => {
   // FUNCIONES DE DESCARGA
   // ============================================
 
+  // ✅ NUEVO: Manejar cambios desde la vista previa editable
+  const handleDatosChange = (nuevosDatos) => {
+    console.log('🔄 App.jsx: Actualizando datosEditables desde Vista Previa', nuevosDatos);
+    setDatosEditables(nuevosDatos);
+    datosEditablesRef.current = nuevosDatos; // Sincronización inmediata para handleDescargar
+  };
+
   const handleDescargar = async (formato) => {
     const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
       tipoFlujo.includes('proyecto') ? 'proyecto' : 'informe';
@@ -1077,12 +1084,27 @@ const CotizadorTesla30 = () => {
           duracion_total: datosFinales?.cronograma?.duracion_total || datosFinales?.duracion_total || datosFinales?.duracion || "30 días",
           fecha_inicio: datosFinales?.cronograma?.fecha_inicio || datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
           fecha_fin: datosFinales?.cronograma?.fecha_fin || datosFinales?.fecha_fin || "",
+          // KPI's PMI
+          spi: datosFinales?.spi || "1.00",
+          cpi: datosFinales?.cpi || "1.00",
+          ev_k: datosFinales?.ev_k || "0",
+          pv_k: datosFinales?.pv_k || "0",
+          ac_k: datosFinales?.ac_k || "0",
+
+          // Listas complejas
+          entregables: datosFinales?.entregables || [],
+          cronograma_fases: datosFinales?.cronograma_fases || datosFinales?.fases || [],
+          stakeholders: datosFinales?.stakeholders || [],
+          riesgos: datosFinales?.riesgos || [],
+          raci_actividades: datosFinales?.raci_actividades || [],
+
           alcance: datosFinales?.resumen || datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
           alcance_proyecto: datosFinales?.resumen || datosFinales?.alcance || datosFinales?.alcance_proyecto || "",
-          fases: datosFinales?.fases || [],
-          recursos: datosFinales?.recursos || { humanos: [], materiales: [] },
-          normativa: datosFinales?.normativa || "CNE Suministro 2011",
-          normativa_aplicable: datosFinales?.normativa || "CNE Suministro 2011",
+
+          normativa: datosFinales?.normativa || datosFinales?.normativa_aplicable || "CNE Suministro 2011",
+          normativa_aplicable: datosFinales?.normativa_aplicable || datosFinales?.normativa || "CNE Suministro 2011",
+          subtitulo_normativa: datosFinales?.subtitulo_normativa || "",
+
           personalizacion: {
             esquema_colores: esquemaColores,
             fuente: fuenteDocumento,
@@ -1098,7 +1120,8 @@ const CotizadorTesla30 = () => {
           tipo_documento: tipoFlujo,
           numero: datosFinales?.numero || `COT-${Date.now()}`,
           fecha: new Date().toLocaleDateString('es-PE'),
-          vigencia: '30 días',
+          vigencia: datosFinales?.vigencia || datosFinales?.validez_oferta || '30 días',
+          moneda: datosFinales?.moneda || 'PEN', // ✅ Moneda
           cliente: {
             nombre: datosCliente.nombre || '[Cliente]',
             ruc: datosCliente.ruc || '',
@@ -1108,11 +1131,20 @@ const CotizadorTesla30 = () => {
           },
           proyecto: nombreProyecto || '[Proyecto]',
           descripcion: contextoUsuario || '',
-          items: itemsActuales.map(item => ({
+
+          // Listas complejas de cotización
+          garantias: datosFinales?.garantias || [],
+          condiciones_pago: datosFinales?.condiciones_pago || [],
+          plazo_entrega: datosFinales?.plazo_entrega || '15 días',
+          lugar_entrega: datosFinales?.lugar_entrega || 'Almacén de cliente',
+
+          items: itemsActuales.map((item, index) => ({
+            item: index + 1,
             descripcion: item.descripcion || '',
             cantidad: parseFloat(item.cantidad || 0),
             unidad: item.unidad || 'und',
-            precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0)
+            precio_unitario: parseFloat(item.precio_unitario || item.precioUnitario || 0),
+            total: (parseFloat(item.cantidad || 0) * parseFloat(item.precio_unitario || item.precioUnitario || 0)).toFixed(2)
           })),
           subtotal: parseFloat(subtotalCalculado.toFixed(2)),
           igv: parseFloat(igvCalculado.toFixed(2)),
@@ -2130,6 +2162,7 @@ const CotizadorTesla30 = () => {
                           <VistaPreviaProfesional
                             cotizacion={cotizacion || proyecto || informe || datosEditables}
                             onGenerarDocumento={handleDescargar}
+                            onDatosChange={handleDatosChange} // ✅ Conectar callback
                             tipoDocumento={tipoFlujo}
                             htmlPreview={htmlPreview}
                             esquemaColores={esquemaColores}
@@ -2138,6 +2171,7 @@ const CotizadorTesla30 = () => {
                             ocultarIGV={ocultarIGV}
                             ocultarPreciosUnitarios={ocultarPreciosUnitarios}
                             ocultarTotalesPorItem={ocultarTotalesPorItem}
+                            modoEdicion={modoEdicion}
                           />
                         );
                       })()}

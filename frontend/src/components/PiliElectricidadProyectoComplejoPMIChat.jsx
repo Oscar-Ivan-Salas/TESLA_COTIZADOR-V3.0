@@ -138,93 +138,95 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
 
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4 relative z-10 custom-scrollbar scrollbar-purple h-full">
-                {conversacion.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
-                        <div className="max-w-[85%]">
-                            <div className={`rounded-2xl p-4 shadow-2xl backdrop-blur-xl border ${msg.sender === 'user'
-                                ? 'bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-cyan-600/90 text-white border-purple-400/30 shadow-purple-500/30'
-                                : 'bg-white/10 text-white border-purple-500/20 shadow-purple-900/50'
-                                }`}>
-                                <div
-                                    className="prose prose-invert max-w-none"
-                                    dangerouslySetInnerHTML={{
-                                        __html: (msg.text || '')
-                                            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-purple-300">$1</strong>')
-                                            .replace(/\n/g, '<br />')
-                                    }}
-                                />
-                            </div>
-
-                            {/* ✨ NUEVO: Renderizar formularios Pro */}
-                            {msg.formulario && (
-                                <div className="mt-4">
-                                    {msg.formulario.tipo === 'profesionales' && (
-                                        <FormularioProfesionalesPro
-                                            tipoProyecto={msg.formulario.tipoProyecto}
-                                            presupuesto={msg.formulario.presupuesto}
-                                            area={msg.formulario.area}
-                                            onSubmit={(profesionales) => {
-                                                console.log('✅ Profesionales seleccionados:', profesionales);
-                                                // Convertir array a string para enviar al backend
-                                                const texto = profesionales.map(p => `${p.rol} (${p.cantidad})`).join(', ');
-                                                addMessage('user', texto);
-                                                setTimeout(() => enviarMensaje(texto), 100);
-                                            }}
-                                        />
-                                    )}
-                                    {msg.formulario.tipo === 'entregables' && (
-                                        <FormularioEntregablesPro
-                                            tipoProyecto={msg.formulario.tipoProyecto}
-                                            presupuesto={msg.formulario.presupuesto}
-                                            area={msg.formulario.area}
-                                            onSubmit={(entregables) => {
-                                                console.log('✅ Entregables seleccionados:', entregables);
-                                                const texto = entregables.map(e => e.nombre).join(', ');
-                                                addMessage('user', texto);
-                                                setTimeout(() => enviarMensaje(texto), 100);
-                                            }}
-                                        />
-                                    )}
-                                    {msg.formulario.tipo === 'suministros' && (
-                                        <FormularioSuministrosPro
-                                            tipoProyecto={msg.formulario.tipoProyecto}
-                                            presupuesto={msg.formulario.presupuesto}
-                                            area={msg.formulario.area}
-                                            onSubmit={(suministros) => {
-                                                console.log('✅ Suministros seleccionados:', suministros);
-                                                const texto = suministros.map(s => `${s.nombre} (${s.cantidad} ${s.unidad})`).join(', ');
-                                                addMessage('user', texto);
-                                                setTimeout(() => enviarMensaje(texto), 100);
-                                            }}
-                                        />
-                                    )}
+                {conversacion.map((msg, i) => {
+                    return (
+                        <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
+                            <div className="max-w-[85%]">
+                                <div className={`rounded-2xl p-4 shadow-2xl backdrop-blur-xl border ${msg.sender === 'user'
+                                    ? 'bg-gradient-to-br from-purple-600/90 via-blue-600/90 to-cyan-600/90 text-white border-purple-400/30 shadow-purple-500/30'
+                                    : 'bg-white/10 text-white border-purple-500/20 shadow-purple-900/50'
+                                    }`}>
+                                    <div
+                                        className="prose prose-invert max-w-none"
+                                        dangerouslySetInnerHTML={{
+                                            __html: (msg.text || '')
+                                                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-purple-300">$1</strong>')
+                                                .replace(/\n/g, '<br />')
+                                        }}
+                                    />
                                 </div>
-                            )}
 
-                            {msg.buttons && (
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    {msg.buttons.map((btn, j) => (
-                                        <button
-                                            key={j}
-                                            onClick={() => {
-                                                addMessage('user', btn.value);
-                                                setTimeout(() => enviarMensaje(btn.value), 100);
-                                            }}
-                                            disabled={isTyping}
-                                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500/80 via-blue-600/80 to-cyan-600/80 hover:from-purple-400 hover:to-cyan-500 text-white font-semibold shadow-lg backdrop-blur-sm border border-purple-400/30 transition-all transform hover:scale-105 disabled:opacity-50"
-                                        >
-                                            {btn.text}
-                                        </button>
-                                    ))}
+                                {/* ✨ NUEVO: Renderizar formularios Pro */}
+                                {msg.formulario && (
+                                    <div className="mt-4">
+                                        {msg.formulario.tipo === 'profesionales' && (
+                                            <FormularioProfesionalesPro
+                                                tipoProyecto={msg.formulario.tipoProyecto}
+                                                presupuesto={msg.formulario.presupuesto}
+                                                area={msg.formulario.area}
+                                                onSubmit={(profesionales) => {
+                                                    console.log('✅ Profesionales seleccionados:', profesionales);
+                                                    // Convertir array a string para enviar al backend
+                                                    const texto = profesionales.map(p => `${p.rol} (${p.cantidad})`).join(', ');
+                                                    addMessage('user', texto);
+                                                    setTimeout(() => enviarMensaje(texto), 100);
+                                                }}
+                                            />
+                                        )}
+                                        {msg.formulario.tipo === 'entregables' && (
+                                            <FormularioEntregablesPro
+                                                tipoProyecto={msg.formulario.tipoProyecto}
+                                                presupuesto={msg.formulario.presupuesto}
+                                                area={msg.formulario.area}
+                                                onSubmit={(entregables) => {
+                                                    console.log('✅ Entregables seleccionados:', entregables);
+                                                    const texto = entregables.map(e => e.nombre).join(', ');
+                                                    addMessage('user', texto);
+                                                    setTimeout(() => enviarMensaje(texto), 100);
+                                                }}
+                                            />
+                                        )}
+                                        {msg.formulario.tipo === 'suministros' && (
+                                            <FormularioSuministrosPro
+                                                tipoProyecto={msg.formulario.tipoProyecto}
+                                                presupuesto={msg.formulario.presupuesto}
+                                                area={msg.formulario.area}
+                                                onSubmit={(suministros) => {
+                                                    console.log('✅ Suministros seleccionados:', suministros);
+                                                    const texto = suministros.map(s => `${s.nombre} (${s.cantidad} ${s.unidad})`).join(', ');
+                                                    addMessage('user', texto);
+                                                    setTimeout(() => enviarMensaje(texto), 100);
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                )}
+
+                                {msg.buttons && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {msg.buttons.map((btn, j) => (
+                                            <button
+                                                key={j}
+                                                onClick={() => {
+                                                    addMessage('user', btn.value);
+                                                    setTimeout(() => enviarMensaje(btn.value), 100);
+                                                }}
+                                                disabled={isTyping}
+                                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500/80 via-blue-600/80 to-cyan-600/80 hover:from-purple-400 hover:to-cyan-500 text-white font-semibold shadow-lg backdrop-blur-sm border border-purple-400/30 transition-all transform hover:scale-105 disabled:opacity-50"
+                                            >
+                                                {btn.text}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className={`text-xs mt-2 ${msg.sender === 'user' ? 'text-right text-purple-200/60' : 'text-left text-gray-400'}`}>
+                                    {msg.timestamp}
                                 </div>
-                            )}
-
-                            <div className={`text-xs mt-2 ${msg.sender === 'user' ? 'text-right text-purple-200/60' : 'text-left text-gray-400'}`}>
-                                {msg.timestamp}
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {isTyping && (
                     <div className="flex justify-start animate-fadeIn">

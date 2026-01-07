@@ -191,27 +191,42 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        dias_ing = self.datos.get('dias_ingenieria', 15)
-        dias_ejec = self.datos.get('dias_ejecucion', 25)
+        # ✅ USAR DATOS DINÁMICOS
+        fases = self.datos.get('cronograma_fases', [])
         
-        fases = [
-            ('1. Inicio y Planificación', '10 días'),
-            ('2. Gestión Stakeholders', '3 días'),
-            ('3. Ingeniería y Diseño', f'{dias_ing} días'),
-            ('4. Ejecución', f'{dias_ejec} días'),
-            ('5. Pruebas y Puesta en Marcha', '8 días'),
-            ('6. Cierre', '5 días')
-        ]
+        if not fases:
+            # Fallback por si acaso
+            dias_ing = self.datos.get('dias_ingenieria', 15)
+            dias_ejec = self.datos.get('dias_ejecucion', 25)
+            fases = [
+                {'label': '1. Inicio y Planificación', 'dias': '10 días'},
+                {'label': '2. Gestión Stakeholders', 'dias': '3 días'},
+                {'label': '3. Ingeniería y Diseño', 'dias': f'{dias_ing} días'},
+                {'label': '4. Ejecución', 'dias': f'{dias_ejec} días'},
+                {'label': '5. Pruebas y Puesta en Marcha', 'dias': '8 días'},
+                {'label': '6. Cierre', 'dias': '5 días'}
+            ]
         
-        for fase, duracion in fases:
+        for item in fases:
+            # Manejar tanto formato diccionario como tupla
+            if isinstance(item, dict):
+                label = item.get('label', item.get('nombre', ''))
+                dias = item.get('dias', '')
+            elif isinstance(item, (list, tuple)) and len(item) >= 2:
+                label, dias = item[0], item[1]
+            else:
+                continue
+
             p_fase = self.doc.add_paragraph()
-            run_fase = p_fase.add_run(f'{fase}: {duracion}')
+            run_fase = p_fase.add_run(f'{label}: {dias}')
             run_fase.font.size = Pt(11)
             run_fase.font.bold = True
             run_fase.font.color.rgb = RGBColor(55, 65, 81)
         
         self.doc.add_paragraph()
-    
+
+        self.doc.add_paragraph()
+
     def _agregar_stakeholders(self):
         """Agrega registro de stakeholders"""
         p_titulo = self.doc.add_paragraph()
@@ -220,29 +235,46 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        stakeholders = self.datos.get('stakeholders', [
-            {'nombre': 'Cliente', 'rol': 'Cliente / Patrocinador Principal', 'poder': 'Alto', 'interes': 'Alto'},
-            {'nombre': 'Jefe de Proyecto', 'rol': 'Project Manager', 'poder': 'Alto', 'interes': 'Alto'},
-            {'nombre': 'Equipo Técnico', 'rol': 'Ingenieros y Técnicos', 'poder': 'Medio', 'interes': 'Alto'}
-        ])
+        # ✅ USAR DATOS DINÁMICOS
+        stakeholders = self.datos.get('stakeholders', [])
+        
+        if not stakeholders:
+             stakeholders = [
+                {'nombre': 'Cliente', 'rol': 'Cliente / Patrocinador Principal', 'poder': 'Alto', 'interes': 'Alto'},
+                {'nombre': 'Jefe de Proyecto', 'rol': 'Project Manager', 'poder': 'Alto', 'interes': 'Alto'},
+                {'nombre': 'Equipo Técnico', 'rol': 'Ingenieros y Técnicos', 'poder': 'Medio', 'interes': 'Alto'}
+            ]
         
         for sh in stakeholders:
+            # Manejar si es string o dict
+            if isinstance(sh, dict):
+                nombre = sh.get('nombre', '')
+                rol = sh.get('rol', '')
+                poder = sh.get('poder', '')
+                interes = sh.get('interes', '')
+            else:
+                nombre = str(sh)
+                rol = ''
+                poder = ''
+                interes = ''
+
             p_sh = self.doc.add_paragraph()
-            run_nombre = p_sh.add_run(f"{sh['nombre']}: ")
+            run_nombre = p_sh.add_run(f"{nombre}: ")
             run_nombre.font.size = Pt(14)
             run_nombre.font.bold = True
             run_nombre.font.color.rgb = self.COLOR_PRIMARIO
             
-            run_rol = p_sh.add_run(sh['rol'])
+            run_rol = p_sh.add_run(rol)
             run_rol.font.size = Pt(11)
             
-            p_badges = self.doc.add_paragraph()
-            run_badges = p_badges.add_run(f"Poder: {sh['poder']} | Interés: {sh['interes']}")
-            run_badges.font.size = Pt(10)
-            run_badges.font.color.rgb = RGBColor(107, 114, 128)
+            if poder or interes:
+                p_badges = self.doc.add_paragraph()
+                run_badges = p_badges.add_run(f"Poder: {poder} | Interés: {interes}")
+                run_badges.font.size = Pt(10)
+                run_badges.font.color.rgb = RGBColor(107, 114, 128)
         
         self.doc.add_paragraph()
-    
+
     def _agregar_matriz_raci(self):
         """Agrega matriz RACI"""
         p_titulo = self.doc.add_paragraph()
@@ -251,14 +283,37 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        table = self.doc.add_table(rows=6, cols=6)
+        # ✅ USAR DATOS DINÁMICOS
+        actividades = self.datos.get('raci_actividades', [])
+        
+        if not actividades:
+            # Fallback
+            actividades = [
+                {'actividad': 'Planificación del Proyecto', 'roles': ['A', 'R', 'I', 'C', 'C']},
+                {'actividad': 'Diseño e Ingeniería', 'roles': ['A', 'R', 'C', 'C', 'I']},
+                {'actividad': 'Ejecución de Obra', 'roles': ['A', 'A', 'R', 'C', 'I']},
+                {'actividad': 'Control de Calidad', 'roles': ['A', 'C', 'C', 'R', 'I']},
+                {'actividad': 'Aprobación de Entregables', 'roles': ['R', 'C', 'I', 'C', 'A']}
+            ]
+
+        # Validar estructura y obtener max columnas
+        max_roles = 5
+        if actividades and isinstance(actividades[0], dict) and 'roles' in actividades[0]:
+            max_roles = max(len(a['roles']) for a in actividades)
+        
+        table = self.doc.add_table(rows=len(actividades) + 1, cols=max_roles + 1)
         table.style = 'Table Grid'
         
         # Header
         headers = ['Actividad', 'PM', 'Ing. Residente', 'Técnicos', 'Inspector QA', 'Cliente']
-        for idx, header in enumerate(headers):
+        # Ajustar headers si hay más o menos columnas
+        if len(headers) < max_roles + 1:
+            headers.extend([f'Rol {i+1}' for i in range(len(headers)-1, max_roles)])
+            
+        for idx in range(max_roles + 1):
             cell = table.rows[0].cells[idx]
-            cell.text = header
+            header_text = headers[idx] if idx < len(headers) else f'Rol {idx}'
+            cell.text = header_text
             cell.paragraphs[0].runs[0].font.bold = True
             cell.paragraphs[0].runs[0].font.color.rgb = RGBColor(255, 255, 255)
             cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -268,22 +323,23 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
             shading_elm.set(qn('w:fill'), color_hex)
             cell._element.get_or_add_tcPr().append(shading_elm)
         
-        # Actividades
-        actividades = [
-            ('Planificación del Proyecto', ['A', 'R', 'I', 'C', 'C']),
-            ('Diseño e Ingeniería', ['A', 'R', 'C', 'C', 'I']),
-            ('Ejecución de Obra', ['A', 'A', 'R', 'C', 'I']),
-            ('Control de Calidad', ['A', 'C', 'C', 'R', 'I']),
-            ('Aprobación de Entregables', ['R', 'C', 'I', 'C', 'A'])
-        ]
-        
-        for idx, (actividad, roles) in enumerate(actividades, 1):
-            table.rows[idx].cells[0].text = actividad
-            for j, rol in enumerate(roles, 1):
-                cell = table.rows[idx].cells[j]
-                cell.text = rol
-                cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-                cell.paragraphs[0].runs[0].font.bold = True
+        for idx, item in enumerate(actividades, 1):
+            if isinstance(item, dict):
+                nombre = item.get('actividad', '')
+                roles = item.get('roles', [])
+            elif isinstance(item, (list, tuple)):
+                nombre = item[0]
+                roles = item[1]
+            else:
+                continue
+                
+            table.rows[idx].cells[0].text = nombre
+            for j, rol in enumerate(roles):
+                if j + 1 < len(table.rows[idx].cells):
+                    cell = table.rows[idx].cells[j+1]
+                    cell.text = str(rol)
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cell.paragraphs[0].runs[0].font.bold = True
         
         # Leyenda
         p_leyenda = self.doc.add_paragraph()
@@ -291,7 +347,9 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_leyenda.font.size = Pt(10)
         
         self.doc.add_paragraph()
-    
+
+        self.doc.add_paragraph()
+
     def _agregar_riesgos(self):
         """Agrega registro de riesgos (Top 5)"""
         p_titulo = self.doc.add_paragraph()
@@ -300,11 +358,15 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        riesgos = self.datos.get('riesgos', [
-            {'id': 'R01', 'descripcion': 'Retrasos en entrega de equipos', 'probabilidad': 'Media', 'impacto': 'Alto', 'severidad': 'Alta', 'mitigacion': 'Compra anticipada'},
-            {'id': 'R02', 'descripcion': 'Variación de precios', 'probabilidad': 'Media', 'impacto': 'Medio', 'severidad': 'Media', 'mitigacion': 'Precio fijo'},
-            {'id': 'R03', 'descripcion': 'Cambios en alcance', 'probabilidad': 'Alta', 'impacto': 'Alto', 'severidad': 'Alta', 'mitigacion': 'Control de cambios'}
-        ])
+        # ✅ USAR DATOS DINÁMICOS
+        riesgos = self.datos.get('riesgos', [])
+        
+        if not riesgos:
+            riesgos = [
+                {'id': 'R01', 'descripcion': 'Retrasos en entrega de equipos', 'probabilidad': 'Media', 'impacto': 'Alto', 'severidad': 'Alta', 'mitigacion': 'Compra anticipada'},
+                {'id': 'R02', 'descripcion': 'Variación de precios', 'probabilidad': 'Media', 'impacto': 'Medio', 'severidad': 'Media', 'mitigacion': 'Precio fijo'},
+                {'id': 'R03', 'descripcion': 'Cambios en alcance', 'probabilidad': 'Alta', 'impacto': 'Alto', 'severidad': 'Alta', 'mitigacion': 'Control de cambios'}
+            ]
         
         table = self.doc.add_table(rows=len(riesgos) + 1, cols=6)
         table.style = 'Table Grid'
@@ -325,19 +387,34 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         
         # Riesgos
         for idx, riesgo in enumerate(riesgos, 1):
+            if isinstance(riesgo, dict):
+                 id_r = riesgo.get('id', str(idx))
+                 desc = riesgo.get('descripcion', '')
+                 prob = riesgo.get('probabilidad', '')
+                 imp = riesgo.get('impacto', '')
+                 sev = riesgo.get('severidad', '')
+                 mit = riesgo.get('mitigacion', '')
+            else:
+                 id_r = str(idx)
+                 desc = str(riesgo)
+                 prob = ''
+                 imp = ''
+                 sev = ''
+                 mit = ''
+
             row = table.rows[idx]
-            row.cells[0].text = riesgo['id']
-            row.cells[1].text = riesgo['descripcion']
-            row.cells[2].text = riesgo['probabilidad']
-            row.cells[3].text = riesgo['impacto']
-            row.cells[4].text = riesgo['severidad']
-            row.cells[5].text = riesgo['mitigacion']
+            row.cells[0].text = id_r
+            row.cells[1].text = desc
+            row.cells[2].text = prob
+            row.cells[3].text = imp
+            row.cells[4].text = sev
+            row.cells[5].text = mit
             
             for j in [2, 3, 4]:
                 row.cells[j].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         self.doc.add_paragraph()
-    
+
     def _agregar_entregables(self):
         """Agrega entregables principales"""
         p_titulo = self.doc.add_paragraph()
@@ -346,23 +423,28 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        entregables = [
-            '📋 Project Charter', '📊 Plan de gestión', '👥 Registro stakeholders',
-            '📝 WBS y diccionario', '📅 Cronograma Gantt', '📐 Planos instalación',
-            '📄 Especif. técnicas', '✅ Plan de calidad', '⚠️ Registro de riesgos',
-            '🔬 Protocolos FAT/SAT', '🏗️ Planos as-built', '📚 Lecciones aprendidas',
-            '🎯 Acta de cierre'
-        ]
+        # ✅ USAR DATOS DINÁMICOS
+        entregables = self.datos.get('entregables', [])
+        
+        if not entregables:
+             entregables = [
+                '📋 Project Charter', '📊 Plan de gestión', '👥 Registro stakeholders',
+                '📝 WBS y diccionario', '📅 Cronograma Gantt', '📐 Planos instalación',
+                '📄 Especif. técnicas', '✅ Plan de calidad', '⚠️ Registro de riesgos',
+                '🔬 Protocolos FAT/SAT', '🏗️ Planos as-built', '📚 Lecciones aprendidas',
+                '🎯 Acta de cierre'
+            ]
         
         for entregable in entregables:
             p_ent = self.doc.add_paragraph(f'• {entregable}')
             p_ent.runs[0].font.size = Pt(11)
         
         self.doc.add_paragraph()
-    
+
     def _agregar_normativa(self):
         """Agrega normativa aplicable"""
         normativa = self.datos.get('normativa_aplicable', 'CNE - Código Nacional de Electricidad')
+        subtitulo = self.datos.get('subtitulo_normativa', 'Gestión según PMBOK® Guide 7th Edition')
         
         p_label = self.doc.add_paragraph()
         run_label = p_label.add_run('NORMATIVA Y ESTÁNDARES APLICABLES')
@@ -376,30 +458,53 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_valor.font.bold = True
         
         p_pmbok = self.doc.add_paragraph()
-        run_pmbok = p_pmbok.add_run('Gestión según PMBOK® Guide 7th Edition')
+        run_pmbok = p_pmbok.add_run(subtitulo)
         run_pmbok.font.size = Pt(11)
         run_pmbok.font.color.rgb = RGBColor(107, 114, 128)
         
         self.doc.add_paragraph()
     
     def generar(self, ruta_salida):
-        """Genera el documento completo"""
-        self._agregar_header_basico()
-        self._agregar_titulo()
-        self._agregar_info_grid()
-        self._agregar_presupuesto()
-        self._agregar_kpis()
-        self._agregar_alcance()
-        self._agregar_cronograma_gantt()
-        self._agregar_stakeholders()
-        self._agregar_matriz_raci()
-        self._agregar_riesgos()
-        self._agregar_entregables()
-        self._agregar_normativa()
-        self._agregar_footer_basico()
+        """Genera el documento completo con proteccion de fallos"""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("🚀 INICIANDO GENERACIÓN PMI (MODO DEFENSIVO)...")
         
-        self.doc.save(str(ruta_salida))
-        return ruta_salida
+        methods = [
+            (self._agregar_header_basico, "Header Básico"),
+            (self._agregar_titulo, "Título"),
+            (self._agregar_info_grid, "Info Grid"),
+            (self._agregar_presupuesto, "Presupuesto"),
+            (self._agregar_kpis, "KPIs"),
+            (self._agregar_alcance, "Alcance"),
+            (self._agregar_cronograma_gantt, "Gantt"),
+            (self._agregar_stakeholders, "Stakeholders"),
+            (self._agregar_matriz_raci, "RACI"),
+            (self._agregar_riesgos, "Riesgos"),
+            (self._agregar_entregables, "Entregables"),
+            (self._agregar_normativa, "Normativa"),
+            (self._agregar_footer_basico, "Footer")
+        ]
+
+        for method, name in methods:
+            try:
+                logger.info(f"👉 Ejecutando: {name}")
+                method()
+            except Exception as e:
+                logger.error(f"❌ ERROR EN {name.upper()}: {e}", exc_info=True)
+                # No relanzamos para que se genere al menos parcial
+                p_error = self.doc.add_paragraph()
+                run_error = p_error.add_run(f"[ERROR GENERANDO SECCIÓN {name}: {e}]")
+                run_error.font.color.rgb = RGBColor(255, 0, 0)
+                run_error.font.bold = True
+        
+        try:
+            logger.info(f"💾 Guardando documento en: {ruta_salida}")
+            self.doc.save(str(ruta_salida))
+            return ruta_salida
+        except Exception as e:
+            logger.error(f"❌ ERROR FINAL GUARDANDO ARCHIVO: {e}", exc_info=True)
+            raise e
 
 
 def generar_proyecto_complejo_pmi(datos, ruta_salida, opciones=None):

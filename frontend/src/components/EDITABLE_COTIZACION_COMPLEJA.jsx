@@ -33,12 +33,35 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
         items: datos.items || [
             { descripcion: 'Tablero eléctrico monofásico 12 circuitos', cantidad: 1, unidad: 'und', precio_unitario: 450 }
         ],
-        cronograma: {
-            dias_ingenieria: datos.cronograma?.dias_ingenieria || 5,
-            dias_adquisiciones: datos.cronograma?.dias_adquisiciones || 7,
-            dias_instalacion: datos.cronograma?.dias_instalacion || 10,
-            dias_pruebas: datos.cronograma?.dias_pruebas || 3
-        }
+        // ✅ CRONOGRAMA AHORA COMO LISTA DINÁMICA
+        cronograma_fases: datos.cronograma_fases || [
+            { nombre: 'Ingeniería', dias: datos.cronograma?.dias_ingenieria || 5 },
+            { nombre: 'Adquisiciones', dias: datos.cronograma?.dias_adquisiciones || 7 },
+            { nombre: 'Instalación', dias: datos.cronograma?.dias_instalacion || 10 },
+            { nombre: 'Pruebas', dias: datos.cronograma?.dias_pruebas || 3 }
+        ],
+        // ✅ LISTAS DINÁMICAS (Antes estáticas)
+        garantias: datos.garantias || [
+            { icon: '🛠️', texto: '12 meses en mano de obra' },
+            { icon: '⚙️', texto: 'Garantía de fabricante en equipos' },
+            { icon: '💬', texto: 'Soporte técnico por 6 meses' }
+        ],
+        condiciones_pago: datos.condiciones_pago || [
+            '50% de adelanto a la firma del contrato',
+            '30% al 50% de avance de obra',
+            '20% contra entrega y conformidad'
+        ],
+        observaciones: datos.observaciones || [
+            'Trabajos ejecutados según normativa vigente',
+            'Materiales de primera calidad con certificación internacional',
+            'Mano de obra especializada y certificada',
+            'Incluye transporte de materiales',
+            'Pruebas y puesta en marcha incluidas',
+            'Capacitación al personal del cliente',
+            'Documentación técnica completa (planos as-built, protocolos, certificados)',
+            'Precios expresados en la moneda indicada',
+            'Cotización válida por el periodo indicado'
+        ]
     });
 
     // Estado para la moneda
@@ -65,8 +88,12 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
     const totales = calcularTotales();
 
     useEffect(() => {
-        onDatosChange({ ...datosEditables, ...totales });
-    }, [datosEditables]);
+        onDatosChange({
+            ...datosEditables,
+            ...totales,
+            moneda: moneda === 'S/' ? 'PEN' : moneda === '$' ? 'USD' : 'EUR'
+        });
+    }, [datosEditables, moneda]);
 
     const actualizarItem = (index, campo, valor) => {
         const nuevosItems = [...datosEditables.items];
@@ -215,14 +242,7 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                     style={{ width: '100%', minHeight: '100px', fontSize: '12px', color: '#374151', lineHeight: '1.8', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', padding: '10px' }}
                 />
                 <p style={{ marginTop: '15px', fontSize: '12px' }}><strong style={{ color: colores.primario }}>INCLUYE:</strong></p>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {['Ingeniería de detalle con cálculos según', 'Suministro de materiales de primera calidad', 'Instalación por personal técnico certificado', 'Pruebas y puesta en marcha', 'Documentación técnica completa', 'Garantía de 12 meses'].map((item, i) => (
-                        <li key={i} style={{ fontSize: '11px', margin: '10px 0', paddingLeft: '25px', position: 'relative' }}>
-                            <span style={{ position: 'absolute', left: 0, color: colores.primario, fontWeight: 'bold', fontSize: '14px' }}>✓</span>
-                            {item} {i === 0 && <input type="text" value={datosEditables.normativa_aplicable} onChange={(e) => setDatosEditables({ ...datosEditables, normativa_aplicable: e.target.value })} style={{ border: 'none', borderBottom: `1px solid ${colores.acento}`, background: 'transparent', fontSize: '11px', width: '200px' }} />}
-                        </li>
-                    ))}
-                </ul>
+                <div style={{ fontSize: '11px', color: '#6B7280', fontStyle: 'italic' }}>(Edita las observaciones abajo para modificar los detalles de inclusión)</div>
             </div>
 
             {/* TABLA DE ITEMS */}
@@ -289,27 +309,37 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                 </div>
             </div>
 
-            {/* CRONOGRAMA ESTIMADO */}
+            {/* CRONOGRAMA ESTIMADO (Editable) */}
             <div style={{ margin: '30px 0', padding: '20px', background: '#F9FAFB', borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px' }}>
                 <h2 style={{ fontSize: '16px', color: colores.primario, fontWeight: 'bold', marginBottom: '15px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ width: '4px', height: '20px', background: colores.acento, display: 'inline-block' }}></span>
                     Cronograma Estimado
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', margin: '20px 0' }}>
-                    {[
-                        { num: 1, nombre: 'Ingeniería', campo: 'dias_ingenieria' },
-                        { num: 2, nombre: 'Adquisiciones', campo: 'dias_adquisiciones' },
-                        { num: 3, nombre: 'Instalación', campo: 'dias_instalacion' },
-                        { num: 4, nombre: 'Pruebas', campo: 'dias_pruebas' }
-                    ].map((fase) => (
-                        <div key={fase.num} style={{ padding: '15px', background: 'white', border: `2px solid ${colores.claroBorde}`, borderRadius: '6px', textAlign: 'center' }}>
-                            <div style={{ width: '40px', height: '40px', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', margin: '0 auto 10px' }}>{fase.num}</div>
-                            <div style={{ fontSize: '12px', color: colores.primario, fontWeight: 'bold', marginBottom: '5px' }}>{fase.nombre}</div>
+                    {datosEditables.cronograma_fases.map((fase, i) => (
+                        <div key={i} style={{ padding: '15px', background: 'white', border: `2px solid ${colores.claroBorde}`, borderRadius: '6px', textAlign: 'center' }}>
+                            <div style={{ width: '40px', height: '40px', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '18px', margin: '0 auto 10px' }}>{i + 1}</div>
+                            <div style={{ fontSize: '12px', color: colores.primario, fontWeight: 'bold', marginBottom: '5px' }}>
+                                <input
+                                    type="text"
+                                    value={fase.nombre}
+                                    onChange={(e) => {
+                                        const newFases = [...datosEditables.cronograma_fases];
+                                        newFases[i].nombre = e.target.value;
+                                        setDatosEditables({ ...datosEditables, cronograma_fases: newFases });
+                                    }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', textAlign: 'center' }}
+                                />
+                            </div>
                             <div style={{ fontSize: '11px', color: '#6B7280' }}>
                                 <input
                                     type="number"
-                                    value={datosEditables.cronograma[fase.campo]}
-                                    onChange={(e) => setDatosEditables({ ...datosEditables, cronograma: { ...datosEditables.cronograma, [fase.campo]: parseInt(e.target.value) || 0 } })}
+                                    value={fase.dias}
+                                    onChange={(e) => {
+                                        const newFases = [...datosEditables.cronograma_fases];
+                                        newFases[i].dias = parseInt(e.target.value) || 0;
+                                        setDatosEditables({ ...datosEditables, cronograma_fases: newFases });
+                                    }}
                                     style={{ width: '40px', border: 'none', borderBottom: `1px solid ${colores.acento}`, background: 'transparent', fontSize: '11px', textAlign: 'center' }}
                                 /> días
                             </div>
@@ -318,63 +348,89 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
                 </div>
             </div>
 
-            {/* GARANTÍAS */}
+            {/* GARANTÍAS (Editable) */}
             <div style={{ margin: '25px 0', padding: '20px', background: '#F9FAFB', borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px' }}>
                 <h2 style={{ fontSize: '16px', color: colores.primario, fontWeight: 'bold', marginBottom: '15px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ width: '4px', height: '20px', background: colores.acento, display: 'inline-block' }}></span>
                     Garantías Incluidas
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', margin: '20px 0' }}>
-                    {[
-                        { icon: '🛠️', texto: '12 meses en mano de obra' },
-                        { icon: '⚙️', texto: 'Garantía de fabricante en equipos' },
-                        { icon: '💬', texto: 'Soporte técnico por 6 meses' }
-                    ].map((garantia, i) => (
+                    {datosEditables.garantias.map((garantia, i) => (
                         <div key={i} style={{ padding: '15px', background: 'white', border: `2px solid ${colores.claroBorde}`, borderRadius: '6px', textAlign: 'center' }}>
-                            <div style={{ width: '50px', height: '50px', background: colores.claro, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: '24px' }}>{garantia.icon}</div>
-                            <div style={{ fontSize: '11px', color: '#374151', fontWeight: '600' }}>{garantia.texto}</div>
+                            <div style={{ width: '50px', height: '50px', background: colores.claro, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: '24px' }}>
+                                <input
+                                    type="text"
+                                    value={garantia.icon}
+                                    onChange={(e) => {
+                                        const nuevasGarantias = [...datosEditables.garantias];
+                                        nuevasGarantias[i].icon = e.target.value;
+                                        setDatosEditables({ ...datosEditables, garantias: nuevasGarantias });
+                                    }}
+                                    style={{ width: '40px', border: 'none', background: 'transparent', textAlign: 'center' }}
+                                />
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#374151', fontWeight: '600' }}>
+                                <input
+                                    type="text"
+                                    value={garantia.texto}
+                                    onChange={(e) => {
+                                        const nuevasGarantias = [...datosEditables.garantias];
+                                        nuevasGarantias[i].texto = e.target.value;
+                                        setDatosEditables({ ...datosEditables, garantias: nuevasGarantias });
+                                    }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', textAlign: 'center', fontWeight: '600' }}
+                                />
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* CONDICIONES DE PAGO */}
+            {/* CONDICIONES DE PAGO (Editable) */}
             <div style={{ margin: '25px 0', padding: '20px', background: '#F9FAFB', borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px' }}>
                 <h2 style={{ fontSize: '16px', color: colores.primario, fontWeight: 'bold', marginBottom: '15px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ width: '4px', height: '20px', background: colores.acento, display: 'inline-block' }}></span>
                     Condiciones de Pago
                 </h2>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {['50% de adelanto a la firma del contrato', '30% al 50% de avance de obra', '20% contra entrega y conformidad'].map((condicion, i) => (
+                    {datosEditables.condiciones_pago.map((condicion, i) => (
                         <li key={i} style={{ fontSize: '11px', margin: '10px 0', paddingLeft: '25px', position: 'relative' }}>
                             <span style={{ position: 'absolute', left: 0, color: colores.primario, fontWeight: 'bold', fontSize: '14px' }}>✓</span>
-                            {condicion}
+                            <input
+                                type="text"
+                                value={condicion}
+                                onChange={(e) => {
+                                    const nuevasCondiciones = [...datosEditables.condiciones_pago];
+                                    nuevasCondiciones[i] = e.target.value;
+                                    setDatosEditables({ ...datosEditables, condiciones_pago: nuevasCondiciones });
+                                }}
+                                style={{ width: '95%', border: 'none', background: 'transparent' }}
+                            />
                         </li>
                     ))}
                 </ul>
             </div>
 
-            {/* OBSERVACIONES */}
+            {/* OBSERVACIONES (Editable) */}
             <div style={{ margin: '25px 0', padding: '20px', background: '#F9FAFB', borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px' }}>
                 <h2 style={{ fontSize: '16px', color: colores.primario, fontWeight: 'bold', marginBottom: '15px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span style={{ width: '4px', height: '20px', background: colores.acento, display: 'inline-block' }}></span>
                     Observaciones Técnicas
                 </h2>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {[
-                        `Trabajos ejecutados según ${datosEditables.normativa_aplicable}`,
-                        'Materiales de primera calidad con certificación internacional',
-                        'Mano de obra especializada y certificada',
-                        'Incluye transporte de materiales',
-                        'Pruebas y puesta en marcha incluidas',
-                        'Capacitación al personal del cliente',
-                        'Documentación técnica completa (planos as-built, protocolos, certificados)',
-                        'Precios en dólares americanos (USD)',
-                        `Cotización válida por ${datosEditables.vigencia}`
-                    ].map((obs, i) => (
+                    {datosEditables.observaciones.map((obs, i) => (
                         <li key={i} style={{ fontSize: '11px', margin: '10px 0', paddingLeft: '25px', position: 'relative' }}>
                             <span style={{ position: 'absolute', left: 0, color: colores.primario, fontWeight: 'bold', fontSize: '14px' }}>✓</span>
-                            {obs}
+                            <input
+                                type="text"
+                                value={obs}
+                                onChange={(e) => {
+                                    const nuevasObs = [...datosEditables.observaciones];
+                                    nuevasObs[i] = e.target.value;
+                                    setDatosEditables({ ...datosEditables, observaciones: nuevasObs });
+                                }}
+                                style={{ width: '95%', border: 'none', background: 'transparent' }}
+                            />
                         </li>
                     ))}
                 </ul>
@@ -383,9 +439,9 @@ const EDITABLE_COTIZACION_COMPLEJA = ({
             {/* PIE DE PÁGINA */}
             <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: `3px solid ${colores.primario}`, textAlign: 'center', fontSize: '10px', color: '#6B7280' }}>
                 <div style={{ fontWeight: 'bold', color: colores.primario, fontSize: '12px', marginBottom: '8px' }}>TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
-                <div style={{ margin: '5px 0' }}>RUC: 20601138787 | Teléfono: 906 315 961</div>
-                <div style={{ margin: '5px 0' }}>Email: ingenieria.teslaelectricidad@gmail.com</div>
-                <div style={{ margin: '5px 0' }}>Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div>
+                <div>RUC: 20601138787 | Teléfono: 906 315 961</div>
+                <div>Email: ingenieria.teslaelectricidad@gmail.com</div>
+                <div>Jr. Las Ágatas Mz B Lote 09, Urb. San Carlos, SJL</div>
             </div>
         </div>
     );

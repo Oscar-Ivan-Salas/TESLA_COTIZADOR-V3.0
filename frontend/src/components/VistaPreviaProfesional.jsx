@@ -29,7 +29,9 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
     ocultarIGV = false,
     ocultarPreciosUnitarios = false,
     ocultarTotalesPorItem = false,
-    onDatosChange // ✨ NUEVO: Callback del padre
+
+    onDatosChange, // ✨ NUEVO: Callback del padre
+    modoEdicion = true // Default true para compatibilidad si no se pasa
   } = props;
 
   console.log('🎬 VistaPreviaProfesional RENDERIZANDO');
@@ -84,7 +86,9 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
           onDatosChange={handleDatosChange}
           ocultarIGV={ocultarIGV}
           ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+
           ocultarTotalesPorItem={ocultarTotalesPorItem}
+          modoEdicion={modoEdicion}
         />
       );
     }
@@ -99,9 +103,9 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
           logoBase64={logoBase64}
           fuenteDocumento={fuenteDocumento}
           onDatosChange={handleDatosChange}
-          ocultarIGV={ocultarIGV}
           ocultarPreciosUnitarios={ocultarPreciosUnitarios}
           ocultarTotalesPorItem={ocultarTotalesPorItem}
+          modoEdicion={modoEdicion}
         />
       );
     }
@@ -116,6 +120,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
           logoBase64={logoBase64}
           fuenteDocumento={fuenteDocumento}
           onDatosChange={handleDatosChange}
+          modoEdicion={modoEdicion}
         />
       );
     }
@@ -130,6 +135,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
           logoBase64={logoBase64}
           fuenteDocumento={fuenteDocumento}
           onDatosChange={handleDatosChange}
+          modoEdicion={modoEdicion}
         />
       );
     }
@@ -145,6 +151,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
           logoBase64={logoBase64}
           fuenteDocumento={fuenteDocumento}
           onDatosChange={handleDatosChange}
+          modoEdicion={modoEdicion}
         />
       );
     }
@@ -159,6 +166,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
           logoBase64={logoBase64}
           fuenteDocumento={fuenteDocumento}
           onDatosChange={handleDatosChange}
+          modoEdicion={modoEdicion}
         />
       );
     }

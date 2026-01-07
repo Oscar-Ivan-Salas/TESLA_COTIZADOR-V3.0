@@ -221,17 +221,17 @@ const FormularioProfesionalesPro = ({
         personalizados.filter(p => p.checked).length;
 
     return (
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg">
+        <div className="bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-slate-900/95 rounded-2xl p-6 border-2 border-purple-400/50 shadow-2xl backdrop-blur-sm">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="bg-blue-600 p-3 rounded-xl">
+                    <div className="bg-purple-600 p-3 rounded-xl">
                         <Users className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-gray-800">👥 Equipo Profesional</h3>
-                        <p className="text-sm text-gray-600">
-                            Template: <span className="font-semibold text-blue-600">{templateActual.nombre}</span>
+                        <h3 className="text-xl font-bold text-white">👥 Equipo Profesional</h3>
+                        <p className="text-sm text-purple-200">
+                            Template: <span className="font-semibold text-cyan-300">{templateActual.nombre}</span>
                             {' '}• {templateActual.descripcion}
                         </p>
                     </div>
@@ -242,7 +242,7 @@ const FormularioProfesionalesPro = ({
             <div className="flex flex-wrap gap-2 mb-6">
                 <button
                     onClick={seleccionarEsenciales}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-lg"
                 >
                     <Check className="w-4 h-4" />
                     ✓ Seleccionar Esenciales
@@ -250,7 +250,7 @@ const FormularioProfesionalesPro = ({
                 </button>
                 <button
                     onClick={deseleccionarTodos}
-                    className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors shadow-lg"
                 >
                     Deseleccionar Todos
                     <span className="text-xs opacity-75 ml-2">(Cmd+D)</span>
@@ -262,9 +262,9 @@ const FormularioProfesionalesPro = ({
                         <button
                             key={key}
                             onClick={() => aplicarTemplate(key)}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${tipoProyecto === key
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-white text-gray-700 hover:bg-blue-100'
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors shadow-md ${tipoProyecto === key
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm'
                                 }`}
                         >
                             {template.nombre}
@@ -279,8 +279,8 @@ const FormularioProfesionalesPro = ({
                     <div
                         key={key}
                         className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${item.checked
-                                ? 'bg-white border-blue-400 shadow-md'
-                                : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                            ? 'bg-white/20 border-purple-400 shadow-lg backdrop-blur-sm'
+                            : 'bg-white/5 border-white/10 hover:border-white/20 backdrop-blur-sm'
                             }`}
                         onClick={() => handleCheckChange(key)}
                     >
@@ -288,14 +288,14 @@ const FormularioProfesionalesPro = ({
                             type="checkbox"
                             checked={item.checked}
                             onChange={() => { }}
-                            className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 pointer-events-none"
+                            className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500 pointer-events-none"
                         />
                         <div className="flex-1">
-                            <span className={`font-medium ${item.checked ? 'text-gray-800' : 'text-gray-400'}`}>
+                            <span className={`font-medium ${item.checked ? 'text-white' : 'text-gray-400'}`}>
                                 {item.nombre}
                             </span>
                             {item.esencial && (
-                                <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                <span className="ml-2 text-xs bg-green-600 text-white px-2 py-1 rounded shadow-md">
                                     Esencial
                                 </span>
                             )}
@@ -308,9 +308,9 @@ const FormularioProfesionalesPro = ({
                                     max="99"
                                     value={item.cantidad}
                                     onChange={(e) => handleCantidadChange(key, e.target.value)}
-                                    className="w-20 px-3 py-2 border-2 border-blue-300 rounded-lg text-center font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-20 px-3 py-2 border-2 border-purple-400 bg-white rounded-lg text-center font-bold text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                 />
-                                <span className="text-sm text-gray-600 min-w-[70px]">personas</span>
+                                <span className="text-sm text-purple-200 min-w-[70px]">personas</span>
                             </div>
                         )}
                     </div>
@@ -376,12 +376,12 @@ const FormularioProfesionalesPro = ({
                         onChange={(e) => setNuevoRol(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && agregarPersonalizado()}
                         placeholder="Agregar rol personalizado... (Enter para agregar)"
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="flex-1 px-4 py-3 border-2 border-purple-400/50 bg-white/10 text-white placeholder-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 backdrop-blur-sm"
                     />
                     <button
                         onClick={agregarPersonalizado}
                         disabled={!nuevoRol.trim()}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold rounded-lg transition-colors flex items-center gap-2"
+                        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold rounded-lg transition-colors flex items-center gap-2 shadow-lg"
                     >
                         <Plus className="w-5 h-5" />
                         Agregar
@@ -393,7 +393,7 @@ const FormularioProfesionalesPro = ({
             <button
                 onClick={handleSubmit}
                 disabled={totalRoles === 0}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold text-lg rounded-xl shadow-lg transition-all transform hover:scale-105 disabled:scale-100 flex items-center justify-center gap-2"
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold text-lg rounded-xl shadow-2xl transition-all transform hover:scale-105 disabled:scale-100 flex items-center justify-center gap-2"
             >
                 <Zap className="w-5 h-5" />
                 ✅ Continuar con este equipo
@@ -402,15 +402,15 @@ const FormularioProfesionalesPro = ({
 
             {/* Resumen */}
             <div className="mt-4 space-y-2">
-                <div className="p-4 bg-white rounded-lg border-2 border-blue-200">
-                    <p className="text-sm text-gray-600">
-                        <span className="font-bold text-blue-600 text-lg">{totalPersonas}</span> profesionales en{' '}
-                        <span className="font-bold text-blue-600 text-lg">{totalRoles}</span> roles
+                <div className="p-4 bg-white/10 rounded-lg border-2 border-purple-400/50 backdrop-blur-sm">
+                    <p className="text-sm text-purple-100">
+                        <span className="font-bold text-cyan-300 text-lg">{totalPersonas}</span> profesionales en{' '}
+                        <span className="font-bold text-cyan-300 text-lg">{totalRoles}</span> roles
                     </p>
                 </div>
 
-                <div className="p-3 bg-cyan-50 rounded-lg border border-cyan-200">
-                    <p className="text-xs text-gray-600 font-mono">
+                <div className="p-3 bg-purple-800/50 rounded-lg border border-purple-400/30 backdrop-blur-sm">
+                    <p className="text-xs text-purple-200 font-mono">
                         💡 <span className="font-semibold">Shortcuts:</span>
                         {' '}Cmd+A (Esenciales) • Cmd+D (Deseleccionar) • Cmd+Enter (Continuar)
                     </p>

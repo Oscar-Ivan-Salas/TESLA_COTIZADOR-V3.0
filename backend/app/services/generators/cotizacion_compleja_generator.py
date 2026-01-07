@@ -298,17 +298,35 @@ class CotizacionComplejaGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        garantias = [
-            '🛠️ 12 meses en mano de obra',
-            '⚙️ Garantía de fabricante en equipos',
-            '💬 Soporte técnico por 6 meses'
-        ]
+        # ✅ USAR DATOS DINÁMICOS
+        garantias_data = self.datos.get('garantias', [])
+        
+        garantias = []
+        if garantias_data:
+            for g in garantias_data:
+                if isinstance(g, dict):
+                    texto = g.get('texto', '')
+                    icon = g.get('icon', '✓')
+                    garantias.append(f"{icon} {texto}")
+                else:
+                    garantias.append(str(g))
+        else:
+            garantias = [
+                '🛠️ 12 meses en mano de obra',
+                '⚙️ Garantía de fabricante en equipos',
+                '💬 Soporte técnico por 6 meses'
+            ]
         
         # Crear tabla para las garantías
-        table = self.doc.add_table(rows=1, cols=3)
+        # Ajustar columnas dinámicamente o max 3
+        cols = min(len(garantias), 3)
+        if cols == 0: cols = 1
+        
+        table = self.doc.add_table(rows=1, cols=cols)
         table.style = 'Table Grid'
         
         for idx, garantia in enumerate(garantias):
+            if idx >= cols: break # Limitar a columnas disponibles
             cell = table.rows[0].cells[idx]
             p = cell.paragraphs[0]
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -332,11 +350,22 @@ class CotizacionComplejaGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        condiciones = [
-            '50% de adelanto a la firma del contrato',
-            '30% al 50% de avance de obra',
-            '20% contra entrega y conformidad'
-        ]
+        # ✅ USAR DATOS DINÁMICOS
+        condiciones_data = self.datos.get('condiciones_pago', [])
+        
+        condiciones = []
+        if condiciones_data:
+            for c in condiciones_data:
+                if isinstance(c, dict):
+                    condiciones.append(c.get('texto', str(c)))
+                else:
+                    condiciones.append(str(c))
+        else:
+            condiciones = [
+                '50% de adelanto a la firma del contrato',
+                '30% al 50% de avance de obra',
+                '20% contra entrega y conformidad'
+            ]
         
         for condicion in condiciones:
             p_cond = self.doc.add_paragraph(f'✓ {condicion}')
@@ -354,20 +383,33 @@ class CotizacionComplejaGenerator(BaseDocumentGenerator):
         run_obs_titulo.font.bold = True
         run_obs_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        normativa = self.datos.get('normativa_aplicable', 'CNE - Código Nacional de Electricidad')
-        vigencia = self.datos.get('vigencia', '30 días')
+        # ✅ USAR DATOS DINÁMICOS
+        observaciones_data = self.datos.get('observaciones', []) # Puede mapearse como 'observaciones' string o array
         
-        observaciones = [
-            f'Trabajos ejecutados según {normativa}',
-            'Materiales de primera calidad con certificación internacional',
-            'Mano de obra especializada y certificada',
-            'Incluye transporte de materiales',
-            'Pruebas y puesta en marcha incluidas',
-            'Capacitación al personal del cliente',
-            'Documentación técnica completa (planos as-built, protocolos, certificados)',
-            'Precios en dólares americanos (USD)',
-            f'Cotización válida por {vigencia}'
-        ]
+        observaciones = []
+        if observaciones_data:
+            if isinstance(observaciones_data, list):
+                for o in observaciones_data:
+                    if isinstance(o, dict):
+                         observaciones.append(o.get('texto', str(o)))
+                    else:
+                         observaciones.append(str(o))
+            elif isinstance(observaciones_data, str):
+                 observaciones = [observaciones_data]
+        else: 
+            normativa = self.datos.get('normativa_aplicable', 'CNE - Código Nacional de Electricidad')
+            vigencia = self.datos.get('vigencia', '30 días')
+            observaciones = [
+                f'Trabajos ejecutados según {normativa}',
+                'Materiales de primera calidad con certificación internacional',
+                'Mano de obra especializada y certificada',
+                'Incluye transporte de materiales',
+                'Pruebas y puesta en marcha incluidas',
+                'Capacitación al personal del cliente',
+                'Documentación técnica completa (planos as-built, protocolos, certificados)',
+                'Precios en dólares americanos (USD)',
+                f'Cotización válida por {vigencia}'
+            ]
         
         for obs in observaciones:
             p_obs = self.doc.add_paragraph(f'✓ {obs}')
@@ -376,29 +418,63 @@ class CotizacionComplejaGenerator(BaseDocumentGenerator):
             p_obs.paragraph_format.left_indent = Inches(0.25)
     
     def generar(self, ruta_salida):
-        """Genera el documento completo"""
-        self._agregar_header_basico()
-        self._agregar_titulo()
-        self._agregar_info_general()
+        """Genera el documento completo con proteccion de fallos"""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("🚀 INICIANDO GENERACIÓN COTIZACIÓN (MODO DEFENSIVO)...")
         
-        # Nueva sección: Alcance del Proyecto
-        self._agregar_alcance()
+        methods = [
+            (self._agregar_header_basico, "Header Básico"),
+            (self._agregar_titulo, "Título"),
+            (self._agregar_info_general, "Info General"),
+            (self._agregar_alcance, "Alcance"),
+            (self._agregar_capitulos_safe, "Capítulos"), # Wrapper needed if logic is complex
+            (self._agregar_cronograma, "Cronograma"),
+            (self._agregar_garantias, "Garantías"),
+            (self._agregar_condiciones_pago, "Condiciones Pago"),
+            (self._agregar_observaciones, "Observaciones"),
+            (self._agregar_footer_basico, "Footer")
+        ]
+
+        subtotal = 0
         
-        subtotal = self._agregar_capitulos()
-        self._agregar_totales(subtotal)
+        # Special handling for capitulos because it returns subtotal
+        try:
+             logger.info("👉 Ejecutando: Capítulos")
+             subtotal = self._agregar_capitulos()
+        except Exception as e:
+             logger.error(f"❌ ERROR EN CAPÍTULOS: {e}", exc_info=True)
+             p_error = self.doc.add_paragraph(f"[ERROR EN CAPÍTULOS: {e}]")
+             p_error.runs[0].font.color.rgb = RGBColor(255,0,0)
+
+        # Special handling for totales because it needs subtotal
+        try:
+             self._agregar_totales(subtotal)
+        except Exception as e:
+             logger.error(f"❌ ERROR EN TOTALES: {e}", exc_info=True)
+
+        for method, name in methods:
+            if "Capítulos" in name: continue # Ya ejecutado
+            try:
+                logger.info(f"👉 Ejecutando: {name}")
+                method()
+            except Exception as e:
+                logger.error(f"❌ ERROR EN {name.upper()}: {e}", exc_info=True)
+                p_error = self.doc.add_paragraph()
+                run_error = p_error.add_run(f"[ERROR GENERANDO SECCIÓN {name}: {e}]")
+                run_error.font.color.rgb = RGBColor(255, 0, 0)
+                run_error.font.bold = True
         
-        # Nuevas secciones: Cronograma, Garantías, Condiciones de Pago
-        self._agregar_cronograma()
-        self._agregar_garantias()
-        self._agregar_condiciones_pago()
+        try:
+            logger.info(f"💾 Guardando documento en: {ruta_salida}")
+            self.doc.save(str(ruta_salida))
+            return ruta_salida
+        except Exception as e:
+            logger.error(f"❌ ERROR FINAL GUARDANDO ARCHIVO: {e}", exc_info=True)
+            raise e
         
-        # Observaciones mejoradas
-        self._agregar_observaciones()
-        
-        self._agregar_footer_basico()
-        
-        self.doc.save(str(ruta_salida))
-        return ruta_salida
+    def _agregar_capitulos_safe(self):
+        pass # Placeholder for loop, ignored
 
 
 def generar_cotizacion_compleja(datos, ruta_salida, opciones=None):

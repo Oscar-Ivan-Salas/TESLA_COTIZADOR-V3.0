@@ -407,24 +407,69 @@ _Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estad
         # ============================================
         # ETAPA: Recursos Humanos
         # ============================================
-        elif etapa == "recursos_humanos":
-            recursos = [r.strip() for r in mensaje.split(',') if r.strip()]
-            estado["recursos_humanos"] = recursos
-            estado["etapa"] = "materiales"
-            return {'success': True, 'respuesta': f"""✅ Equipo: **{len(recursos)} roles** definidos
+        # ============================================
+        # ETAPA: Selección de Profesionales
+        # ============================================
+        elif etapa == "form_profesionales":
+            # Procesar respuesta (llega texto desde el formulario)
+            estado["recursos_humanos"] = [r.strip() for r in mensaje.split(',') if r.strip()]
+            
+            # Pasar a siguiente formulario
+            estado["etapa"] = "form_entregables"
+            
+            return {
+                'success': True,
+                'respuesta': f"""✅ Equipo registrado correctamente.
 
-🔧 **Materiales principales (separados por coma):**
-_Ejemplo: Tableros eléctricos, Cables THW, Protecciones termomagnéticas, Sistema SCADA, UPS_""", 'botones': None, 'estado': estado}
-        
+━━━━━━━━━━━━━━━━━━━━━━━
+**ENTREGABLES DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Ahora define los entregables clave que se comprometen con el cliente.
+He precargado una lista estándar según PMI. Selecciona los que apliquen.""",
+                'botones': None,
+                'estado': estado,
+                'formulario': {
+                    'tipo': 'entregables',
+                    'tipoProyecto': 'electricidad-complejo',
+                    'presupuesto': estado.get('presupuesto'),
+                    'area': estado.get('area_m2')
+                }
+            }
+
         # ============================================
-        # ETAPA: Materiales
+        # ETAPA: Selección de Entregables
         # ============================================
-        elif etapa == "materiales":
-            materiales = [m.strip() for m in mensaje.split(',') if m.strip()]
-            estado["materiales"] = materiales
+        elif etapa == "form_entregables":
+            estado["entregables_seleccionados"] = [e.strip() for e in mensaje.split(',') if e.strip()]
+            
+            estado["etapa"] = "form_suministros"
+            
+            return {
+                'success': True,
+                'respuesta': f"""✅ Entregables registrados.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**SUMINISTROS Y MATERIALES**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Finalmente, selecciona los suministros principales para calcular el presupuesto detallado.""",
+                'botones': None,
+                'estado': estado,
+                'formulario': {
+                    'tipo': 'suministros',
+                    'tipoProyecto': 'electricidad-complejo',
+                    'presupuesto': estado.get('presupuesto'),
+                    'area': estado.get('area_m2')
+                }
+            }
+
+        # ============================================
+        # ETAPA: Selección de Suministros
+        # ============================================
+        elif etapa == "form_suministros":
+            estado["materiales"] = [m.strip() for m in mensaje.split(',') if m.strip()]
             return self._generar_proyecto(estado)
-        
-        return {'success': False, 'respuesta': "❌ Etapa no reconocida", 'botones': None, 'estado': estado}
     
     def _procesar_riesgo(self, mensaje: str, estado: Dict) -> Dict:
         """Procesa el loop de 5 riesgos"""
@@ -510,17 +555,30 @@ _Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""
 📝 **Descripción del riesgo:**""", 'botones': None, 'estado': estado}
             else:
                 # Todos los riesgos completados
-                estado["etapa"] = "recursos_humanos"
-                return {'success': True, 'respuesta': f"""✅ Plan de mitigación guardado
+                estado["etapa"] = "form_profesionales"
+                return {
+                    'success': True,
+                    'respuesta': f"""✅ Plan de mitigación guardado
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✅ **TODOS LOS RIESGOS COMPLETADOS**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-Ahora necesito información sobre los recursos del proyecto.
+━━━━━━━━━━━━━━━━━━━━━━━
+**EQUIPO Y RECURSOS**
+━━━━━━━━━━━━━━━━━━━━━━━
 
-👥 **Equipo humano (roles separados por coma):**
-_Ejemplo: Project Manager, Ing. Residente, Ing. Eléctrico, Técnicos (3), Inspector QA_""", 'botones': None, 'estado': estado}
+Ahora vamos a definir el equipo profesional necesario.
+Usa el formulario interactivo para seleccionar roles y cantidades.""",
+                    'botones': None,
+                    'estado': estado,
+                    'formulario': {
+                        'tipo': 'profesionales',
+                        'tipoProyecto': 'electricidad-complejo',
+                        'presupuesto': estado.get('presupuesto'),
+                        'area': estado.get('area_m2')
+                    }
+                }
         
         return {'success': False, 'respuesta': "❌ Campo de riesgo no reconocido", 'botones': None, 'estado': estado}
     
