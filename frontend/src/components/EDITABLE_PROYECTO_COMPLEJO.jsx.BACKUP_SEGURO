@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla', logoBase64 = null, fuenteDocumento = 'Calibri', onDatosChange = () => { } }) => {
-    // ✅ NUEVO: Detectar complejidad del proyecto (5, 6 o 7 fases)
-    const complejidad = datos.complejidad || 7;
-
     // Estado inicial extendido con listas que antes eran estáticas
     const [datosEditables, setDatosEditables] = useState({
         nombre_proyecto: datos.nombre_proyecto || 'SISTEMA DE INSTALACIÓN ELÉCTRICA INDUSTRIAL',
