@@ -40,8 +40,8 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             moneda = estado.get("moneda", "USD")
             duracion_meses = estado.get("duracion_meses")
             
-            # ✅ FLUJO NORMAL: Preguntar todo paso a paso (modo rápido desactivado)
-            estado["etapa"] = "ubicacion"
+            # ✅ FLUJO ADAPTATIVO: Preguntar complejidad primero
+            estado["etapa"] = "complejidad"
             simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
             return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
@@ -51,10 +51,63 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
 
 ✅ Cliente: **{cliente_nombre or 'No especificado'}**
 ✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
-✅ Presupuesto: **{simbolo} {presupuesto:,.2f}** if presupuesto else '**No especificado**'
-✅ Duración: **{duracion_meses} meses** if duracion_meses else '**No especificado**'
+✅ Presupuesto: **{simbolo} {presupuesto:,.2f if presupuesto else 0}**
+✅ Duración: **{duracion_meses or 'No especificado'} meses**
 
-Ahora necesito información adicional para crear el Project Charter completo.
+━━━━━━━━━━━━━━━━━━━━━━━
+**NIVEL DE COMPLEJIDAD DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Como experta en PMI PMBOK 7th Edition, adaptaré el análisis según la complejidad de tu proyecto.
+
+📊 **¿Qué nivel de complejidad tiene tu proyecto?**
+
+**5 FASES - Básico** 
+• Proyectos estándar (< $50K)
+• Documentación esencial
+• Análisis simplificado
+• ⏱️ ~5 minutos
+
+**6 FASES - Intermedio**
+• Proyectos con múltiples stakeholders ($50K-$200K)
+• Control de calidad reforzado
+• Gestión de riesgos moderada
+• ⏱️ ~8 minutos
+
+**7 FASES - Avanzado**
+• Proyectos críticos/complejos (> $200K)
+• Documentación completa PMI
+• Gestión integral de riesgos
+• Formularios interactivos
+• ⏱️ ~15 minutos
+
+Selecciona el nivel que mejor se adapte a tu proyecto.""", 'botones': [
+                {"text": "5 fases - Básico", "value": "5"},
+                {"text": "6 fases - Intermedio", "value": "6"},
+                {"text": "7 fases - Avanzado", "value": "7"}
+            ], 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Complejidad (NUEVA)
+        # ============================================
+        elif etapa == "complejidad":
+            try:
+                complejidad = int(mensaje)
+                if complejidad not in [5, 6, 7]:
+                    return {'success': False, 'respuesta': "❌ Por favor selecciona 5, 6 o 7 fases.", 'botones': [
+                        {"text": "5 fases - Básico", "value": "5"},
+                        {"text": "6 fases - Intermedio", "value": "6"},
+                        {"text": "7 fases - Avanzado", "value": "7"}
+                    ], 'estado': estado}
+                
+                estado["complejidad"] = complejidad
+                estado["etapa"] = "ubicacion"
+                
+                nivel_texto = {5: "Básico", 6: "Intermedio", 7: "Avanzado"}.get(complejidad, "Básico")
+                
+                return {'success': True, 'respuesta': f"""✅ Nivel seleccionado: **{complejidad} fases - {nivel_texto}**
+
+Perfecto. He configurado el análisis PMI para un proyecto de nivel {nivel_texto.lower()}.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **UBICACIÓN DEL PROYECTO**
@@ -62,6 +115,12 @@ Ahora necesito información adicional para crear el Project Charter completo.
 
 📍 **¿Dónde se realizará el proyecto?**
 _Ejemplo: Lima, Perú / Concepción, Chile_""", 'botones': None, 'estado': estado}
+            except:
+                return {'success': False, 'respuesta': "❌ Selección inválida. Por favor elige una opción.", 'botones': [
+                    {"text": "5 fases - Básico", "value": "5"},
+                    {"text": "6 fases - Intermedio", "value": "6"},
+                    {"text": "7 fases - Avanzado", "value": "7"}
+                ], 'estado': estado}
         
         # ============================================
         # ETAPA: Ubicación
@@ -378,10 +437,10 @@ Duración total: **{duracion_total} días**
 6. Cierre: 5 días
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**REGISTRO DE RIESGOS (TOP 5)**
+**REGISTRO DE RIESGOS**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-Identificaremos los 5 riesgos principales del proyecto.
+Según el nivel de complejidad seleccionado, identificaremos los riesgos principales.
 
 Para cada riesgo necesito:
 • Descripción
@@ -390,7 +449,7 @@ Para cada riesgo necesito:
 • Plan de Mitigación
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**RIESGO 1 de 5**
+**RIESGO 1 de {estado.get('complejidad', 7) - 2}**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 📝 **Descripción del riesgo:**
@@ -414,12 +473,15 @@ _Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estad
             # Procesar respuesta (llega texto desde el formulario)
             estado["recursos_humanos"] = [r.strip() for r in mensaje.split(',') if r.strip()]
             
-            # Pasar a siguiente formulario
-            estado["etapa"] = "form_entregables"
+            complejidad = estado.get('complejidad', 7)
             
-            return {
-                'success': True,
-                'respuesta': f"""✅ Equipo registrado correctamente.
+            if complejidad >= 7:
+                # Nivel Avanzado: Continuar con formulario de entregables
+                estado["etapa"] = "form_entregables"
+                
+                return {
+                    'success': True,
+                    'respuesta': f"""✅ Equipo registrado correctamente.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **ENTREGABLES DEL PROYECTO**
@@ -427,15 +489,22 @@ _Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estad
 
 Ahora define los entregables clave que se comprometen con el cliente.
 He precargado una lista estándar según PMI. Selecciona los que apliquen.""",
-                'botones': None,
-                'estado': estado,
-                'formulario': {
-                    'tipo': 'entregables',
-                    'tipoProyecto': 'electricidad-complejo',
-                    'presupuesto': estado.get('presupuesto'),
-                    'area': estado.get('area_m2')
+                    'botones': None,
+                    'estado': estado,
+                    'formulario': {
+                        'tipo': 'entregables',
+                        'tipoProyecto': 'electricidad-complejo',
+                        'presupuesto': estado.get('presupuesto'),
+                        'area': estado.get('area_m2')
+                    }
                 }
-            }
+            else:
+                # Nivel Intermedio (6 fases): Pedir materiales como texto y generar
+                estado["etapa"] = "materiales_texto"
+                return {'success': True, 'respuesta': f"""✅ Equipo profesional registrado.
+
+🔧 **Materiales principales (separados por coma):**
+_Ejemplo: Tableros eléctricos, Cables THW, Protecciones termomagnéticas, Sistema de puesta a tierra_""", 'botones': None, 'estado': estado}
 
         # ============================================
         # ETAPA: Selección de Entregables
@@ -469,6 +538,26 @@ Finalmente, selecciona los suministros principales para calcular el presupuesto 
         # ============================================
         elif etapa == "form_suministros":
             estado["materiales"] = [m.strip() for m in mensaje.split(',') if m.strip()]
+            return self._generar_proyecto(estado)
+        
+        # ============================================
+        # ETAPA: Recursos Texto (Para complejidad 5 - Básico)
+        # ============================================
+        elif etapa == "recursos_texto":
+            recursos = [r.strip() for r in mensaje.split(',') if r.strip()]
+            estado["recursos_humanos"] = recursos
+            estado["etapa"] = "materiales_texto"
+            return {'success': True, 'respuesta': f"""✅ Equipo: **{len(recursos)} roles** definidos
+
+🔧 **Materiales principales (separados por coma):**
+_Ejemplo: Tableros eléctricos, Cables THW, Protecciones termomagnéticas, Sistema de puesta a tierra_""", 'botones': None, 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Materiales Texto (Para complejidad 5 - Básico)
+        # ============================================
+        elif etapa == "materiales_texto":
+            materiales = [m.strip() for m in mensaje.split(',') if m.strip()]
+            estado["materiales"] = materiales
             return self._generar_proyecto(estado)
     
     def _procesar_riesgo(self, mensaje: str, estado: Dict) -> Dict:
@@ -539,8 +628,11 @@ _Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""
             estado["riesgos"].append(estado["riesgo_temp"].copy())
             estado.pop("riesgo_temp")
             
-            # Verificar si hay más riesgos
-            if num_riesgo < 5:
+            # Verificar si hay más riesgos (adaptativo según complejidad)
+            complejidad = estado.get('complejidad', 7)
+            max_riesgos = {5: 3, 6: 4, 7: 5}.get(complejidad, 5)
+            
+            if num_riesgo < max_riesgos:
                 estado["etapa"] = f"riesgo{num_riesgo + 1}_desc"
                 return {'success': True, 'respuesta': f"""✅ Plan de mitigación guardado
 
@@ -549,16 +641,20 @@ _Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**RIESGO {num_riesgo + 1} de 5**
+**RIESGO {num_riesgo + 1} de {max_riesgos}**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 📝 **Descripción del riesgo:**""", 'botones': None, 'estado': estado}
             else:
-                # Todos los riesgos completados
-                estado["etapa"] = "form_profesionales"
-                return {
-                    'success': True,
-                    'respuesta': f"""✅ Plan de mitigación guardado
+                # Todos los riesgos completados - Flujo adaptativo
+                complejidad = estado.get('complejidad', 7)
+                
+                if complejidad >= 7:
+                    # Nivel Avanzado: Formulario de profesionales
+                    estado["etapa"] = "form_profesionales"
+                    return {
+                        'success': True,
+                        'respuesta': f"""✅ Plan de mitigación guardado
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✅ **TODOS LOS RIESGOS COMPLETADOS**
@@ -570,15 +666,60 @@ _Ejemplo: Compra anticipada de equipos críticos con proveedores alternativos_""
 
 Ahora vamos a definir el equipo profesional necesario.
 Usa el formulario interactivo para seleccionar roles y cantidades.""",
-                    'botones': None,
-                    'estado': estado,
-                    'formulario': {
-                        'tipo': 'profesionales',
-                        'tipoProyecto': 'electricidad-complejo',
-                        'presupuesto': estado.get('presupuesto'),
-                        'area': estado.get('area_m2')
+                        'botones': None,
+                        'estado': estado,
+                        'formulario': {
+                            'tipo': 'profesionales',
+                            'tipoProyecto': 'electricidad-complejo',
+                            'presupuesto': estado.get('presupuesto'),
+                            'area': estado.get('area_m2')
+                        }
                     }
-                }
+                elif complejidad == 6:
+                    # Nivel Intermedio: Solo formulario de profesionales
+                    estado["etapa"] = "form_profesionales"
+                    return {
+                        'success': True,
+                        'respuesta': f"""✅ Plan de mitigación guardado
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ **TODOS LOS RIESGOS COMPLETADOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**EQUIPO PROFESIONAL**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Define el equipo profesional usando el formulario interactivo.""",
+                        'botones': None,
+                        'estado': estado,
+                        'formulario': {
+                            'tipo': 'profesionales',
+                            'tipoProyecto': 'electricidad-complejo',
+                            'presupuesto': estado.get('presupuesto'),
+                            'area': estado.get('area_m2')
+                        }
+                    }
+                else:
+                    # Nivel Básico (5 fases): Texto simple, sin formularios
+                    estado["etapa"] = "recursos_texto"
+                    return {
+                        'success': True,
+                        'respuesta': f"""✅ Plan de mitigación guardado
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✅ **TODOS LOS RIESGOS COMPLETADOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**EQUIPO Y RECURSOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+👥 **Equipo profesional necesario (separados por coma):**
+_Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos Electricistas (4)_""",
+                        'botones': None,
+                        'estado': estado
+                    }
         
         return {'success': False, 'respuesta': "❌ Campo de riesgo no reconocido", 'botones': None, 'estado': estado}
     
