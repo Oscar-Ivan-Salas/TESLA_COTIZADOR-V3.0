@@ -810,51 +810,78 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         recursos_humanos = estado.get("recursos_humanos", ["Project Manager", "Ing. Residente", "Técnicos"])
         materiales = estado.get("materiales", ["Tableros eléctricos", "Cables", "Protecciones"])
         
-        # Generar datos completos
-        datos_generados = {
-            "codigo": codigo,
-            "nombre": nombre,
-            "cliente": {
-                "nombre": estado.get("cliente_nombre", cliente),
-                "ruc": estado.get("cliente_ruc"),
-                "direccion": estado.get("cliente_direccion"),
-                "telefono": estado.get("cliente_telefono"),
-                "email": estado.get("cliente_email")
-            },
-            "ubicacion": ubicacion,
-            "area_m2": area,
-            "descripcion": descripcion,
-            "normativa": normativa,
-            "cronograma": {
-                "fecha_inicio": fecha_inicio.strftime("%d/%m/%Y"),
-                "fecha_fin": fecha_fin.strftime("%d/%m/%Y"),
-                "duracion_total": duracion_total
-            },
-            "presupuesto": presupuesto,
-            "moneda": moneda,
-            "kpis": {
-                "spi": spi,
-                "cpi": cpi,
-                "ev_k": ev_k,
-                "pv_k": pv_k,
-                "ac_k": ac_k
-            },
-            "alcance": alcance,
-            "fases_gantt": [
-                {"nombre": "Inicio y Planificación", "duracion": 10},
-                {"nombre": "Gestión Stakeholders", "duracion": 3},
-                {"nombre": "Ingeniería y Diseño", "duracion": dias_ingenieria},
-                {"nombre": "Ejecución", "duracion": dias_ejecucion},
-                {"nombre": "Pruebas y Puesta en Marcha", "duracion": 8},
-                {"nombre": "Cierre", "duracion": 5}
-            ],
-            "stakeholders": stakeholders,
-            "riesgos": riesgos,
-            "recursos": {
-                "humanos": recursos_humanos,
-                "materiales": materiales
-            }
-        }
+    # Cronograma Dinámico según Complejidad
+    complejidad = estado.get("complejidad", 7)
+    cronograma_fases = []
+    
+    if complejidad == 5:
+        cronograma_fases = [
+            {"label": "1. Inicio y Planificación", "dias": "5 días", "width": "20%"},
+            {"label": "2. Ingeniería Básica", "dias": f"{int(dias_ingenieria/2)} días", "width": "15%"},
+            {"label": "3. Ejecución", "dias": f"{dias_ejecucion} días", "width": "40%"},
+            {"label": "4. Pruebas", "dias": "5 días", "width": "15%"},
+            {"label": "5. Cierre", "dias": "2 días", "width": "10%"}
+        ]
+    elif complejidad == 6:
+        cronograma_fases = [
+            {"label": "1. Inicio y Planificación", "dias": "10 días", "width": "15%"},
+            {"label": "2. Gestión Stakeholders", "dias": "3 días", "width": "10%"},
+            {"label": "3. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
+            {"label": "4. Ejecución", "dias": f"{dias_ejecucion} días", "width": "35%"},
+            {"label": "5. Pruebas y Puesta en Marcha", "dias": "8 días", "width": "12%"},
+            {"label": "6. Cierre", "dias": "5 días", "width": "8%"}
+        ]
+    else: # 7 Fases
+        cronograma_fases = [
+            {"label": "1. Inicio", "dias": "5 días", "width": "10%"},
+            {"label": "2. Planificación Detallada", "dias": "10 días", "width": "15%"},
+            {"label": "3. Gestión de Riesgos y Calidad", "dias": "5 días", "width": "10%"},
+            {"label": "4. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
+            {"label": "5. Ejecución y Monitoreo", "dias": f"{dias_ejecucion} días", "width": "30%"},
+            {"label": "6. Pruebas Integrales (FAT/SAT)", "dias": "10 días", "width": "10%"},
+            {"label": "7. Cierre y Lecciones Aprendidas", "dias": "5 días", "width": "5%"}
+        ]
+            
+    # Generar datos completos
+    datos_generados = {
+        "complejidad": complejidad,
+        "codigo": codigo,
+        "nombre": nombre,
+        "cliente": {
+            "nombre": estado.get("cliente_nombre", cliente),
+            "ruc": estado.get("cliente_ruc"),
+            "direccion": estado.get("cliente_direccion"),
+            "telefono": estado.get("cliente_telefono"),
+            "email": estado.get("cliente_email")
+        },
+        "ubicacion": ubicacion,
+        "area_m2": area,
+        "descripcion": descripcion,
+        "normativa": normativa,
+        "cronograma": {
+            "fecha_inicio": fecha_inicio.strftime("%d/%m/%Y"),
+            "fecha_fin": fecha_fin.strftime("%d/%m/%Y"),
+            "duracion_total": duracion_total
+        },
+        "presupuesto": presupuesto,
+        "moneda": moneda,
+        "kpis": {
+            "spi": spi,
+            "cpi": cpi,
+            "ev_k": ev_k,
+            "pv_k": pv_k,
+            "ac_k": ac_k
+        },
+        "alcance": alcance,
+        "cronograma_fases": cronograma_fases,  # ✅ RENOMBRADO Y DINÁMICO
+        "stakeholders": stakeholders,
+        "riesgos": riesgos,
+        # ✅ CORREGIDO: Recursos en formato correcto (no anidados)
+        "recursos_humanos": recursos_humanos,
+        "materiales": materiales,
+        "entregables_seleccionados": estado.get("entregables_seleccionados", []),  # ✅ NUEVO
+        "raci_actividades": estado.get("raci_actividades", [])  # ✅ NUEVO
+    }
         
         simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
         

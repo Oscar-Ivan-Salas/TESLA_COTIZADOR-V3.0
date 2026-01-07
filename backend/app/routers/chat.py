@@ -168,6 +168,18 @@ try:
 except: pili_saneamiento_bot = None
 
 # ═══════════════════════════════════════════════════════════════
+# 📊 PILI PROYECTO COMPLEJO PMI - IMPORTAR CAJA NEGRA
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from Pili_ChatBot.pili_electricidad_proyecto_complejo_pmi_chatbot import PILIElectricidadProyectoComplejoPMIChatBot
+    pili_electricidad_proyecto_complejo_pmi_bot = PILIElectricidadProyectoComplejoPMIChatBot()
+    logger.info("✅ PILI PROYECTO COMPLEJO PMI OK")
+except Exception as e:
+    logger.error(f"❌ Error importando PILI PROYECTO COMPLEJO PMI: {e}")
+    pili_electricidad_proyecto_complejo_pmi_bot = None
+
+# ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0
 # ═══════════════════════════════════════════════════════════════
 
