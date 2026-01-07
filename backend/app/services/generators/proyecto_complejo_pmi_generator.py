@@ -463,7 +463,99 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_pmbok.font.color.rgb = RGBColor(107, 114, 128)
         
         self.doc.add_paragraph()
-    
+        self.doc.add_paragraph()
+        
+    def _agregar_matriz_raci(self):
+        """Agrega Matriz RACI si la complejidad lo requiere"""
+        p_titulo = self.doc.add_paragraph()
+        run_titulo = p_titulo.add_run('MATRIZ DE ASIGNACIÓN DE RESPONSABILIDADES (RACI)')
+        run_titulo.font.size = Pt(18)
+        run_titulo.font.bold = True
+        run_titulo.font.color.rgb = self.COLOR_PRIMARIO
+        
+        # Datos
+        raci_data = self.datos.get('raci_actividades', [])
+        if not raci_data:
+            raci_data = [
+                 {'actividad': 'Planificación', 'roles': ['A', 'R', 'I', 'C', 'C']},
+                 {'actividad': 'Ejecución', 'roles': ['A', 'A', 'R', 'C', 'I']},
+                 {'actividad': 'Cierre', 'roles': ['R', 'C', 'I', 'C', 'A']}
+            ]
+            
+        # Tabla
+        table = self.doc.add_table(rows=len(raci_data) + 1, cols=6)
+        table.style = 'Table Grid'
+        
+        # Header
+        headers = ['Actividad', 'PM', 'Residente', 'Técnicos', 'QA', 'Cliente']
+        for idx, header in enumerate(headers):
+            cell = table.rows[0].cells[idx]
+            cell.text = header
+            cell.paragraphs[0].runs[0].font.bold = True
+            cell.paragraphs[0].runs[0].font.color.rgb = RGBColor(255, 255, 255)
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            
+            shading_elm = OxmlElement('w:shd')
+            color_hex = self._rgb_to_hex(self.COLOR_PRIMARIO)
+            shading_elm.set(qn('w:fill'), color_hex)
+            cell._element.get_or_add_tcPr().append(shading_elm)
+            
+        # Filas
+        for idx, row_data in enumerate(raci_data, 1):
+            actividad = row_data.get('actividad', '')
+            roles = row_data.get('roles', [])
+            
+            row = table.rows[idx]
+            row.cells[0].text = actividad
+            
+            for j in range(5):
+                if j < len(roles):
+                    cell = row.cells[j+1]
+                    cell.text = roles[j]
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    
+        self.doc.add_paragraph()
+
+    def _agregar_recursos(self):
+        """Agrega sección de Recursos y Materiales"""
+        p_titulo = self.doc.add_paragraph()
+        run_titulo = p_titulo.add_run('RECURSOS Y MATERIALES CRÍTICOS')
+        run_titulo.font.size = Pt(18)
+        run_titulo.font.bold = True
+        run_titulo.font.color.rgb = self.COLOR_PRIMARIO
+        
+        recursos = self.datos.get('recursos_humanos', [])
+        materiales = self.datos.get('materiales', [])
+        
+        # 1. Recursos Humanos
+        p_sub1 = self.doc.add_paragraph()
+        run_sub1 = p_sub1.add_run('Equipo del Proyecto')
+        run_sub1.font.bold = True
+        run_sub1.font.color.rgb = self.COLOR_SECUNDARIO
+        run_sub1.font.size = Pt(14)
+        
+        if not recursos:
+            recursos = ['Project Manager', 'Ingeniero Residente', 'Técnicos']
+            
+        for rec in recursos:
+            self.doc.add_paragraph(f'• {rec}', style='List Bullet')
+            
+        self.doc.add_paragraph()
+        
+        # 2. Materiales
+        p_sub2 = self.doc.add_paragraph()
+        run_sub2 = p_sub2.add_run('Materiales Principales')
+        run_sub2.font.bold = True
+        run_sub2.font.color.rgb = self.COLOR_SECUNDARIO
+        run_sub2.font.size = Pt(14)
+        
+        if not materiales:
+            materiales = ['Equipos principales', 'Materiales de instalación']
+            
+        for mat in materiales:
+            self.doc.add_paragraph(f'• {mat}', style='List Bullet')
+            
+        self.doc.add_paragraph()
     def generar(self, ruta_salida):
         """Genera el documento completo con proteccion de fallos"""
         import logging
@@ -496,6 +588,7 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         # Continuar con secciones comunes
         methods_comunes.extend([
             (self._agregar_riesgos, "Riesgos"),
+            (self._agregar_recursos, "Recursos"),  # ✅ NUEVO
             (self._agregar_entregables, "Entregables"),
             (self._agregar_normativa, "Normativa"),
             (self._agregar_footer_basico, "Footer")

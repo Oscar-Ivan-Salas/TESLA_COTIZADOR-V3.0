@@ -531,6 +531,36 @@ const CotizadorTesla30 = () => {
   // FUNCIÓN DE GENERACIÓN DE DOCUMENTOS
   // ============================================
 
+  // ✅ NUEVO: Determinar tipo de plantilla específico
+  const determinarTipoPlantilla = (datos, tipoDocumento) => {
+    // Para proyectos, verificar si es PMI (tiene complejidad, cronograma_fases, etc.)
+    if (tipoDocumento === 'proyecto') {
+      const esPMI = datos.complejidad || datos.cronograma_fases || datos.raci_actividades ||
+        datos.kpis || datos.metricas_pmi;
+
+      if (esPMI) {
+        console.log('🔍 DETECTADO: Proyecto Complejo PMI');
+        return 'proyecto-complejo-pmi';
+      } else {
+        console.log('🔍 DETECTADO: Proyecto Simple');
+        return 'proyecto-simple';
+      }
+    }
+
+    // Para cotizaciones
+    if (tipoDocumento === 'cotizacion') {
+      const esCompleja = datos.items && datos.items.length > 10;
+      return esCompleja ? 'cotizacion-compleja' : 'cotizacion-simple';
+    }
+
+    // Para informes
+    if (tipoDocumento === 'informe') {
+      return 'informe-tecnico';
+    }
+
+    return tipoDocumento;
+  };
+
   const handleGenerarDocumento = async (formato) => {
     try {
       console.log(`📄 Generando ${formato.toUpperCase()}...`);
@@ -626,7 +656,8 @@ const CotizadorTesla30 = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...datosParaEnviar,
+            datos: datosParaEnviar,
+            tipo_plantilla: determinarTipoPlantilla(datosParaEnviar, tipoDocumento),  // ✅ NUEVO
             opciones_personalizacion: datosParaEnviar.personalizacion || {
               esquema_colores: esquemaColores,
               fuente: fuenteDocumento,
@@ -1888,7 +1919,7 @@ const CotizadorTesla30 = () => {
 
                   {/* CHAT (IZQUIERDA) */}
                   {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6">
+                    <div className="col-span-6 h-full min-h-0">
                       <PiliITSEChat
                         onDatosGenerados={(datos) => { console.log(' DATOS RECIBIDOS DE ITSE:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -1897,7 +1928,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6">
+                    <div className="col-span-6 h-full min-h-0">
                       <PiliElectricidadChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS RECIBIDOS DE ELECTRICIDAD:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -1906,7 +1937,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'puesta-tierra' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6">
+                    <div className="col-span-6 h-full min-h-0">
                       <PiliPuestaTierraChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS RECIBIDOS DE PUESTA A TIERRA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -1915,7 +1946,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6">
+                    <div className="col-span-6 h-full min-h-0">
                       <PiliContraIncendiosChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -1924,7 +1955,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'domotica' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6">
+                    <div className="col-span-6 h-full min-h-0">
                       <PiliDomoticaChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -1933,15 +1964,15 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'cctv' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'redes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'expedientes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'saneamiento' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-compleja' ? (
                     <div className="col-span-6 h-full min-h-0"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-compleja' ? (

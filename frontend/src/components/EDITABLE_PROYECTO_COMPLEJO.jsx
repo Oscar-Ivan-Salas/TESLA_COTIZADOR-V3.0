@@ -51,7 +51,10 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
             { actividad: 'Ejecución de Obra', roles: ['A', 'A', 'R', 'C', 'I'] },
             { actividad: 'Control de Calidad', roles: ['A', 'C', 'C', 'R', 'I'] },
             { actividad: 'Aprobación de Entregables', roles: ['R', 'C', 'I', 'C', 'A'] }
-        ]
+        ],
+        // ✅ NUEVO: Recursos y Materiales
+        recursos_humanos: datos.recursos_humanos || ['Project Manager', 'Supervisor de Obra', 'Técnicos Electricistas', 'Prevencionista de Riesgos'],
+        materiales: datos.materiales || ['Cables LSOH', 'Tableros Eléctricos Adosables', 'Interruptores Termomagnéticos', 'Dimales LED', 'Sistema de Puesta a Tierra']
     });
 
     // Estado para la moneda
@@ -64,6 +67,46 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
         'personalizado': { primario: '#8B5CF6', secundario: '#7C3AED', acento: '#A78BFA', claro: '#F5F3FF', claroBorde: '#DDD6FE' }  // Morado personalizado
     };
     const colores = COLORES[esquemaColores] || COLORES['azul-tesla'];
+
+    // ✅ CRÍTICO: Sincronizar datos del chatbot cuando lleguen
+    useEffect(() => {
+        if (datos && Object.keys(datos).length > 0) {
+            console.log('🔍 SINCRONIZANDO DATOS DEL CHATBOT:', datos);
+            console.log('🔍 COMPLEJIDAD RECIBIDA:', datos.complejidad);
+            console.log('🔍 FASES RECIBIDAS:', datos.cronograma_fases?.length);
+
+            setDatosEditables(prev => ({
+                ...prev,
+                // Sobrescribir SOLO los campos que vienen del chatbot
+                ...(datos.nombre_proyecto && { nombre_proyecto: datos.nombre_proyecto }),
+                ...(datos.codigo_proyecto && { codigo_proyecto: datos.codigo_proyecto }),
+                ...(datos.cliente && { cliente: datos.cliente }),
+                ...(datos.duracion_total && { duracion_total: datos.duracion_total }),
+                ...(datos.fecha_inicio && { fecha_inicio: datos.fecha_inicio }),
+                ...(datos.fecha_fin && { fecha_fin: datos.fecha_fin }),
+                ...(datos.presupuesto && { presupuesto: datos.presupuesto }),
+                ...(datos.spi && { spi: datos.spi }),
+                ...(datos.cpi && { cpi: datos.cpi }),
+                ...(datos.ev_k && { ev_k: datos.ev_k }),
+                ...(datos.pv_k && { pv_k: datos.pv_k }),
+                ...(datos.ac_k && { ac_k: datos.ac_k }),
+                ...(datos.alcance_proyecto && { alcance_proyecto: datos.alcance_proyecto }),
+                ...(datos.dias_ingenieria && { dias_ingenieria: datos.dias_ingenieria }),
+                ...(datos.dias_ejecucion && { dias_ejecucion: datos.dias_ejecucion }),
+                ...(datos.normativa_aplicable && { normativa_aplicable: datos.normativa_aplicable }),
+                ...(datos.subtitulo_normativa && { subtitulo_normativa: datos.subtitulo_normativa }),
+                ...(datos.stakeholders && { stakeholders: datos.stakeholders }),
+                ...(datos.riesgos && { riesgos: datos.riesgos }),
+                ...(datos.entregables && { entregables: datos.entregables }),
+                // ✅ CRÍTICO: Cronograma dinámico
+                ...(datos.cronograma_fases && { cronograma_fases: datos.cronograma_fases }),
+                ...(datos.raci_actividades && { raci_actividades: datos.raci_actividades }),
+                ...(datos.recursos_humanos && { recursos_humanos: datos.recursos_humanos }),
+                ...(datos.materiales && { materiales: datos.materiales })
+            }));
+        }
+    }, [datos]);
+
 
     // ✅ Incluir moneda en los datos que se envían al padre
     useEffect(() => {
@@ -315,6 +358,57 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                     </div>
                 </div>
             )}
+
+            {/* RECURSOS Y MATERIALES - Sección Nueva */}
+            <div style={{ margin: '30px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                {/* Recursos Humanos */}
+                <div>
+                    <h2 style={{ fontSize: '16px', color: colores.primario, marginBottom: '10px', paddingBottom: '5px', borderBottom: `2px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '4px', height: '20px', background: colores.acento }}></span>Equipo del Proyecto
+                    </h2>
+                    <div style={{ background: '#F9FAFB', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', padding: '10px' }}>
+                        {datosEditables.recursos_humanos.map((recurso, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '6px', borderBottom: i < datosEditables.recursos_humanos.length - 1 ? '1px solid #E5E7EB' : 'none' }}>
+                                <span style={{ color: colores.acento, marginRight: '8px' }}>•</span>
+                                <input
+                                    type="text"
+                                    value={recurso}
+                                    onChange={(e) => {
+                                        const nuevosRecursos = [...datosEditables.recursos_humanos];
+                                        nuevosRecursos[i] = e.target.value;
+                                        setDatosEditables({ ...datosEditables, recursos_humanos: nuevosRecursos });
+                                    }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', fontSize: '11px', color: '#374151' }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Materiales */}
+                <div>
+                    <h2 style={{ fontSize: '16px', color: colores.primario, marginBottom: '10px', paddingBottom: '5px', borderBottom: `2px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '4px', height: '20px', background: colores.acento }}></span>Materiales Críticos
+                    </h2>
+                    <div style={{ background: '#F9FAFB', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', padding: '10px' }}>
+                        {datosEditables.materiales.map((material, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '6px', borderBottom: i < datosEditables.materiales.length - 1 ? '1px solid #E5E7EB' : 'none' }}>
+                                <span style={{ color: colores.acento, marginRight: '8px' }}>•</span>
+                                <input
+                                    type="text"
+                                    value={material}
+                                    onChange={(e) => {
+                                        const nuevosMateriales = [...datosEditables.materiales];
+                                        nuevosMateriales[i] = e.target.value;
+                                        setDatosEditables({ ...datosEditables, materiales: nuevosMateriales });
+                                    }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', fontSize: '11px', color: '#374151' }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
 
             {/* REGISTRO DE RIESGOS */}
             <div style={{ margin: '30px 0' }}>
