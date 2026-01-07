@@ -43,6 +43,10 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             # ✅ FLUJO ADAPTATIVO: Preguntar complejidad primero
             estado["etapa"] = "complejidad"
             simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+            
+            # Formatear presupuesto correctamente
+            presupuesto_texto = f"{simbolo} {presupuesto:,.2f}" if presupuesto else f"{simbolo} 0.00"
+            
             return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -51,7 +55,7 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
 
 ✅ Cliente: **{cliente_nombre or 'No especificado'}**
 ✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
-✅ Presupuesto: **{simbolo} {presupuesto:,.2f if presupuesto else 0}**
+✅ Presupuesto: **{presupuesto_texto}**
 ✅ Duración: **{duracion_meses or 'No especificado'} meses**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
