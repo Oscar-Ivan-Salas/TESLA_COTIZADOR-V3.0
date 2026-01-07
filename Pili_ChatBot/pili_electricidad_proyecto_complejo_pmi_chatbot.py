@@ -873,15 +873,15 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
             "ac_k": ac_k
         },
         "alcance": alcance,
-        "cronograma_fases": cronograma_fases,  # ✅ RENOMBRADO Y DINÁMICO
-        "stakeholders": stakeholders,
-        "riesgos": riesgos,
-        # ✅ CORREGIDO: Recursos en formato correcto (no anidados)
-        "recursos_humanos": recursos_humanos,
-        "materiales": materiales,
-        "entregables_seleccionados": estado.get("entregables_seleccionados", []),  # ✅ NUEVO
-        "raci_actividades": estado.get("raci_actividades", [])  # ✅ NUEVO
-    }
+            "cronograma_fases": cronograma_fases,  # ✅ RENOMBRADO Y DINÁMICO
+            "stakeholders": stakeholders,
+            "riesgos": riesgos,
+            # ✅ CORREGIDO: Recursos en formato correcto (no anidados)
+            "recursos_humanos": recursos_humanos,
+            "materiales": materiales,
+            "entregables_seleccionados": estado.get("entregables_seleccionados", []),  # ✅ NUEVO
+            "raci_actividades": estado.get("raci_actividades", [])  # ✅ NUEVO
+        }
         
         simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
         
