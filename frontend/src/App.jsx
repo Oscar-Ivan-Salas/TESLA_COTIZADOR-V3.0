@@ -197,10 +197,10 @@ const CotizadorTesla30 = () => {
     setContextoUsuario('');
     setBotonesContextuales([]);
     setArchivos([]);
-    setNombreProyecto('');
-    setClienteProyecto('');
-    setPresupuestoEstimado('');
-    setDuracionMeses('');
+    setNombre_proyecto('');
+    setDatosCliente({ nombre: '', ruc: '', direccion: '', telefono: '', email: '' });
+    setPresupuesto('');
+    setDuracion_total('');
     setProyectoSeleccionado('');
     setHtmlPreview('');
     setMostrarPreview(false);
