@@ -17,7 +17,10 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     onDatosGenerados,
     onBotonesUpdate,
     onBack,
-    onFinish
+    onFinish,
+    // ✅ NUEVO: Props para memoria de chat
+    chatMemory = { conversacion: [], conversationState: null, hasQuote: false },
+    onChatMemoryUpdate = () => { }
 }) => {
     const [conversacion, setConversacion] = useState([]);
     const [inputValue, setInputValue] = useState('');
@@ -30,6 +33,29 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [conversacion]);
+
+    // ✅ NUEVO: Restaurar conversación guardada al montar el componente
+    useEffect(() => {
+        if (chatMemory.conversacion && chatMemory.conversacion.length > 0) {
+            console.log('🔄 Restaurando conversación guardada:', chatMemory);
+            setConversacion(chatMemory.conversacion);
+            setConversationState(chatMemory.conversationState);
+            setHasQuote(chatMemory.hasQuote);
+            hasSentInitialMessage.current = true; // Marcar como ya iniciado
+        }
+    }, []); // Solo al montar
+
+    // ✅ NUEVO: Guardar conversación en memoria cuando cambie
+    useEffect(() => {
+        if (conversacion.length > 0) {
+            onChatMemoryUpdate({
+                conversacion,
+                conversationState,
+                hasQuote,
+                tipoChat: 'pmi'
+            });
+        }
+    }, [conversacion, conversationState, hasQuote]);
 
     useEffect(() => {
         if (!hasSentInitialMessage.current) {

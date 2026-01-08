@@ -258,8 +258,8 @@ const FormularioEntregablesPro = ({
                             key={key}
                             onClick={() => aplicarTemplate(key)}
                             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${tipoProyecto === key
-                                    ? 'bg-purple-600 text-white'
-                                    : 'bg-white text-gray-700 hover:bg-purple-100'
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-purple-100'
                                 }`}
                         >
                             {template.nombre}
@@ -274,8 +274,8 @@ const FormularioEntregablesPro = ({
                     <div
                         key={key}
                         className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${item.checked
-                                ? 'bg-white border-purple-400 shadow-md'
-                                : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                            ? 'bg-white border-purple-400 shadow-md'
+                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                             }`}
                         onClick={() => handleCheckChange(key)}
                     >
@@ -303,7 +303,7 @@ const FormularioEntregablesPro = ({
                                     max="999"
                                     value={item.cantidad}
                                     onChange={(e) => handleCantidadChange(key, e.target.value)}
-                                    className="w-20 px-3 py-2 border-2 border-purple-300 rounded-lg text-center font-bold focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                    className="w-20 px-3 py-2 border-2 border-purple-300 rounded-lg text-center font-bold text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                 />
                                 <span className="text-sm text-gray-600 min-w-[60px]">{item.unidad}</span>
                             </div>
@@ -347,7 +347,7 @@ const FormularioEntregablesPro = ({
                                         ));
                                     }
                                 }}
-                                className="w-20 px-3 py-2 border-2 border-blue-300 rounded-lg text-center font-bold focus:ring-2 focus:ring-blue-500"
+                                className="w-20 px-3 py-2 border-2 border-blue-300 rounded-lg text-center font-bold text-gray-900 focus:ring-2 focus:ring-blue-500"
                             />
                             <span className="text-sm text-gray-600 min-w-[60px]">{item.unidad}</span>
                             <button

@@ -54,7 +54,10 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
         ],
         // ✅ NUEVO: Recursos y Materiales
         recursos_humanos: datos.recursos_humanos || ['Project Manager', 'Supervisor de Obra', 'Técnicos Electricistas', 'Prevencionista de Riesgos'],
-        materiales: datos.materiales || ['Cables LSOH', 'Tableros Eléctricos Adosables', 'Interruptores Termomagnéticos', 'Dimales LED', 'Sistema de Puesta a Tierra']
+        materiales: datos.materiales || ['Cables LSOH', 'Tableros Eléctricos Adosables', 'Interruptores Termomagnéticos', 'Dimales LED', 'Sistema de Puesta a Tierra'],
+        // ✅ NUEVO: Información del Proyecto
+        ubicacion: datos.ubicacion || '',
+        area_m2: datos.area_m2 || ''
     });
 
     // Estado para la moneda
@@ -102,7 +105,14 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 ...(datos.cronograma_fases && { cronograma_fases: datos.cronograma_fases }),
                 ...(datos.raci_actividades && { raci_actividades: datos.raci_actividades }),
                 ...(datos.recursos_humanos && { recursos_humanos: datos.recursos_humanos }),
-                ...(datos.materiales && { materiales: datos.materiales })
+                ...(datos.materiales && { materiales: datos.materiales }),
+                // ✅ NUEVO: Información del Proyecto
+                ...(datos.ubicacion && { ubicacion: datos.ubicacion }),
+                ...(datos.area_m2 && { area_m2: datos.area_m2 }),
+                // ✅ NUEVO: Datos completos del cliente
+                ...(datos.cliente && {
+                    cliente: typeof datos.cliente === 'string' ? { nombre: datos.cliente } : datos.cliente
+                })
             }));
         }
     }, [datos]);
@@ -173,7 +183,7 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
             {/* INFO GRID */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', margin: '25px 0' }}>
                 {[
-                    { label: 'Cliente', value: datosEditables.cliente, field: 'cliente' },
+                    { label: 'Cliente', value: typeof datosEditables.cliente === 'object' ? datosEditables.cliente?.nombre : datosEditables.cliente, field: 'cliente' },
                     { label: 'Duración Total', value: `${datosEditables.duracion_total} días`, field: 'duracion_total' },
                     { label: 'Inicio', value: datosEditables.fecha_inicio, field: 'fecha_inicio' },
                     { label: 'Fin Estimado', value: datosEditables.fecha_fin, field: 'fecha_fin' }
@@ -192,6 +202,55 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '5px' }}>PRESUPUESTO TOTAL DEL PROYECTO</div>
                 <div style={{ fontSize: '36px', color: colores.primario, fontWeight: 'bold' }}>
                     {moneda} <input type="text" value={datosEditables.presupuesto} onChange={(e) => setDatosEditables({ ...datosEditables, presupuesto: e.target.value })} style={{ width: '200px', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: '36px', textAlign: 'center' }} />
+                </div>
+            </div>
+
+            {/* INFORMACIÓN DEL PROYECTO */}
+            <div style={{ margin: '30px 0' }}>
+                <h2 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', paddingBottom: '8px', borderBottom: `3px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>📋 Información del Proyecto
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', padding: '15px', background: '#F9FAFB', borderRadius: '6px' }}>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>UBICACIÓN</div>
+                        <input type="text" value={datosEditables.ubicacion || ''} onChange={(e) => setDatosEditables({ ...datosEditables, ubicacion: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Ubicación del proyecto..." />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>ÁREA DEL PROYECTO</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <input type="number" value={datosEditables.area_m2 || ''} onChange={(e) => setDatosEditables({ ...datosEditables, area_m2: e.target.value })} style={{ flex: 1, padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="0" />
+                            <span style={{ fontSize: '12px', color: '#6B7280', fontWeight: '600' }}>m²</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* DATOS DEL CLIENTE */}
+            <div style={{ margin: '30px 0' }}>
+                <h2 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', paddingBottom: '8px', borderBottom: `3px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>👤 Datos del Cliente
+                </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', padding: '15px', background: '#F9FAFB', borderRadius: '6px' }}>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>NOMBRE DEL CLIENTE</div>
+                        <input type="text" value={typeof datosEditables.cliente === 'object' ? datosEditables.cliente?.nombre : datosEditables.cliente} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, nombre: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Nombre del cliente..." />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>RUC / NIT</div>
+                        <input type="text" value={datosEditables.cliente?.ruc || ''} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, ruc: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="RUC del cliente..." />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>TELÉFONO</div>
+                        <input type="text" value={datosEditables.cliente?.telefono || ''} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, telefono: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Teléfono..." />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>DIRECCIÓN</div>
+                        <input type="text" value={datosEditables.cliente?.direccion || ''} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, direccion: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Dirección..." />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>EMAIL</div>
+                        <input type="email" value={datosEditables.cliente?.email || ''} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, email: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Email..." />
+                    </div>
                 </div>
             </div>
 

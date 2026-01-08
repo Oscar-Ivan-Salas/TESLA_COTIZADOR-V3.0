@@ -317,8 +317,8 @@ const FormularioSuministrosPro = ({
                             key={key}
                             onClick={() => aplicarTemplate(key)}
                             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${tipoProyecto === key
-                                    ? 'bg-orange-600 text-white'
-                                    : 'bg-white text-gray-700 hover:bg-orange-100'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-orange-100'
                                 }`}
                         >
                             {template.nombre}
@@ -333,8 +333,8 @@ const FormularioSuministrosPro = ({
                     <div
                         key={key}
                         className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${item.checked
-                                ? 'bg-white border-orange-400 shadow-md'
-                                : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                            ? 'bg-white border-orange-400 shadow-md'
+                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
                             }`}
                         onClick={() => handleCheckChange(key)}
                     >
@@ -362,7 +362,7 @@ const FormularioSuministrosPro = ({
                                     max="9999"
                                     value={item.cantidad}
                                     onChange={(e) => handleCantidadChange(key, e.target.value)}
-                                    className="w-24 px-3 py-2 border-2 border-orange-300 rounded-lg text-center font-bold focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    className="w-24 px-3 py-2 border-2 border-orange-300 rounded-lg text-center font-bold text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                 />
                                 <span className="text-sm text-gray-600 min-w-[50px]">{item.unidad}</span>
                             </div>
@@ -406,7 +406,7 @@ const FormularioSuministrosPro = ({
                                         ));
                                     }
                                 }}
-                                className="w-24 px-3 py-2 border-2 border-yellow-300 rounded-lg text-center font-bold focus:ring-2 focus:ring-yellow-500"
+                                className="w-24 px-3 py-2 border-2 border-yellow-300 rounded-lg text-center font-bold text-gray-900 focus:ring-2 focus:ring-yellow-500"
                             />
                             <span className="text-sm text-gray-600 min-w-[50px]">{item.unidad}</span>
                             <button

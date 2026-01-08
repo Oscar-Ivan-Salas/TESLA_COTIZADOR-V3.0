@@ -148,11 +148,28 @@ _Ejemplo: 5000_""", 'botones': None, 'estado': estado}
                 area = float(mensaje.replace(',', ''))
                 estado["area_m2"] = area
                 estado["etapa"] = "descripcion"
-                return {'success': True, 'respuesta': f"""✅ Área: **{area:,.0f} m²**
+                
+                # Obtener nombre del proyecto del formulario inicial
+                nombre_proyecto = estado.get("proyecto_nombre", "")
+                
+                mensaje_descripcion = f"""✅ Área: **{area:,.0f} m²**
 
-📝 **Descripción técnica detallada del proyecto:**
+📝 **Descripción del proyecto:**"""
+                
+                if nombre_proyecto:
+                    mensaje_descripcion += f"""
+Veo que el proyecto es: **{nombre_proyecto}**
+
+¿Necesitas agregar más detalles técnicos? (sistemas, equipos, especificaciones)
+_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_
+
+Si no necesitas agregar más, simplemente escribe "No" o "Continuar"."""
+                else:
+                    mensaje_descripcion += """
 _Incluye: tipo de instalación, sistemas, equipos principales, etc._
-_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_""", 'botones': None, 'estado': estado}
+_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_"""
+                
+                return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado}
             except:
                 return {'success': False, 'respuesta': "❌ Área inválida. Por favor ingresa solo números.", 'botones': None, 'estado': estado}
         
@@ -336,7 +353,7 @@ _Ejemplo: {sugerencia_ac}_""", 'botones': None, 'estado': estado}
             try:
                 ac = int(mensaje)
                 estado["ac_k"] = ac
-                estado["etapa"] = "alcance"
+                estado["etapa"] = "dias_ingenieria"  # ✅ SALTAR ALCANCE (ya se captura en formulario)
                 
                 return {'success': True, 'respuesta': f"""✅ AC: **${ac}K**
 
@@ -348,24 +365,11 @@ SPI: {estado.get('spi')} | CPI: {estado.get('cpi')}
 EV: ${estado.get('ev_k')}K | PV: ${estado.get('pv_k')}K | AC: ${ac}K
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**ALCANCE DEL PROYECTO**
+**CRONOGRAMA GANTT**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-📋 **Descripción detallada del alcance (WBS Level 1):**
-
-Incluye todos los entregables principales del proyecto.
-
-_Ejemplo:_
-_• Diseño e ingeniería eléctrica completa_
-_• Suministro de materiales certificados_
-_• Instalación de sistema eléctrico_
-_• Sistema de automatización y control SCADA_
-_• Pruebas FAT/SAT_
-_• Documentación técnica as-built_
-_• Capacitación al personal_
-_• Garantía de 24 meses_
-
-**Tu alcance:**""", 'botones': None, 'estado': estado}
+📅 **Duración de Ingeniería y Diseño (días):**
+_Ejemplo: 30_""", 'botones': None, 'estado': estado}
             except:
                 return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número entero.", 'botones': None, 'estado': estado}
         
@@ -842,6 +846,18 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
                 {"label": "7. Cierre y Lecciones Aprendidas", "dias": "5 días", "width": "5%"}
             ]
             
+        # ✅ NUEVO: Generar RACI por defecto según complejidad
+        raci_actividades = estado.get("raci_actividades", [])
+        if not raci_actividades and complejidad >= 6:
+            # Solo generar RACI si complejidad >= 6 y no existe
+            raci_actividades = [
+                {"actividad": "Planificación del Proyecto", "roles": ["A", "R", "I", "C", "C"]},
+                {"actividad": "Diseño e Ingeniería", "roles": ["A", "R", "C", "C", "I"]},
+                {"actividad": "Ejecución de Obra", "roles": ["A", "A", "R", "C", "I"]},
+                {"actividad": "Control de Calidad", "roles": ["A", "C", "C", "R", "I"]},
+                {"actividad": "Aprobación de Entregables", "roles": ["R", "C", "I", "C", "A"]}
+            ]
+            
         # Generar datos completos
         datos_generados = {
             "complejidad": complejidad,
@@ -880,7 +896,7 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
             "recursos_humanos": recursos_humanos,
             "materiales": materiales,
             "entregables_seleccionados": estado.get("entregables_seleccionados", []),  # ✅ NUEVO
-            "raci_actividades": estado.get("raci_actividades", [])  # ✅ NUEVO
+            "raci_actividades": raci_actividades  # ✅ CORREGIDO: Usar variable generada
         }
         
         simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
