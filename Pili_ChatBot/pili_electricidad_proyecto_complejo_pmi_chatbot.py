@@ -177,9 +177,54 @@ _Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, t
         # ETAPA: Descripción
         # ============================================
         elif etapa == "descripcion":
-            estado["descripcion"] = mensaje
+            # El usuario DEBE escribir la descripción detallada del proyecto
+            # NO confundir con el nombre del proyecto
+            estado["descripcion_inicial"] = mensaje
+            estado["etapa"] = "descripcion_adicional"
+            return {'success': True, 'respuesta': """✅ Descripción inicial guardada
+
+💡 **¿Quieres agregar más detalles técnicos?**
+_Ejemplo: especificaciones de equipos, sistemas adicionales, requisitos especiales_
+
+[Sí, agregar más] [No, continuar]""", 'botones': [
+                {'text': '✅ Sí, agregar más', 'value': 'SI_AGREGAR'},
+                {'text': '➡️ No, continuar', 'value': 'NO_AGREGAR'}
+            ], 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Descripción Adicional (Pregunta Sí/No)
+        # ============================================
+        elif etapa == "descripcion_adicional":
+            if mensaje == "SI_AGREGAR":
+                estado["etapa"] = "descripcion_extra"
+                return {'success': True, 'respuesta': """📝 **Describe los detalles técnicos adicionales:**
+
+_Ejemplo: Sistema de automatización SCADA, iluminación LED inteligente, sistema de respaldo UPS de 100 KVA, etc._""", 'botones': None, 'estado': estado}
+            else:  # NO_AGREGAR
+                # Solo usar descripción inicial
+                estado["descripcion"] = estado.get("descripcion_inicial", "")
+                estado["etapa"] = "normativa"
+                return {'success': True, 'respuesta': f"""✅ Descripción: **{estado['descripcion']}**
+
+📋 **Normativa aplicable:**
+_Selecciona la normativa principal_
+
+[CNE Suministro 2011] [NEC 2020] [IEC] [Otra]""", 'botones': [
+                    {'text': 'CNE Suministro 2011', 'value': 'CNE Suministro 2011'},
+                    {'text': 'NEC 2020', 'value': 'NEC 2020'},
+                    {'text': 'IEC', 'value': 'IEC'},
+                    {'text': 'Otra', 'value': 'OTRA'}
+                ], 'estado': estado}
+        
+        # ============================================
+        # ETAPA: Descripción Extra (Detalles Adicionales)
+        # ============================================
+        elif etapa == "descripcion_extra":
+            # Concatenar descripción inicial + detalles adicionales
+            desc_inicial = estado.get("descripcion_inicial", "")
+            estado["descripcion"] = f"{desc_inicial}\n\n{mensaje}"
             estado["etapa"] = "normativa"
-            return {'success': True, 'respuesta': f"""✅ Descripción guardada
+            return {'success': True, 'respuesta': f"""✅ Descripción completa guardada
 
 📋 **Normativa aplicable:**
 _Selecciona la normativa principal_
