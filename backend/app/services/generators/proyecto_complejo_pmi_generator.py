@@ -60,11 +60,10 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         fecha_inicio = self.datos.get('fecha_inicio', '01/01/2025')
         fecha_fin = self.datos.get('fecha_fin', '28/02/2025')
         
-        table = self.doc.add_table(rows=1, cols=4)
+        table = self.doc.add_table(rows=1, cols=3)
         table.style = 'Table Grid'
         
         cards = [
-            ('Cliente', cliente),
             ('Duración Total', f'{duracion} días'),
             ('Inicio', fecha_inicio),
             ('Fin Estimado', fecha_fin)

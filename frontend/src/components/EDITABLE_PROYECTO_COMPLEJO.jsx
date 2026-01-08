@@ -218,11 +218,6 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                         <input type="text" value={datosEditables.nombre_proyecto || ''} onChange={(e) => setDatosEditables({ ...datosEditables, nombre_proyecto: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Nombre del proyecto..." />
                     </div>
 
-                    {/* Cliente */}
-                    <div>
-                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>CLIENTE</div>
-                        <input type="text" value={typeof datosEditables.cliente === 'object' ? datosEditables.cliente?.nombre : datosEditables.cliente || ''} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, nombre: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Nombre del cliente..." />
-                    </div>
 
                     {/* Ubicación */}
                     <div>
