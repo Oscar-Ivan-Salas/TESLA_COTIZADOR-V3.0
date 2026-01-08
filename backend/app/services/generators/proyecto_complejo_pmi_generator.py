@@ -31,10 +31,14 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_subtitulo.font.color.rgb = self.COLOR_SECUNDARIO
         run_subtitulo.font.italic = True
         
-        nombre_proyecto = self.datos.get('nombre_proyecto', 'SISTEMA DE INSTALACIÓN ELÉCTRICA INDUSTRIAL')
+        # ✅ Título automático: SERVICIO - INDUSTRIA
+        servicio = self.opciones.get('servicio', 'ELECTRICIDAD').upper()
+        industria = self.opciones.get('industria', 'CONSTRUCCIÓN').upper()
+        titulo_proyecto = f"{servicio} - {industria}"
+        
         p_nombre = self.doc.add_paragraph()
         p_nombre.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_nombre = p_nombre.add_run(nombre_proyecto)
+        run_nombre = p_nombre.add_run(titulo_proyecto)
         run_nombre.font.size = Pt(18)
         run_nombre.font.color.rgb = self.COLOR_SECUNDARIO
         
