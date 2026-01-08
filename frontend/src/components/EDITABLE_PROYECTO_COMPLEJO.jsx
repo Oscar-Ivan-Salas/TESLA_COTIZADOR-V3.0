@@ -94,10 +94,7 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 ...(datos.pv_k && { pv_k: datos.pv_k }),
                 ...(datos.ac_k && { ac_k: datos.ac_k }),
                 ...(datos.alcance_proyecto && { alcance_proyecto: datos.alcance_proyecto }),
-                // ✅ NUEVO: Mapeo de descripcion del chatbot
-                ...(datos.descripcion && { alcance_proyecto: datos.descripcion }),
-                // ✅ NUEVO: Mapeo de alcance del chatbot
-                ...(datos.alcance && { alcance_proyecto: datos.alcance }),
+
                 ...(datos.dias_ingenieria && { dias_ingenieria: datos.dias_ingenieria }),
                 ...(datos.dias_ejecucion && { dias_ejecucion: datos.dias_ejecucion }),
                 ...(datos.normativa_aplicable && { normativa_aplicable: datos.normativa_aplicable }),

@@ -799,7 +799,7 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         
         # Datos del cliente y proyecto
         cliente = estado.get("cliente_nombre", "Cliente")
-        nombre = estado.get("proyecto_nombre", "Proyecto Eléctrico")
+        nombre_proyecto = estado.get("nombre_proyecto", "Proyecto Eléctrico")
         ubicacion = estado.get("ubicacion", "Lima, Perú")
         area = estado.get("area_m2", 1000)
         descripcion = estado.get("descripcion", "Proyecto eléctrico")
@@ -907,7 +907,7 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         datos_generados = {
             "complejidad": complejidad,
             "codigo": codigo,
-            "nombre": nombre,
+            "nombre_proyecto": nombre_proyecto,
             "cliente": {
                 "nombre": estado.get("cliente_nombre", cliente),
                 "ruc": estado.get("cliente_ruc"),
@@ -917,7 +917,7 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
             },
             "ubicacion": ubicacion,
             "area_m2": area,
-            "descripcion": descripcion,
+
             "normativa": normativa,
             "cronograma": {
                 "fecha_inicio": fecha_inicio.strftime("%d/%m/%Y"),
@@ -933,7 +933,7 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
                 "pv_k": pv_k,
                 "ac_k": ac_k
             },
-            "alcance": alcance,
+            "alcance_proyecto": alcance,
             "cronograma_fases": cronograma_fases,  # ✅ RENOMBRADO Y DINÁMICO
             "stakeholders": stakeholders,
             "riesgos": riesgos,

@@ -72,11 +72,11 @@ const CotizadorTesla30 = () => {
   const [informe, setInforme] = useState(null);
 
   // Estados específicos para proyectos
-  const [nombreProyecto, setNombreProyecto] = useState('');
-  const [clienteProyecto, setClienteProyecto] = useState('');
-  const [presupuestoEstimado, setPresupuestoEstimado] = useState('');
-  const [monedaProyecto, setMonedaProyecto] = useState('PEN'); // ✅ NUEVO: Moneda del proyecto
-  const [duracionMeses, setDuracionMeses] = useState('');
+  const [nombre_proyecto, setNombre_proyecto] = useState('');
+  const [presupuesto, setPresupuesto] = useState('');
+  const [moneda, setMoneda] = useState('PEN');
+  const [duracion_total, setDuracion_total] = useState('');
+  // ❌ ELIMINADO: clienteProyecto (usar datosCliente.nombre)
 
   // Estados específicos para informes
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState('');
@@ -1723,8 +1723,8 @@ const CotizadorTesla30 = () => {
                         <label className="block text-blue-400 font-semibold mb-2">Nombre del Proyecto *</label>
                         <input
                           type="text"
-                          value={nombreProyecto}
-                          onChange={(e) => setNombreProyecto(e.target.value)}
+                          value={nombre_proyecto}
+                          onChange={(e) => setNombre_proyecto(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
                           placeholder="Ej: Instalación Eléctrica Edificio Central"
                         />
@@ -1733,8 +1733,8 @@ const CotizadorTesla30 = () => {
                         <label className="block text-blue-400 font-semibold mb-2">Cliente *</label>
                         <input
                           type="text"
-                          value={clienteProyecto}
-                          onChange={(e) => setClienteProyecto(e.target.value)}
+                          value={datosCliente.nombre}
+                          onChange={(e) => setDatosCliente({ ...datosCliente, nombre: e.target.value })}
                           className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
                           placeholder="Ej: Constructora ABC S.A.C."
                         />
@@ -1744,8 +1744,8 @@ const CotizadorTesla30 = () => {
                           <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado</label>
                           <input
                             type="number"
-                            value={presupuestoEstimado}
-                            onChange={(e) => setPresupuestoEstimado(e.target.value)}
+                            value={presupuesto}
+                            onChange={(e) => setPresupuesto(e.target.value)}
                             className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
                             placeholder="50000"
                           />
@@ -1753,8 +1753,8 @@ const CotizadorTesla30 = () => {
                         <div>
                           <label className="block text-blue-400 font-semibold mb-2">Moneda</label>
                           <select
-                            value={monedaProyecto}
-                            onChange={(e) => setMonedaProyecto(e.target.value)}
+                            value={moneda}
+                            onChange={(e) => setMoneda(e.target.value)}
                             className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
                           >
                             <option value="PEN">S/ (PEN)</option>
@@ -1767,8 +1767,8 @@ const CotizadorTesla30 = () => {
                         <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
                         <input
                           type="number"
-                          value={duracionMeses}
-                          onChange={(e) => setDuracionMeses(e.target.value)}
+                          value={duracion_total}
+                          onChange={(e) => setDuracion_total(e.target.value)}
                           className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
                           placeholder="6"
                         />
