@@ -400,7 +400,7 @@ const CotizadorTesla30 = () => {
       let contextoPrincipal = `Servicio: ${servicioSeleccionado}, Industria: ${industriaSeleccionada}, Contexto: ${contextoUsuario}`;
 
       if (tipoFlujo.includes('proyecto')) {
-        contextoPrincipal += `, Nombre: ${nombreProyecto}, Cliente: ${clienteProyecto}, Presupuesto: ${presupuestoEstimado}, Duración: ${duracionMeses} meses`;
+        contextoPrincipal += `, Nombre: ${nombre_proyecto}, Cliente: ${datosCliente.nombre}, Presupuesto: ${presupuesto}, Duración: ${duracion_total} meses`;
       } else if (tipoFlujo.includes('informe')) {
         contextoPrincipal += `, Proyecto: ${proyectoSeleccionado}, Formato: ${formatoInforme}`;
       }
@@ -871,13 +871,13 @@ const CotizadorTesla30 = () => {
 
       // 2. Reemplazar variables
       let htmlFinal = html
-        .replace(/\{\{NOMBRE_PROYECTO\}\}/g, nombreProyecto || 'Nuevo Proyecto')
-        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, nombreProyecto || 'Nuevo Proyecto')
-        .replace(/\{\{CLIENTE\}\}/g, clienteProyecto || 'Cliente')
-        .replace(/\{\{CLIENTE_NOMBRE\}\}/g, clienteProyecto || 'Cliente')
-        .replace(/\{\{PRESUPUESTO\}\}/g, presupuestoEstimado || '0.00')
-        .replace(/\{\{TOTAL\}\}/g, presupuestoEstimado || '0.00')
-        .replace(/\{\{DURACION_TOTAL\}\}/g, `${duracionMeses} meses`)
+        .replace(/\{\{NOMBRE_PROYECTO\}\}/g, nombre_proyecto || 'Nuevo Proyecto')
+        .replace(/\{\{PROYECTO_NOMBRE\}\}/g, nombre_proyecto || 'Nuevo Proyecto')
+        .replace(/\{\{CLIENTE\}\}/g, datosCliente.nombre || 'Cliente')
+        .replace(/\{\{CLIENTE_NOMBRE\}\}/g, datosCliente.nombre || 'Cliente')
+        .replace(/\{\{PRESUPUESTO\}\}/g, presupuesto || '0.00')
+        .replace(/\{\{TOTAL\}\}/g, presupuesto || '0.00')
+        .replace(/\{\{DURACION_TOTAL\}\}/g, `${duracion_total} meses`)
         .replace(/\{\{FECHA\}\}/g, new Date().toLocaleDateString('es-PE'))
         .replace(/\{\{DESCRIPCION_PROYECTO\}\}/g, contextoUsuario || 'Descripción del proyecto');
 
@@ -900,7 +900,7 @@ const CotizadorTesla30 = () => {
       return htmlFinal;
     } catch (error) {
       console.error('Error cargando plantilla proyecto:', error);
-      return `<div style="padding: 20px;"><h1>Proyecto</h1><p>${nombreProyecto}</p></div>`;
+      return `<div style="padding: 20px;"><h1>Proyecto</h1><p>${nombre_proyecto}</p></div>`;
     }
   };
 
@@ -1119,7 +1119,7 @@ const CotizadorTesla30 = () => {
             email: datosCliente.email || ''
           },
           presupuesto: datosFinales?.presupuesto || 0,
-          moneda: datosFinales?.moneda || monedaProyecto || 'PEN', // ✅ AGREGAR: Moneda del proyecto
+          moneda: datosFinales?.moneda || moneda || 'PEN',
           duracion_total: datosFinales?.cronograma?.duracion_total || datosFinales?.duracion_total || datosFinales?.duracion || "30 días",
           fecha_inicio: datosFinales?.cronograma?.fecha_inicio || datosFinales?.fecha_inicio || new Date().toLocaleDateString('es-PE'),
           fecha_fin: datosFinales?.cronograma?.fecha_fin || datosFinales?.fecha_fin || "",
@@ -1168,7 +1168,7 @@ const CotizadorTesla30 = () => {
             telefono: datosCliente.telefono || '',
             email: datosCliente.email || ''
           },
-          proyecto: nombreProyecto || '[Proyecto]',
+          proyecto: nombre_proyecto || '[Proyecto]',
           descripcion: contextoUsuario || '',
 
           // Listas complejas de cotización
@@ -1910,7 +1910,7 @@ const CotizadorTesla30 = () => {
                 <button
                   onClick={() => setPaso(2)}
                   disabled={!servicioSeleccionado || !industriaSeleccionada || !contextoUsuario.trim() ||
-                    (esProyecto && (!nombreProyecto || !clienteProyecto)) ||
+                    (esProyecto && (!nombre_proyecto || !datosCliente.nombre)) ||
                     (esInforme && !proyectoSeleccionado)}
                   className="w-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 hover:from-yellow-500 hover:to-yellow-400 disabled:from-gray-800 disabled:to-gray-700 disabled:cursor-not-allowed py-4 rounded-xl font-bold text-lg text-black shadow-2xl border-2 border-yellow-400 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3">
                   <MessageSquare className="w-6 h-6" />
@@ -1988,9 +1988,9 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-compleja' ? (
                     <div className="col-span-6 h-full min-h-0"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombreProyecto={nombreProyecto} clienteProyecto={clienteProyecto} presupuestoEstimado={presupuestoEstimado} monedaProyecto={monedaProyecto} duracionMeses={duracionMeses} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">

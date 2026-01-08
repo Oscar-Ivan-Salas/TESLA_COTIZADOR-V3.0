@@ -4,11 +4,10 @@ import { PiliAvatarLarge } from './PiliAvatar';
 
 const PiliElectricidadProyectoSimpleChat = ({
   datosCliente,
-  nombreProyecto,
-  clienteProyecto,
-  presupuestoEstimado,
-  monedaProyecto,
-  duracionMeses,
+  nombre_proyecto,
+  presupuesto,
+  moneda,
+  duracion_total,
   onDatosGenerados,
   onBotonesUpdate,
   onBack,
@@ -31,15 +30,15 @@ const PiliElectricidadProyectoSimpleChat = ({
       hasSentInitialMessage.current = true;
 
       const estadoInicial = {
-        cliente_nombre: datosCliente?.nombre || clienteProyecto || null,
+        cliente_nombre: datosCliente?.nombre || null,
         cliente_ruc: datosCliente?.ruc || null,
         cliente_direccion: datosCliente?.direccion || null,
         cliente_telefono: datosCliente?.telefono || null,
         cliente_email: datosCliente?.email || null,
-        proyecto_nombre: nombreProyecto || null,
-        presupuesto: presupuestoEstimado ? parseFloat(presupuestoEstimado) : null,
-        moneda: monedaProyecto || 'PEN',
-        duracion_meses: duracionMeses ? parseInt(duracionMeses) : null
+        nombre_proyecto: nombre_proyecto || null,
+        presupuesto: presupuesto ? parseFloat(presupuesto) : null,
+        moneda: moneda || 'PEN',
+        duracion_total: duracion_total ? parseInt(duracion_total) : null
       };
 
       setConversationState(estadoInicial);
