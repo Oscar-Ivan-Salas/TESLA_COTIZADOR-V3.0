@@ -82,8 +82,6 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 ...prev,
                 // Sobrescribir SOLO los campos que vienen del chatbot
                 ...(datos.nombre_proyecto && { nombre_proyecto: datos.nombre_proyecto }),
-                // ✅ NUEVO: Mapeo de nombre del chatbot
-                ...(datos.nombre && { nombre_proyecto: datos.nombre }),
                 ...(datos.codigo_proyecto && { codigo_proyecto: datos.codigo_proyecto }),
                 ...(datos.cliente && { cliente: datos.cliente }),
                 ...(datos.duracion_total && { duracion_total: datos.duracion_total }),
@@ -217,16 +215,58 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                     <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>📋 Información del Proyecto
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', padding: '15px', background: '#F9FAFB', borderRadius: '6px' }}>
+                    {/* Nombre del Proyecto */}
+                    <div style={{ gridColumn: '1 / -1' }}>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>NOMBRE DEL PROYECTO</div>
+                        <input type="text" value={datosEditables.nombre_proyecto || ''} onChange={(e) => setDatosEditables({ ...datosEditables, nombre_proyecto: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Nombre del proyecto..." />
+                    </div>
+
+                    {/* Cliente */}
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>CLIENTE</div>
+                        <input type="text" value={typeof datosEditables.cliente === 'object' ? datosEditables.cliente?.nombre : datosEditables.cliente || ''} onChange={(e) => setDatosEditables({ ...datosEditables, cliente: { ...datosEditables.cliente, nombre: e.target.value } })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Nombre del cliente..." />
+                    </div>
+
+                    {/* Ubicación */}
                     <div>
                         <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>UBICACIÓN</div>
                         <input type="text" value={datosEditables.ubicacion || ''} onChange={(e) => setDatosEditables({ ...datosEditables, ubicacion: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="Ubicación del proyecto..." />
                     </div>
+
+                    {/* Área del Proyecto */}
                     <div>
                         <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>ÁREA DEL PROYECTO</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <input type="number" value={datosEditables.area_m2 || ''} onChange={(e) => setDatosEditables({ ...datosEditables, area_m2: e.target.value })} style={{ flex: 1, padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="0" />
                             <span style={{ fontSize: '12px', color: '#6B7280', fontWeight: '600' }}>m²</span>
                         </div>
+                    </div>
+
+                    {/* Presupuesto */}
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>PRESUPUESTO</div>
+                        <input type="text" value={datosEditables.presupuesto || ''} onChange={(e) => setDatosEditables({ ...datosEditables, presupuesto: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="0" />
+                    </div>
+
+                    {/* Duración */}
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>DURACIÓN</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <input type="text" value={datosEditables.duracion_total || ''} onChange={(e) => setDatosEditables({ ...datosEditables, duracion_total: e.target.value })} style={{ flex: 1, padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="0" />
+                            <span style={{ fontSize: '12px', color: '#6B7280', fontWeight: '600' }}>días</span>
+                        </div>
+                    </div>
+
+                    {/* Fecha Inicio */}
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>FECHA INICIO</div>
+                        <input type="text" value={datosEditables.fecha_inicio || ''} onChange={(e) => setDatosEditables({ ...datosEditables, fecha_inicio: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="DD/MM/AAAA" />
+                    </div>
+
+                    {/* Fecha Fin */}
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '5px' }}>FECHA FIN</div>
+                        <input type="text" value={datosEditables.fecha_fin || ''} onChange={(e) => setDatosEditables({ ...datosEditables, fecha_fin: e.target.value })} style={{ width: '100%', padding: '8px', border: `1px solid ${colores.claroBorde}`, borderRadius: '4px', fontSize: '12px' }} placeholder="DD/MM/AAAA" />
                     </div>
                 </div>
             </div>

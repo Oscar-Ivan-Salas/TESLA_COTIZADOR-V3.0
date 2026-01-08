@@ -73,6 +73,16 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 duracion_meses: duracionMeses ? parseInt(duracionMeses) : null
             };
 
+            // 🔍 DEBUG: Ver qué datos llegan del formulario
+            console.log('🔍 DATOS DEL FORMULARIO INICIAL:', {
+                nombreProyecto,
+                clienteProyecto,
+                presupuestoEstimado,
+                monedaProyecto,
+                duracionMeses
+            });
+            console.log('📤 ESTADO INICIAL ENVIADO AL CHATBOT:', estadoInicial);
+
             setConversationState(estadoInicial);
             enviarMensaje('', estadoInicial);
         }
