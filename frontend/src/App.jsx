@@ -201,13 +201,7 @@ const CotizadorTesla30 = () => {
           descripcion: contextoUsuario,
           presupuesto: presupuesto ? parseFloat(presupuesto) : null,
           moneda: moneda,
-          duracion_total: duracion_total ? parseInt(duracion_total) : null,
-          tipo_dias: tipoDias,
-          fecha_inicio: fechaInicio,
-          area_m2: areaM2 ? parseFloat(areaM2) : null,
-          tiene_area: tieneArea,
-          alcance_proyecto: alcanceProyecto,
-          ubicacion: ubicacion
+          duracion_total: duracion_total ? parseInt(duracion_total) : null
         })
       });
 
