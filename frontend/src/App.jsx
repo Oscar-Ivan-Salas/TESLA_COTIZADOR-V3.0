@@ -1052,7 +1052,6 @@ const CotizadorTesla30 = () => {
 
   // ✅ NUEVO: Manejar cambios desde la vista previa editable
   const handleDatosChange = (nuevosDatos) => {
-    console.log('🔄 App.jsx: Actualizando datosEditables desde Vista Previa', nuevosDatos);
     setDatosEditables(nuevosDatos);
     datosEditablesRef.current = nuevosDatos; // Sincronización inmediata para handleDescargar
   };

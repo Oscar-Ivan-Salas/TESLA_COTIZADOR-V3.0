@@ -9,7 +9,7 @@ import EDITABLE_PROYECTO_COMPLEJO from './EDITABLE_PROYECTO_COMPLEJO';
 import EDITABLE_INFORME_TECNICO from './EDITABLE_INFORME_TECNICO';
 import EDITABLE_INFORME_EJECUTIVO from './EDITABLE_INFORME_EJECUTIVO';
 
-console.log('🚀 VistaPreviaProfesional.jsx CARGADO - Versión Limpia con SOLO Componentes EDITABLE');
+
 
 /**
  * VistaPreviaProfesional - Componente que renderiza SOLO componentes EDITABLE
@@ -34,8 +34,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
     modoEdicion = true // Default true para compatibilidad si no se pasa
   } = props;
 
-  console.log('🎬 VistaPreviaProfesional RENDERIZANDO');
-  console.log('📦 Props:', { tipoDocumento, esquemaColores, tieneCotizacion: !!cotizacion });
+
 
   // Estado editable de la cotizacion/proyecto/informe
   const [datosEditables, setDatosEditables] = useState(cotizacion || proyecto || informe || {});
@@ -46,14 +45,14 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
   React.useEffect(() => {
     const nuevosDatos = cotizacion || proyecto || informe;
     if (nuevosDatos && JSON.stringify(nuevosDatos) !== JSON.stringify(datosEditables)) {
-      console.log('🔄 Sincronizando datos de props a vista previa:', nuevosDatos);
+
       setDatosEditables(nuevosDatos);
     }
   }, [cotizacion, proyecto, informe]); // NO incluir datosEditables aquí
 
   // Callback para recibir cambios del componente EDITABLE
   const handleDatosChange = (nuevosDatos) => {
-    console.log('📝 Datos actualizados desde componente EDITABLE:', nuevosDatos);
+
     setDatosEditables(nuevosDatos);
 
     // ✨ NUEVO: Notificar al padre (App.jsx) de los cambios
@@ -72,11 +71,11 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
 
   // ✅ RENDERIZAR COMPONENTE EDITABLE SEGÚN TIPO DE DOCUMENTO
   const renderComponenteEditable = () => {
-    console.log('🎨 Renderizando componente para tipo:', tipoDocumento);
+
 
     // COTIZACIÓN COMPLEJA
     if (tipoDocumento === 'cotizacion-compleja' || tipoDocumento === 'cotizacion') {
-      console.log('✅ Renderizando EDITABLE_COTIZACION_COMPLEJA');
+
       return (
         <EDITABLE_COTIZACION_COMPLEJA
           datos={datosEditables}
@@ -95,7 +94,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
 
     // COTIZACIÓN SIMPLE
     if (tipoDocumento === 'cotizacion-simple') {
-      console.log('✅ Renderizando EDITABLE_COTIZACION_SIMPLE');
+
       return (
         <EDITABLE_COTIZACION_SIMPLE
           datos={datosEditables}
@@ -112,7 +111,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
 
     // PROYECTO SIMPLE
     if (tipoDocumento === 'proyecto-simple') {
-      console.log('✅ Renderizando EDITABLE_PROYECTO_SIMPLE');
+
       return (
         <EDITABLE_PROYECTO_SIMPLE
           datos={datosEditables}
@@ -127,7 +126,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
 
     // PROYECTO COMPLEJO
     if (tipoDocumento === 'proyecto-complejo') {
-      console.log('✅ Renderizando EDITABLE_PROYECTO_COMPLEJO');
+
       return (
         <EDITABLE_PROYECTO_COMPLEJO
           datos={datosEditables}
@@ -143,7 +142,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
 
     // INFORME TÉCNICO (también responde a informe-simple)
     if (tipoDocumento === 'informe-tecnico' || tipoDocumento === 'informe-simple') {
-      console.log('✅ Renderizando EDITABLE_INFORME_TECNICO');
+
       return (
         <EDITABLE_INFORME_TECNICO
           datos={datosEditables}
@@ -158,7 +157,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
 
     // INFORME EJECUTIVO
     if (tipoDocumento === 'informe-ejecutivo') {
-      console.log('✅ Renderizando EDITABLE_INFORME_EJECUTIVO');
+
       return (
         <EDITABLE_INFORME_EJECUTIVO
           datos={datosEditables}
@@ -172,7 +171,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
     }
 
     // Tipo desconocido
-    console.log('❌ Tipo de documento desconocido:', tipoDocumento);
+
     return (
       <div style={{ padding: '40px', textAlign: 'center', background: '#FEF2F2', borderRadius: '8px', border: '2px dashed #DC2626' }}>
         <FileText size={48} style={{ color: '#DC2626', margin: '0 auto 20px' }} />

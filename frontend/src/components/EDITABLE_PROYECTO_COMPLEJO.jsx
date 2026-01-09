@@ -74,9 +74,6 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
     // ✅ CRÍTICO: Sincronizar datos del chatbot cuando lleguen
     useEffect(() => {
         if (datos && Object.keys(datos).length > 0) {
-            console.log('🔍 SINCRONIZANDO DATOS DEL CHATBOT:', datos);
-            console.log('🔍 COMPLEJIDAD RECIBIDA:', datos.complejidad);
-            console.log('🔍 FASES RECIBIDAS:', datos.cronograma_fases?.length);
 
             setDatosEditables(prev => ({
                 ...prev,
