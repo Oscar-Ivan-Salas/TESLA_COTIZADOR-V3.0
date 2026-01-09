@@ -2032,7 +2032,26 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
                     <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} datosCalendario={datosCalendario} servicio={servicioSeleccionado} industria={industriaSeleccionada} proyectoId={proyectoId} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0">
+                      <PiliElectricidadProyectoComplejoPMIChat
+                        datosCliente={datosCliente}
+                        nombre_proyecto={nombre_proyecto}
+                        presupuesto={presupuesto}
+                        moneda={moneda}
+                        duracion_total={duracion_total}
+                        datosCalendario={datosCalendario}
+                        servicio={servicioSeleccionado}
+                        industria={industriaSeleccionada}
+                        descripcion_inicial={contextoUsuario} // ✅ NUEVO: Pasar descripción detallada
+                        proyectoId={proyectoId}
+                        chatMemory={chatMemory}
+                        onChatMemoryUpdate={setChatMemory}
+                        onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }}
+                        onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                        onBack={() => setPaso(1)}
+                        onFinish={() => setPaso(3)}
+                      />
+                    </div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">

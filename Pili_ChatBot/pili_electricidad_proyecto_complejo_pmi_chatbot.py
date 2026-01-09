@@ -84,6 +84,9 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             fecha_fin = estado.get("fecha_fin")
             duracion_dias = estado.get("duracion_dias")
             
+            # 🔍 DEBUG: Ver datos recibidos
+            print(f"🔍 DEBUG CHATBOT - Fechas recibidas: Inicio={fecha_inicio}, Fin={fecha_fin}, Dias={duracion_dias}")
+            
             # Construir texto de duración profesional
             if fecha_inicio and fecha_fin and duracion_dias:
                 duracion_texto = f"**{duracion_dias} días** (del {fecha_inicio} al {fecha_fin})"
@@ -194,32 +197,103 @@ _Ejemplo: 5000_""", 'botones': None, 'estado': estado}
             try:
                 area = float(mensaje.replace(',', ''))
                 estado["area_m2"] = area
-                estado["etapa"] = "descripcion"
                 
-                # Obtener nombre del proyecto del formulario inicial
-                nombre_proyecto = estado.get("proyecto_nombre", "")
+                # ✅ LÓGICA INTELIGENTE: Verificar si ya tenemos descripción inicial
+                alcance_inicial = estado.get("alcance_proyecto", "")
                 
-                mensaje_descripcion = f"""✅ Área: **{area:,.0f} m²**
+                if alcance_inicial and len(alcance_inicial) > 10:
+                    estado["etapa"] = "confirmar_alcance"
+                    
+                    return {'success': True, 'respuesta': f"""✅ Área: **{area:,.0f} m²**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**CONFIRMACIÓN DE ALCANCE**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+He recibido la siguiente descripción inicial del proyecto:
+
+📝 **"{alcance_inicial}"**
+
+¿Esta información está completa o deseas agregar más detalles técnicos?
+_(Sistemas, equipos, especificaciones)_""", 'botones': [
+                        {"text": "✅ Es correcto, continuar", "value": "continuar"},
+                        {"text": "✏️ Agregar detalles", "value": "agregar"}
+                    ], 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_inicial}}
+                else:
+                    estado["etapa"] = "descripcion"
+                    
+                    # Obtener nombre del proyecto del formulario inicial
+                    nombre_proyecto = estado.get("proyecto_nombre", "")
+                    
+                    mensaje_descripcion = f"""✅ Área: **{area:,.0f} m²**
 
 📝 **Descripción del proyecto:**"""
-                
-                if nombre_proyecto:
-                    mensaje_descripcion += f"""
+                    
+                    if nombre_proyecto:
+                        mensaje_descripcion += f"""
 Veo que el proyecto es: **{nombre_proyecto}**
 
 ¿Necesitas agregar más detalles técnicos? (sistemas, equipos, especificaciones)
 _Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_
 
 Si no necesitas agregar más, simplemente escribe "No" o "Continuar"."""
-                else:
-                    mensaje_descripcion += """
+                    else:
+                        mensaje_descripcion += """
 _Incluye: tipo de instalación, sistemas, equipos principales, etc._
 _Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_"""
-                
-                return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado}
+                    
+                    return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado}
             except:
                 return {'success': False, 'respuesta': "❌ Área inválida. Por favor ingresa solo números.", 'botones': None, 'estado': estado}
         
+        # ============================================
+        # ETAPA: Confirmar Alcance (NUEVA)
+        # ============================================
+        elif etapa == "confirmar_alcance":
+            texto_usuario = mensaje.lower().strip()
+            
+            # Caso 1: Confirmación directa
+            if texto_usuario in ["continuar", "si", "sí", "correcto", "ok", "listo", "no", "ninguno"]:
+                estado["etapa"] = "entregables"
+                
+                # Obtener alcance confirmado para mostrar en respuesta
+                alcance_final = estado.get("alcance_proyecto", "")
+                
+                return {'success': True, 'respuesta': f"""✅ **Datos guardados correctamente.**
+                
+Entendido. El alcance del proyecto se mantiene como:
+*"{alcance_final}"*
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**ENTREGABLES DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 **¿Cuáles son los entregables principales?**
+_Ejemplo: Planos As-Built, Memorias de cálculo, Dossier de calidad, Protocolos de pruebas_""", 'botones': None, 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_final}}
+            
+            # Caso 2: Usuario decide agregar detalles (botón)
+            elif texto_usuario == "agregar":
+                 return {'success': True, 'respuesta': """📝 **Por favor escribe los detalles adicionales que deseas agregar:**""", 'botones': None, 'estado': estado}
+            
+            # Caso 3: Usuario escribe texto adicional
+            else:
+                 # Concatenar al alcance existente
+                 alcance_actual = estado.get("alcance_proyecto", "")
+                 nuevo_alcance = f"{alcance_actual}\n\nDetalles adicionales: {mensaje}"
+                 estado["alcance_proyecto"] = nuevo_alcance
+                 estado["etapa"] = "entregables"
+                 
+                 return {'success': True, 'respuesta': f"""✅ **Datos guardados y actualizados correctamente.**
+
+He agregado la información adicional al alcance del proyecto.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**ENTREGABLES DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 **¿Cuáles son los entregables principales?**
+_Ejemplo: Planos As-Built, Memorias de cálculo, Dossier de calidad, Protocolos de pruebas_""", 'botones': None, 'estado': estado, 'datos_generados': {'alcance_proyecto': nuevo_alcance}}
+
         # ============================================
         # ETAPA: Descripción
         # ============================================
@@ -860,9 +934,30 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         industria = estado.get("industria") or estado_inicial.get("industria", "construccion")
         
         # Fechas y duración
-        fecha_inicio = datetime.strptime(estado.get("fecha_inicio", "01/01/2026"), "%d/%m/%Y")
-        duracion_total = estado.get("duracion_total", 100)
-        fecha_fin = fecha_inicio + timedelta(days=duracion_total)
+        fecha_inicio_str = estado.get("fecha_inicio", "01/01/2026")
+        try:
+            fecha_inicio = datetime.strptime(fecha_inicio_str, "%d/%m/%Y")
+        except:
+            fecha_inicio = datetime.now()
+
+        # ✅ NUEVO: Priorizar datos del calendario
+        duracion_dias = estado.get("duracion_dias")
+        if duracion_dias:
+            duracion_total = int(duracion_dias)
+        else:
+            # Fallback a lógica anterior
+            duracion_total = estado.get("duracion_total", 100)
+            if not duracion_total: duracion_total = 100
+
+        # ✅ NUEVO: Priorizar fecha fin exacta del calendario
+        fecha_fin_str = estado.get("fecha_fin")
+        if fecha_fin_str:
+            try:
+                fecha_fin = datetime.strptime(fecha_fin_str, "%d/%m/%Y")
+            except:
+                fecha_fin = fecha_inicio + timedelta(days=duracion_total)
+        else:
+            fecha_fin = fecha_inicio + timedelta(days=duracion_total)
         
         # Código proyecto
         codigo = f"PROY-PMI-{fecha_inicio.year}-{self.contador:03d}"
@@ -973,6 +1068,12 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
             "area_m2": area,
 
             "normativa": normativa,
+            
+            # ✅ DATOS PLANOS para compatibilidad con frontend
+            "fecha_inicio": fecha_inicio.strftime("%d/%m/%Y"),
+            "fecha_fin": fecha_fin.strftime("%d/%m/%Y"),
+            "duracion_total": duracion_total,
+
             "cronograma": {
                 "fecha_inicio": fecha_inicio.strftime("%d/%m/%Y"),
                 "fecha_fin": fecha_fin.strftime("%d/%m/%Y"),

@@ -16,6 +16,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     datosCalendario, // ✅ NUEVO: Datos del calendario profesional
     servicio,
     industria,
+    descripcion_inicial, // ✅ NUEVO: Descripción detallada recibida
     proyectoId,
     onDatosGenerados,
     onBotonesUpdate,
@@ -85,7 +86,9 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                     duracion_horas: datosCalendario.duracion_horas,
                     duracion_meses: datosCalendario.duracion_meses,
                     horario: datosCalendario.horario,
-                    dias_habiles: datosCalendario.dias_habiles
+                    dias_habiles: datosCalendario.dias_habiles,
+                    // ✅ NUEVO: Pasar el alcance inicial para saltar preguntas redundantes
+                    alcance_proyecto: descripcion_inicial || ''
                 })
             };
 
@@ -98,7 +101,8 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 moneda,
                 duracion_total,
                 servicio,
-                industria
+                industria,
+                alcance_proyecto: descripcion_inicial // ✅ VERIFICAR EN CONSOLA
             });
             console.log('📅 DATOS DEL CALENDARIO:', datosCalendario);
             console.log('📤 ESTADO INICIAL ENVIADO AL CHATBOT:', estadoInicial);
