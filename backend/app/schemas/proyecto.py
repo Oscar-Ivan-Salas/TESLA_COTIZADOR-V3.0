@@ -19,6 +19,20 @@ class ProyectoBase(BaseModel):
     descripcion: Optional[str] = Field(None, description="Descripción del proyecto")
     cliente: str = Field(..., min_length=3, max_length=200, description="Nombre del cliente")
     estado: EstadoProyecto = Field(default=EstadoProyecto.PLANIFICACION, description="Estado del proyecto")
+    
+    # ✅ CAMPOS PMI
+    servicio: Optional[str] = Field(None, max_length=50, description="Servicio del proyecto")
+    industria: Optional[str] = Field(None, max_length=50, description="Industria del proyecto")
+    presupuesto: Optional[float] = Field(None, description="Presupuesto estimado")
+    moneda: Optional[str] = Field('PEN', max_length=3, description="Moneda (PEN, USD, EUR)")
+    duracion_total: Optional[int] = Field(None, description="Duración total en días")
+    tipo_dias: Optional[str] = Field('habiles', max_length=20, description="Tipo de días (habiles, calendario)")
+    area_m2: Optional[float] = Field(None, description="Área del proyecto en m²")
+    tiene_area: Optional[bool] = Field(False, description="Si el proyecto tiene área definida")
+    alcance_proyecto: Optional[str] = Field(None, description="Alcance del proyecto")
+    ubicacion: Optional[str] = Field(None, max_length=200, description="Ubicación del proyecto")
+    normativa: Optional[str] = Field(None, max_length=200, description="Normativa aplicable")
+    
     metadata_adicional: Optional[Dict[str, Any]] = Field(None, description="Metadata adicional en formato JSON")
 
 class ProyectoCreate(ProyectoBase):
@@ -32,6 +46,20 @@ class ProyectoUpdate(BaseModel):
     descripcion: Optional[str] = None
     cliente: Optional[str] = Field(None, min_length=3, max_length=200)
     estado: Optional[EstadoProyecto] = None
+    
+    # ✅ CAMPOS PMI
+    servicio: Optional[str] = None
+    industria: Optional[str] = None
+    presupuesto: Optional[float] = None
+    moneda: Optional[str] = None
+    duracion_total: Optional[int] = None
+    tipo_dias: Optional[str] = None
+    area_m2: Optional[float] = None
+    tiene_area: Optional[bool] = None
+    alcance_proyecto: Optional[str] = None
+    ubicacion: Optional[str] = None
+    normativa: Optional[str] = None
+    
     metadata_adicional: Optional[Dict[str, Any]] = None
     fecha_inicio: Optional[datetime] = None
     fecha_fin: Optional[datetime] = None
