@@ -58,6 +58,17 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             if industria:
                 estado["industria"] = industria
             
+            # ✅ NUEVO: Guardar estado inicial completo para preservar servicio/industria
+            estado["estado_inicial"] = {
+                "servicio": servicio,
+                "industria": industria,
+                "cliente_nombre": cliente_nombre,
+                "nombre_proyecto": proyecto_nombre,
+                "presupuesto": presupuesto,
+                "moneda": moneda,
+                "duracion_total": duracion_total
+            }
+            
             # ✅ FLUJO ADAPTATIVO: Preguntar complejidad primero
             estado["etapa"] = "complejidad"
             simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
@@ -829,8 +840,11 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         normativa = estado.get("normativa", "CNE Suministro 2011")
         presupuesto = estado.get("presupuesto", 100000)
         moneda = estado.get("moneda", "USD")
-        servicio = estado.get("servicio", "electricidad")
-        industria = estado.get("industria", "construccion")
+        
+        # ✅ CORREGIDO: Leer servicio/industria de estado_inicial si no están en estado actual
+        estado_inicial = estado.get("estado_inicial", {})
+        servicio = estado.get("servicio") or estado_inicial.get("servicio", "electricidad")
+        industria = estado.get("industria") or estado_inicial.get("industria", "construccion")
         
         # Fechas y duración
         fecha_inicio = datetime.strptime(estado.get("fecha_inicio", "01/01/2026"), "%d/%m/%Y")
