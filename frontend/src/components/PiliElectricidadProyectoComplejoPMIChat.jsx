@@ -13,6 +13,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     presupuesto,
     moneda,
     duracion_total,
+    datosCalendario, // ✅ NUEVO: Datos del calendario profesional
     servicio,
     industria,
     proyectoId,
@@ -75,7 +76,17 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 moneda: moneda || 'PEN',
                 duracion_total: duracion_total ? parseInt(duracion_total) : null,
                 servicio: servicio || 'electricidad',
-                industria: industria || 'construccion'
+                industria: industria || 'construccion',
+                // ✅ NUEVO: Datos del calendario profesional
+                ...(datosCalendario && {
+                    fecha_inicio: datosCalendario.fecha_inicio,
+                    fecha_fin: datosCalendario.fecha_fin,
+                    duracion_dias: datosCalendario.duracion_dias,
+                    duracion_horas: datosCalendario.duracion_horas,
+                    duracion_meses: datosCalendario.duracion_meses,
+                    horario: datosCalendario.horario,
+                    dias_habiles: datosCalendario.dias_habiles
+                })
             };
 
             // 🔍 DEBUG: Ver qué datos llegan del formulario
@@ -123,12 +134,18 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
 
             const data = await res.json();
 
+
             if (data.success) {
                 // ✨ NUEVO: Detectar si viene formulario
                 addMessage('bot', data.respuesta, data.botones, data.formulario);
                 setConversationState(data.conversation_state);
 
                 if (data.datos_generados) {
+                    // 🔍 DEBUG: Ver qué datos genera el chatbot backend
+                    console.log('🔍 DEBUG CHAT PMI - datos_generados del backend:', data.datos_generados);
+                    console.log('  servicio:', data.datos_generados.servicio);
+                    console.log('  industria:', data.datos_generados.industria);
+
                     setHasQuote(true);
                     if (onDatosGenerados) onDatosGenerados(data.datos_generados);
                 }

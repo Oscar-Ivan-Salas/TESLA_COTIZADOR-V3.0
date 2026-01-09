@@ -19,6 +19,7 @@ import PiliContraIncendiosComplejoChat from './components/PiliContraIncendiosCom
 import PiliElectricidadProyectoSimpleChat from './components/PiliElectricidadProyectoSimpleChat';
 import PiliElectricidadProyectoComplejoPMIChat from './components/PiliElectricidadProyectoComplejoPMIChat';
 import VistaPreviaProfesional from './components/VistaPreviaProfesional';
+import CalendarioProyecto from './components/CalendarioProyecto';
 
 const CotizadorTesla30 = () => {
   // ============================================
@@ -47,6 +48,7 @@ const CotizadorTesla30 = () => {
   const [descargando, setDescargando] = useState(null);
   const [logoBase64, setLogoBase64] = useState('');
   const [botonesContextuales, setBotonesContextuales] = useState([]);
+  const [datosCalendario, setDatosCalendario] = useState(null); // ✅ NUEVO: Datos del calendario profesional
 
   // Estados para vista previa HTML editable
   const [htmlPreview, setHtmlPreview] = useState('');
@@ -1798,16 +1800,15 @@ const CotizadorTesla30 = () => {
                           </select>
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Duración (Meses)</label>
-                        <input
-                          type="number"
-                          value={duracion_total}
-                          onChange={(e) => setDuracion_total(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
-                          placeholder="6"
-                        />
-                      </div>
+                      {/* ✅ CALENDARIO PROFESIONAL - Reemplaza input de duración */}
+                      <CalendarioProyecto
+                        onChange={setDatosCalendario}
+                        valoresIniciales={{
+                          fechaInicio: new Date(),
+                          duracionMeses: duracion_total || 4,
+                          usarDiasHabiles: true
+                        }}
+                      />
                     </div>
                   </div>
                 )}
@@ -2031,7 +2032,7 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
                     <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} servicio={servicioSeleccionado} industria={industriaSeleccionada} proyectoId={proyectoId} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} datosCalendario={datosCalendario} servicio={servicioSeleccionado} industria={industriaSeleccionada} proyectoId={proyectoId} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">
