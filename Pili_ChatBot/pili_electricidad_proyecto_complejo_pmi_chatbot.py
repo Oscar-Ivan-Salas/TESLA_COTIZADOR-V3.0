@@ -35,16 +35,34 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
         if etapa == "inicial":
             # Auto-detectar datos del frontend
             cliente_nombre = estado.get("cliente_nombre")
-            proyecto_nombre = estado.get("proyecto_nombre")
+            proyecto_nombre = estado.get("nombre_proyecto")
             presupuesto = estado.get("presupuesto")
-            moneda = estado.get("moneda", "USD")
-            duracion_meses = estado.get("duracion_meses")
+            moneda = estado.get("moneda", "PEN")
+            duracion_total = estado.get("duracion_total")
+            servicio = estado.get("servicio", "electricidad")
+            industria = estado.get("industria", "construccion")
+            
+            # ✅ GUARDAR datos del formulario en el estado para usarlos después
+            if cliente_nombre:
+                estado["cliente_nombre"] = cliente_nombre
+            if proyecto_nombre:
+                estado["nombre_proyecto"] = proyecto_nombre
+            if presupuesto:
+                estado["presupuesto"] = presupuesto
+            if moneda:
+                estado["moneda"] = moneda
+            if duracion_total:
+                estado["duracion_total"] = duracion_total
+            if servicio:
+                estado["servicio"] = servicio
+            if industria:
+                estado["industria"] = industria
             
             # ✅ FLUJO ADAPTATIVO: Preguntar complejidad primero
             estado["etapa"] = "complejidad"
             simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
             
-            # Formatear presupuesto (NO se puede usar condicional dentro de :,.2f)
+            # Formatear presupuesto
             if presupuesto:
                 presupuesto_texto = f"{simbolo} {presupuesto:,.2f}"
             else:
@@ -53,13 +71,18 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**DATOS DETECTADOS DEL FORMULARIO**
+**✅ DATOS RECIBIDOS DEL FORMULARIO**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Cliente: **{cliente_nombre or 'No especificado'}**
 ✅ Proyecto: **{proyecto_nombre or 'No especificado'}**
+✅ Servicio: **{servicio.upper()}**
+✅ Industria: **{industria.upper()}**
 ✅ Presupuesto: **{presupuesto_texto}**
-✅ Duración: **{duracion_meses or 'No especificado'} meses**
+✅ Duración: **{duracion_total or 'No especificado'} días**
+
+💡 **Estos datos se usarán automáticamente en el documento.**
+Solo te preguntaré información adicional necesaria para el Project Charter.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **NIVEL DE COMPLEJIDAD DEL PROYECTO**
@@ -70,7 +93,7 @@ Como experta en PMI PMBOK 7th Edition, adaptaré el análisis según la compleji
 📊 **¿Qué nivel de complejidad tiene tu proyecto?**
 
 **5 FASES - Básico** 
-• Proyectos estándar (< $50K)
+• Proyectos estándar (<$50K)
 • Documentación esencial
 • Análisis simplificado
 • ⏱️ ~5 minutos
@@ -82,7 +105,7 @@ Como experta en PMI PMBOK 7th Edition, adaptaré el análisis según la compleji
 • ⏱️ ~8 minutos
 
 **7 FASES - Avanzado**
-• Proyectos críticos/complejos (> $200K)
+• Proyectos críticos/complejos (>$200K)
 • Documentación completa PMI
 • Gestión integral de riesgos
 • Formularios interactivos
