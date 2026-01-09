@@ -116,14 +116,6 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
     }, [datos]);
 
 
-    // ✅ Incluir moneda en los datos que se envían al padre
-    useEffect(() => {
-        onDatosChange({
-            ...datosEditables,
-            moneda: moneda === 'S/' ? 'PEN' : moneda === '$' ? 'USD' : 'EUR'
-        });
-    }, [datosEditables, moneda]);  // ✅ Agregar moneda como dependencia
-
     const getBadgeStyle = (nivel) => {
         const styles = {
             'Alta': { background: '#FEE2E2', color: '#991B1B' }, 'Alto': { background: '#FEE2E2', color: '#991B1B' },
