@@ -95,6 +95,9 @@ const CotizadorTesla30 = () => {
   const [listaClientes, setListaClientes] = useState([]);
   const [guardandoCliente, setGuardandoCliente] = useState(false);
 
+  // ✅ NUEVO: ID del proyecto guardado en BD
+  const [proyectoId, setProyectoId] = useState(null);
+
   // ✅ NUEVO: Estados para progreso de chat conversacional
   const [datosRecopilados, setDatosRecopilados] = useState([]);
   const [datosFaltantes, setDatosFaltantes] = useState([]);
@@ -183,6 +186,45 @@ const CotizadorTesla30 = () => {
   // ============================================
   // FUNCIONES PRINCIPALES
   // ============================================
+
+  // ✅ NUEVO: Guardar proyecto en BD antes de iniciar chat
+  const guardarProyectoEnBD = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/proyectos/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: nombre_proyecto,
+          servicio: servicioSeleccionado,
+          industria: industriaSeleccionada,
+          cliente: datosCliente.nombre,
+          descripcion: contextoUsuario,
+          presupuesto: presupuesto ? parseFloat(presupuesto) : null,
+          moneda: moneda,
+          duracion_total: duracion_total ? parseInt(duracion_total) : null,
+          tipo_dias: tipoDias,
+          fecha_inicio: fechaInicio,
+          area_m2: areaM2 ? parseFloat(areaM2) : null,
+          tiene_area: tieneArea,
+          alcance_proyecto: alcanceProyecto,
+          ubicacion: ubicacion
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Proyecto guardado en BD:', data);
+        setProyectoId(data.id);
+        return data.id;
+      } else {
+        console.error('❌ Error al guardar proyecto');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error guardando proyecto:', error);
+      return null;
+    }
+  };
 
   const volverAlInicio = () => {
     setPantallaActual('inicio');
@@ -1908,7 +1950,13 @@ const CotizadorTesla30 = () => {
 
                 {/* BOTÓN CONTINUAR */}
                 <button
-                  onClick={() => setPaso(2)}
+                  onClick={async () => {
+                    // ✅ Guardar proyecto en BD antes de ir al chat
+                    if (esProyecto) {
+                      await guardarProyectoEnBD();
+                    }
+                    setPaso(2);
+                  }}
                   disabled={!servicioSeleccionado || !industriaSeleccionada || !contextoUsuario.trim() ||
                     (esProyecto && (!nombre_proyecto || !datosCliente.nombre)) ||
                     (esInforme && !proyectoSeleccionado)}
@@ -1990,7 +2038,7 @@ const CotizadorTesla30 = () => {
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
                     <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} servicio={servicioSeleccionado} industria={industriaSeleccionada} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoComplejoPMIChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} servicio={servicioSeleccionado} industria={industriaSeleccionada} proyectoId={proyectoId} chatMemory={chatMemory} onChatMemoryUpdate={setChatMemory} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : (
                     <div className="col-span-6 bg-white rounded-2xl shadow-xl flex flex-col">
                       <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 p-4 rounded-t-2xl">

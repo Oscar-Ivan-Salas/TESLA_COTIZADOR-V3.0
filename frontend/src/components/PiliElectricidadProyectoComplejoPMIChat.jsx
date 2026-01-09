@@ -15,6 +15,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     duracion_total,
     servicio,
     industria,
+    proyectoId,
     onDatosGenerados,
     onBotonesUpdate,
     onBack,
@@ -63,6 +64,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
             hasSentInitialMessage.current = true;
 
             const estadoInicial = {
+                proyecto_id: proyectoId,
                 cliente_nombre: datosCliente?.nombre || null,
                 cliente_ruc: datosCliente?.ruc || null,
                 cliente_direccion: datosCliente?.direccion || null,
@@ -78,6 +80,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
 
             // 🔍 DEBUG: Ver qué datos llegan del formulario
             console.log('🔍 DATOS DEL FORMULARIO INICIAL:', {
+                proyecto_id: proyectoId,
                 nombre_proyecto,
                 cliente: datosCliente?.nombre,
                 presupuesto,
