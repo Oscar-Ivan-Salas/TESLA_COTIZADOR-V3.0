@@ -79,6 +79,19 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             else:
                 presupuesto_texto = f"{simbolo} 0.00"
             
+            # ✅ NUEVO: Leer datos del calendario si existen
+            fecha_inicio = estado.get("fecha_inicio")
+            fecha_fin = estado.get("fecha_fin")
+            duracion_dias = estado.get("duracion_dias")
+            
+            # Construir texto de duración profesional
+            if fecha_inicio and fecha_fin and duracion_dias:
+                duracion_texto = f"**{duracion_dias} días** (del {fecha_inicio} al {fecha_fin})"
+            elif duracion_total:
+                duracion_texto = f"**{duracion_total} días**"
+            else:
+                duracion_texto = "**No especificado**"
+            
             return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -90,7 +103,7 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
 ✅ Servicio: **{servicio.upper()}**
 ✅ Industria: **{industria.upper()}**
 ✅ Presupuesto: **{presupuesto_texto}**
-✅ Duración: **{duracion_total or 'No especificado'} días**
+✅ Duración: {duracion_texto}
 
 💡 **Estos datos se usarán automáticamente en el documento.**
 Solo te preguntaré información adicional necesaria para el Project Charter.

@@ -100,6 +100,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 servicio,
                 industria
             });
+            console.log('📅 DATOS DEL CALENDARIO:', datosCalendario);
             console.log('📤 ESTADO INICIAL ENVIADO AL CHATBOT:', estadoInicial);
 
             setConversationState(estadoInicial);
