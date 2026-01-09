@@ -2232,12 +2232,6 @@ const CotizadorTesla30 = () => {
                           <p className="text-sm">Aparecerá cuando la IA genere contenido</p>
                         </div>
                       ) : (() => {
-                        // DEBUG: Ver qué datos tenemos
-                        console.log('🔍 DEBUG - cotizacion:', cotizacion);
-                        console.log('🔍 DEBUG - cotizacion?.items:', cotizacion?.items);
-                        console.log('🔍 DEBUG - datosEditables:', datosEditables);
-                        console.log('🔍 DEBUG - datosEditables?.items:', datosEditables?.items);
-
                         // ✅ RENDERIZAR VistaPreviaProfesional en Paso 2
                         return (
                           <VistaPreviaProfesional
