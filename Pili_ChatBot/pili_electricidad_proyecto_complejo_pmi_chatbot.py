@@ -806,6 +806,8 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
         normativa = estado.get("normativa", "CNE Suministro 2011")
         presupuesto = estado.get("presupuesto", 100000)
         moneda = estado.get("moneda", "USD")
+        servicio = estado.get("servicio", "electricidad")
+        industria = estado.get("industria", "construccion")
         
         # Fechas y duración
         fecha_inicio = datetime.strptime(estado.get("fecha_inicio", "01/01/2026"), "%d/%m/%Y")
@@ -908,6 +910,8 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
             "complejidad": complejidad,
             "codigo": codigo,
             "nombre_proyecto": nombre_proyecto,
+            "servicio": servicio,
+            "industria": industria,
             "cliente": {
                 "nombre": estado.get("cliente_nombre", cliente),
                 "ruc": estado.get("cliente_ruc"),
