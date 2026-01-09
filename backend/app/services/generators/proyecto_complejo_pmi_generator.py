@@ -36,23 +36,10 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         servicio = self.opciones.get('servicio') or self.datos.get('servicio', 'ELECTRICIDAD')
         industria = self.opciones.get('industria') or self.datos.get('industria', 'CONSTRUCCIÓN')
         
-        # 🔍 DEBUG: Ver qué valores llegan
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"🔍 DEBUG GENERADOR PMI:")
-        logger.info(f"  servicio recibido: {servicio}")
-        logger.info(f"  industria recibida: {industria}")
-        logger.info(f"  opciones.servicio: {self.opciones.get('servicio')}")
-        logger.info(f"  datos.servicio: {self.datos.get('servicio')}")
-        logger.info(f"  opciones completas: {self.opciones}")
-        logger.info(f"  datos keys: {list(self.datos.keys())}")
-        
         # Convertir a mayúsculas
         servicio_upper = servicio.upper() if servicio else 'ELECTRICIDAD'
         industria_upper = industria.upper() if industria else 'CONSTRUCCIÓN'
         titulo_proyecto = f"{servicio_upper} - {industria_upper}"
-        
-        logger.info(f"  ✅ título generado: {titulo_proyecto}")
         
         p_nombre = self.doc.add_paragraph()
         p_nombre.alignment = WD_ALIGN_PARAGRAPH.CENTER

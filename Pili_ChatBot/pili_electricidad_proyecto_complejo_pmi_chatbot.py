@@ -820,12 +820,6 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
     def _generar_proyecto(self, estado: Dict) -> Dict:
         """Genera el proyecto completo con todos los datos"""
         
-        # 🔍 DEBUG: Ver estado completo al inicio
-        print(f"🔍 DEBUG _generar_proyecto - Estado recibido:")
-        print(f"  servicio en estado: {estado.get('servicio')}")
-        print(f"  industria en estado: {estado.get('industria')}")
-        print(f"  keys del estado: {list(estado.keys())}")
-        
         # Datos del cliente y proyecto
         cliente = estado.get("cliente_nombre", "Cliente")
         nombre_proyecto = estado.get("nombre_proyecto", "Proyecto Eléctrico")
@@ -934,13 +928,6 @@ _Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos El
                 {"actividad": "Aprobación de Entregables", "roles": ["R", "C", "I", "C", "A"]}
             ]
             
-        # 🔍 DEBUG: Ver qué valores tienen servicio e industria
-        print(f"🔍 DEBUG CHATBOT PMI - Antes de generar datos:")
-        print(f"  servicio: {servicio}")
-        print(f"  industria: {industria}")
-        print(f"  estado.servicio: {estado.get('servicio')}")
-        print(f"  estado.industria: {estado.get('industria')}")
-        
         # Generar datos completos
         datos_generados = {
             "complejidad": complejidad,
