@@ -1,7 +1,7 @@
 """
 Modelo: Proyecto
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, JSON
+from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, JSON, Numeric, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -31,6 +31,19 @@ class Proyecto(Base):
         default=EstadoProyecto.PLANIFICACION,
         nullable=False
     )
+    
+    # ✅ NUEVOS CAMPOS PARA PMI (nullable para compatibilidad con datos existentes)
+    servicio = Column(String(50), nullable=True, index=True)
+    industria = Column(String(50), nullable=True, index=True)
+    presupuesto = Column(Numeric(12, 2), nullable=True)
+    moneda = Column(String(3), default='PEN', nullable=True)
+    duracion_total = Column(Integer, nullable=True)
+    tipo_dias = Column(String(20), default='habiles', nullable=True)
+    area_m2 = Column(Numeric(10, 2), nullable=True)
+    tiene_area = Column(Boolean, default=False, nullable=True)
+    alcance_proyecto = Column(Text, nullable=True)
+    ubicacion = Column(String(200), nullable=True)
+    normativa = Column(String(200), nullable=True)
     
     # Metadata adicional (JSON)
     metadata_adicional = Column(JSON, nullable=True)
@@ -68,6 +81,17 @@ class Proyecto(Base):
             "descripcion": self.descripcion,
             "cliente": self.cliente,
             "estado": self.estado.value if self.estado else None,
+            "servicio": self.servicio,
+            "industria": self.industria,
+            "presupuesto": float(self.presupuesto) if self.presupuesto else None,
+            "moneda": self.moneda,
+            "duracion_total": self.duracion_total,
+            "tipo_dias": self.tipo_dias,
+            "area_m2": float(self.area_m2) if self.area_m2 else None,
+            "tiene_area": self.tiene_area,
+            "alcance_proyecto": self.alcance_proyecto,
+            "ubicacion": self.ubicacion,
+            "normativa": self.normativa,
             "metadata_adicional": self.metadata_adicional,
             "fecha_creacion": self.fecha_creacion.isoformat() if self.fecha_creacion else None,
             "fecha_modificacion": self.fecha_modificacion.isoformat() if self.fecha_modificacion else None,
