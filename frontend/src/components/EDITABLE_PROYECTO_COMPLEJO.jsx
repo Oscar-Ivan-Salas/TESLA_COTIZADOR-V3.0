@@ -163,7 +163,10 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 <h1 style={{ fontSize: '30px', color: colores.primario, marginBottom: '5px' }}>PROJECT CHARTER</h1>
                 <div style={{ fontSize: '14px', color: colores.secundario, fontStyle: 'italic', margin: '8px 0' }}>Gestión de Proyectos según Metodología PMI</div>
                 <div style={{ fontSize: '18px', color: colores.secundario, marginTop: '10px' }}>
-                    <input type="text" value={datosEditables.nombre_proyecto} onChange={(e) => setDatosEditables({ ...datosEditables, nombre_proyecto: e.target.value })} style={{ width: '80%', border: 'none', borderBottom: `2px solid ${colores.acento}`, background: 'transparent', color: colores.secundario, fontSize: '18px', textAlign: 'center' }} />
+                    {/* ✅ TÍTULO DINÁMICO: SERVICIO - INDUSTRIA */}
+                    <div style={{ fontSize: '22px', fontWeight: 'bold', color: colores.primario, textTransform: 'uppercase' }}>
+                        {(datosEditables.servicio || 'electricidad').toUpperCase()} - {(datosEditables.industria || 'construccion').toUpperCase()}
+                    </div>
                 </div>
                 <div style={{ fontSize: '14px', color: colores.secundario, fontWeight: '600', marginTop: '5px' }}>
                     <input type="text" value={datosEditables.codigo_proyecto} onChange={(e) => setDatosEditables({ ...datosEditables, codigo_proyecto: e.target.value })} style={{ width: '200px', border: 'none', borderBottom: `2px solid ${colores.acento}`, background: 'transparent', color: colores.secundario, fontSize: '14px', textAlign: 'center' }} />
