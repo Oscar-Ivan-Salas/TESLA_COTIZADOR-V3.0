@@ -34,6 +34,18 @@ async def crear_proyecto(
         descripcion=proyecto.descripcion,
         cliente=proyecto.cliente,
         estado=EstadoProyecto.PLANIFICACION,
+        # ✅ CAMPOS PMI
+        servicio=proyecto.servicio,
+        industria=proyecto.industria,
+        presupuesto=proyecto.presupuesto,
+        moneda=proyecto.moneda,
+        duracion_total=proyecto.duracion_total,
+        tipo_dias=proyecto.tipo_dias,
+        area_m2=proyecto.area_m2,
+        tiene_area=proyecto.tiene_area,
+        alcance_proyecto=proyecto.alcance_proyecto,
+        ubicacion=proyecto.ubicacion,
+        normativa=proyecto.normativa,
         metadata_adicional=proyecto.metadata_adicional,
         fecha_inicio=datetime.utcnow()
     )
