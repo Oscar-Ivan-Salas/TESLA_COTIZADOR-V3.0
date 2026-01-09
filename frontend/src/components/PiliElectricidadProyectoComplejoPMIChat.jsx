@@ -13,6 +13,8 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     presupuesto,
     moneda,
     duracion_total,
+    servicio,
+    industria,
     onDatosGenerados,
     onBotonesUpdate,
     onBack,
@@ -69,7 +71,9 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 nombre_proyecto: nombre_proyecto || null,
                 presupuesto: presupuesto ? parseFloat(presupuesto) : null,
                 moneda: moneda || 'PEN',
-                duracion_total: duracion_total ? parseInt(duracion_total) : null
+                duracion_total: duracion_total ? parseInt(duracion_total) : null,
+                servicio: servicio || 'electricidad',
+                industria: industria || 'construccion'
             };
 
             // 🔍 DEBUG: Ver qué datos llegan del formulario
@@ -78,7 +82,9 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 cliente: datosCliente?.nombre,
                 presupuesto,
                 moneda,
-                duracion_total
+                duracion_total,
+                servicio,
+                industria
             });
             console.log('📤 ESTADO INICIAL ENVIADO AL CHATBOT:', estadoInicial);
 
