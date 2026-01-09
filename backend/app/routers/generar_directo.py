@@ -277,7 +277,9 @@ async def generar_documento_v2(
             'logo_path': logo_path,  # Usar ruta de archivo temporal
             'ocultar_igv': personalizacion.get('ocultar_igv', False),
             'ocultar_precios_unitarios': personalizacion.get('ocultar_precios_unitarios', False),
-            'moneda': datos.get('moneda', 'USD')  # ✅ AGREGAR: Moneda desde datos principales
+            'moneda': datos.get('moneda', 'USD'),
+            'servicio': datos.get('servicio', 'electricidad'),
+            'industria': datos.get('industria', 'construccion')
         }
         logger.info(f"🎨 Opciones de personalización: {opciones.get('esquema_colores')}")
         
