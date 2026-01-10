@@ -83,7 +83,15 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 duracion_total: duracion_total ? parseInt(duracion_total) : null,
                 servicio: servicio || 'electricidad',
                 industria: industria || 'construccion',
-                // ✅ NUEVO: Datos del calendario profesional
+
+                // ✅ CORREGIDO: Estos datos SIEMPRE deben enviarse, no dependen del calendario
+                alcance_proyecto: descripcion_inicial || '',
+                complejidad: complejidad || 7,
+                etapas_seleccionadas: etapasSeleccionadas || [],
+                incluir_metrado: incluirMetrado || false,
+                area_proyecto: areaMetrado || null,
+
+                // ✅ Datos del calendario profesional (opcionales)
                 ...(datosCalendario && {
                     fecha_inicio: datosCalendario.fecha_inicio,
                     fecha_fin: datosCalendario.fecha_fin,
@@ -91,15 +99,7 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                     duracion_horas: datosCalendario.duracion_horas,
                     duracion_meses: datosCalendario.duracion_meses,
                     horario: datosCalendario.horario,
-                    dias_habiles: datosCalendario.dias_habiles,
-                    // ✅ NUEVO: Pasar el alcance inicial para saltar preguntas redundantes
-                    alcance_proyecto: descripcion_inicial || '',
-                    // ✅ NUEVO: Configuración de Alcance y Complejidad desde Formulario
-                    complejidad: complejidad || 7,
-                    etapas_seleccionadas: etapasSeleccionadas || [],
-                    // ✅ NUEVO: Configuración de Metrado
-                    incluir_metrado: incluirMetrado || false,
-                    area_proyecto: areaMetrado || null
+                    dias_habiles: datosCalendario.dias_habiles
                 })
             };
 

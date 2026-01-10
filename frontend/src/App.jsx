@@ -253,6 +253,8 @@ const CotizadorTesla30 = () => {
     setDatosEditables(null);
     setExito('Sistema reiniciado');
     setTimeout(() => setExito(''), 2000);
+    // ✅ NUEVO: Limpiar memoria del chat para evitar conflictos
+    setChatMemory({});
   };
 
   const iniciarFlujo = (tipo) => {

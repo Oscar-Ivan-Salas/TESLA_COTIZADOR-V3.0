@@ -63,6 +63,17 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
     // Estado para la moneda
     const [moneda, setMoneda] = useState('S/'); // S/, $, €
 
+    // ✅ Función helper para convertir código de moneda a símbolo
+    const getSimboloMoneda = (codigoMoneda) => {
+        const simbolos = {
+            'PEN': 'S/',
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£'
+        };
+        return simbolos[codigoMoneda] || 'S/';
+    };
+
     const COLORES = {
         'azul-tesla': { primario: '#0052A3', secundario: '#1E40AF', acento: '#3B82F6', claro: '#EFF6FF', claroBorde: '#DBEAFE' },
         'rojo-energia': { primario: '#8B0000', secundario: '#991B1B', acento: '#DC2626', claro: '#FEF2F2', claroBorde: '#FECACA' },
@@ -74,6 +85,11 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
     // ✅ Sincronizar datos iniciales (Solo una vez o cuando cambian drásticamente)
     useEffect(() => {
         if (datos && Object.keys(datos).length > 0) {
+            // ✅ NUEVO: Sincronizar moneda
+            if (datos.moneda) {
+                setMoneda(getSimboloMoneda(datos.moneda));
+            }
+
             setDatosEditables(prev => {
                 // Objeto con datos entrantes del chatbot
                 const nuevos = {};

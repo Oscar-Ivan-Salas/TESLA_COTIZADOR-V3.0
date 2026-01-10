@@ -141,11 +141,12 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
             kpis_data = {}
         
         # Prioridad: kpis anidados > kpis nivel superior > valores por defecto
-        spi = kpis_data.get('spi') or self.datos.get('spi') or '1.0'
-        cpi = kpis_data.get('cpi') or self.datos.get('cpi') or '1.0'
-        ev_k = kpis_data.get('ev_k') or self.datos.get('ev_k') or '0'
-        pv_k = kpis_data.get('pv_k') or self.datos.get('pv_k') or '0'
-        ac_k = kpis_data.get('ac_k') or self.datos.get('ac_k') or '0'
+        # ✅ CORREGIDO: Convertir explícitamente a string para evitar errores de tipo
+        spi = str(kpis_data.get('spi') or self.datos.get('spi') or '1.0')
+        cpi = str(kpis_data.get('cpi') or self.datos.get('cpi') or '1.0')
+        ev_k = str(kpis_data.get('ev_k') or self.datos.get('ev_k') or '0')
+        pv_k = str(kpis_data.get('pv_k') or self.datos.get('pv_k') or '0')
+        ac_k = str(kpis_data.get('ac_k') or self.datos.get('ac_k') or '0')
         
         # ✅ Extraer moneda de OPCIONES o DATOS con fallback
         moneda = self.opciones.get('moneda') or self.datos.get('moneda') or 'USD'

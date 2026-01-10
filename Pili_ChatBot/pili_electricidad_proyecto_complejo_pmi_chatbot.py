@@ -644,14 +644,21 @@ _Ejemplo: {sugerencia_ac}_""", 'botones': None, 'estado': estado}
                 estado["ac_k"] = ac
                 estado["etapa"] = "procesar_gantt"  # ✅ SALTAR ALCANCE (ya se captura en formulario)
                 
-                return {'success': True, 'respuesta': f"""✅ AC: **${ac}K**
+                # ✅ Obtener símbolo de moneda dinámicamente
+                moneda = estado.get('moneda', 'USD')
+                simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+                
+                # 🔍 DEBUG: Verificar moneda y símbolo
+                print(f"🔍 DEBUG KPI - Moneda: {moneda}, Símbolo: {simbolo}")
+                
+                return {'success': True, 'respuesta': f"""✅ AC: **{simbolo}{ac}K**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✅ **KPIs PMI COMPLETADOS**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 SPI: {estado.get('spi')} | CPI: {estado.get('cpi')}
-EV: ${estado.get('ev_k')}K | PV: ${estado.get('pv_k')}K | AC: ${ac}K
+EV: {simbolo}{estado.get('ev_k')}K | PV: {simbolo}{estado.get('pv_k')}K | AC: {simbolo}{ac}K
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **CRONOGRAMA GANTT**
@@ -1183,8 +1190,8 @@ Usa el formulario interactivo para seleccionar roles.""",
         pv_k = estado.get("pv_k", 75)
         ac_k = estado.get("ac_k", 65)
         
-        # Alcance
-        alcance = estado.get("alcance", "Alcance del proyecto")
+        # Alcance - ✅ CORREGIDO: Usar clave correcta que envía el frontend
+        alcance = estado.get("alcance_proyecto", estado.get("alcance", "Alcance del proyecto"))
         
         # Cronograma
         dias_ingenieria = estado.get("dias_ingenieria", 25)
@@ -1219,37 +1226,60 @@ Usa el formulario interactivo para seleccionar roles.""",
         recursos_humanos = estado.get("recursos_humanos", ["Project Manager", "Ing. Residente", "Técnicos"])
         materiales = estado.get("materiales", ["Tableros eléctricos", "Cables", "Protecciones"])
         
-        # Cronograma Dinámico según Complejidad
+        # ✅ CORREGIDO: Usar cronograma configurado por el usuario en el formulario Gantt
+        # Si el usuario configuró el Gantt manualmente, usar esos datos
+        # De lo contrario, generar valores por defecto según complejidad
         complejidad = estado.get("complejidad", 7)
-        cronograma_fases = []
-    
-        if complejidad == 5:
+        
+        if "cronograma_fases" in estado and isinstance(estado["cronograma_fases"], dict):
+            # ✅ Usuario configuró el Gantt - convertir diccionario a formato visual
+            fases_dict = estado["cronograma_fases"]
+            duracion_total_real = estado.get("duracion_total", 105)
+            
+            # Función helper para calcular ancho porcentual
+            def calc_width(dias):
+                return f"{max(5, int((dias / duracion_total_real) * 100))}%"
+            
             cronograma_fases = [
-                {"label": "1. Inicio y Planificación", "dias": "5 días", "width": "20%"},
-                {"label": "2. Ingeniería Básica", "dias": f"{int(dias_ingenieria/2)} días", "width": "15%"},
-                {"label": "3. Ejecución", "dias": f"{dias_ejecucion} días", "width": "40%"},
-                {"label": "4. Pruebas", "dias": "5 días", "width": "15%"},
-                {"label": "5. Cierre", "dias": "2 días", "width": "10%"}
+                {"label": "1. Inicio", "dias": f"{fases_dict.get('inicio', 5)} días", "width": calc_width(fases_dict.get('inicio', 5))},
+                {"label": "2. Planificación Detallada", "dias": f"{fases_dict.get('planificacion', 10)} días", "width": calc_width(fases_dict.get('planificacion', 10))},
+                {"label": "3. Gestión de Riesgos y Calidad", "dias": f"{fases_dict.get('riesgos', 5)} días", "width": calc_width(fases_dict.get('riesgos', 5))},
+                {"label": "4. Ingeniería y Diseño", "dias": f"{fases_dict.get('ingenieria', 25)} días", "width": calc_width(fases_dict.get('ingenieria', 25))},
+                {"label": "5. Ejecución y Monitoreo", "dias": f"{fases_dict.get('ejecucion', 45)} días", "width": calc_width(fases_dict.get('ejecucion', 45))},
+                {"label": "6. Pruebas Integrales (FAT/SAT)", "dias": f"{fases_dict.get('pruebas', 10)} días", "width": calc_width(fases_dict.get('pruebas', 10))},
+                {"label": "7. Cierre y Lecciones Aprendidas", "dias": f"{fases_dict.get('cierre', 5)} días", "width": calc_width(fases_dict.get('cierre', 5))}
             ]
-        elif complejidad == 6:
-            cronograma_fases = [
-                {"label": "1. Inicio y Planificación", "dias": "10 días", "width": "15%"},
-                {"label": "2. Gestión Stakeholders", "dias": "3 días", "width": "10%"},
-                {"label": "3. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
-                {"label": "4. Ejecución", "dias": f"{dias_ejecucion} días", "width": "35%"},
-                {"label": "5. Pruebas y Puesta en Marcha", "dias": "8 días", "width": "12%"},
-                {"label": "6. Cierre", "dias": "5 días", "width": "8%"}
-            ]
-        else: # 7 Fases
-            cronograma_fases = [
-                {"label": "1. Inicio", "dias": "5 días", "width": "10%"},
-                {"label": "2. Planificación Detallada", "dias": "10 días", "width": "15%"},
-                {"label": "3. Gestión de Riesgos y Calidad", "dias": "5 días", "width": "10%"},
-                {"label": "4. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
-                {"label": "5. Ejecución y Monitoreo", "dias": f"{dias_ejecucion} días", "width": "30%"},
-                {"label": "6. Pruebas Integrales (FAT/SAT)", "dias": "10 días", "width": "10%"},
-                {"label": "7. Cierre y Lecciones Aprendidas", "dias": "5 días", "width": "5%"}
-            ]
+        else:
+            # Fallback: Generar cronograma por defecto según complejidad
+            cronograma_fases = []
+        
+            if complejidad == 5:
+                cronograma_fases = [
+                    {"label": "1. Inicio y Planificación", "dias": "5 días", "width": "20%"},
+                    {"label": "2. Ingeniería Básica", "dias": f"{int(dias_ingenieria/2)} días", "width": "15%"},
+                    {"label": "3. Ejecución", "dias": f"{dias_ejecucion} días", "width": "40%"},
+                    {"label": "4. Pruebas", "dias": "5 días", "width": "15%"},
+                    {"label": "5. Cierre", "dias": "2 días", "width": "10%"}
+                ]
+            elif complejidad == 6:
+                cronograma_fases = [
+                    {"label": "1. Inicio y Planificación", "dias": "10 días", "width": "15%"},
+                    {"label": "2. Gestión Stakeholders", "dias": "3 días", "width": "10%"},
+                    {"label": "3. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
+                    {"label": "4. Ejecución", "dias": f"{dias_ejecucion} días", "width": "35%"},
+                    {"label": "5. Pruebas y Puesta en Marcha", "dias": "8 días", "width": "12%"},
+                    {"label": "6. Cierre", "dias": "5 días", "width": "8%"}
+                ]
+            else: # 7 Fases
+                cronograma_fases = [
+                    {"label": "1. Inicio", "dias": "5 días", "width": "10%"},
+                    {"label": "2. Planificación Detallada", "dias": "10 días", "width": "15%"},
+                    {"label": "3. Gestión de Riesgos y Calidad", "dias": "5 días", "width": "10%"},
+                    {"label": "4. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
+                    {"label": "5. Ejecución y Monitoreo", "dias": f"{dias_ejecucion} días", "width": "30%"},
+                    {"label": "6. Pruebas Integrales (FAT/SAT)", "dias": "10 días", "width": "10%"},
+                    {"label": "7. Cierre y Lecciones Aprendidas", "dias": "5 días", "width": "5%"}
+                ]
             
         # ✅ NUEVO: Generar RACI por defecto según complejidad
         raci_actividades = estado.get("raci_actividades", [])
@@ -1294,6 +1324,8 @@ Usa el formulario interactivo para seleccionar roles.""",
             },
             "presupuesto": presupuesto,
             "moneda": moneda,
+            
+            # ✅ KPIs en formato anidado (para frontend)
             "kpis": {
                 "spi": spi,
                 "cpi": cpi,
@@ -1301,6 +1333,14 @@ Usa el formulario interactivo para seleccionar roles.""",
                 "pv_k": pv_k,
                 "ac_k": ac_k
             },
+            
+            # ✅ KPIs también como campos planos (para plantillas Word)
+            "spi": spi,
+            "cpi": cpi,
+            "ev_k": ev_k,
+            "pv_k": pv_k,
+            "ac_k": ac_k,
+            
             "alcance_proyecto": alcance,
             "cronograma_fases": cronograma_fases,  # ✅ RENOMBRADO Y DINÁMICO
             "stakeholders": stakeholders,
@@ -1337,7 +1377,7 @@ Usa el formulario interactivo para seleccionar roles.""",
 
 **KPIs PMI:**
 • SPI: {spi} | CPI: {cpi}
-• EV: ${ev_k}K | PV: ${pv_k}K | AC: ${ac_k}K
+• EV: {simbolo}{ev_k}K | PV: {simbolo}{pv_k}K | AC: {simbolo}{ac_k}K
 
 **RIESGOS:** {len(riesgos)} identificados
 **STAKEHOLDERS:** {len(stakeholders)} registrados

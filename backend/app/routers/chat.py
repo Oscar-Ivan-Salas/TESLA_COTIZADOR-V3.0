@@ -174,7 +174,7 @@ except: pili_saneamiento_bot = None
 try:
     from Pili_ChatBot.pili_electricidad_proyecto_complejo_pmi_chatbot import PILIElectricidadProyectoComplejoPMIChatBot
     pili_electricidad_proyecto_complejo_pmi_bot = PILIElectricidadProyectoComplejoPMIChatBot()
-    logger.info("✅ PILI PROYECTO COMPLEJO PMI OK")
+    logger.info("✅ PILI PROYECTO COMPLEJO PMI OK - v1.2 (Final Currency Fix)")  # ✅ Forzar reload
 except Exception as e:
     logger.error(f"❌ Error importando PILI PROYECTO COMPLEJO PMI: {e}")
     pili_electricidad_proyecto_complejo_pmi_bot = None
