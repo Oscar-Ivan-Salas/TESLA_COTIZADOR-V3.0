@@ -69,16 +69,19 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
                 "duracion_total": duracion_total
             }
             
-            # ✅ FLUJO ADAPTATIVO: Preguntar complejidad primero
-            estado["etapa"] = "complejidad"
-            simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
+            # ✅ FLUJO ADAPTATIVO: Router de Inicio (Frontend First)
+            complejidad_inicial = estado.get("complejidad")
+            etapas_activas = estado.get("etapas_seleccionadas")
+            incluir_metrado = estado.get("incluir_metrado")
+            area_proyecto = estado.get("area_proyecto") # m2
             
+            simbolo = {'PEN': 'S/', 'USD': '$', 'EUR': '€', 'GBP': '£'}.get(moneda, '$')
             # Formatear presupuesto
             if presupuesto:
                 presupuesto_texto = f"{simbolo} {presupuesto:,.2f}"
             else:
                 presupuesto_texto = f"{simbolo} 0.00"
-            
+
             # ✅ NUEVO: Leer datos del calendario si existen
             fecha_inicio = estado.get("fecha_inicio")
             fecha_fin = estado.get("fecha_fin")
@@ -86,16 +89,57 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
             
             # 🔍 DEBUG: Ver datos recibidos
             print(f"🔍 DEBUG CHATBOT - Fechas recibidas: Inicio={fecha_inicio}, Fin={fecha_fin}, Dias={duracion_dias}")
-            
-            # Construir texto de duración profesional
+
+            # Construir texto de duración
             if fecha_inicio and fecha_fin and duracion_dias:
                 duracion_texto = f"**{duracion_dias} días** (del {fecha_inicio} al {fecha_fin})"
             elif duracion_total:
                 duracion_texto = f"**{duracion_total} días**"
             else:
                 duracion_texto = "**No especificado**"
+
+            if complejidad_inicial:
+                # =======================================================
+                # CASO 1: MODO EXPERTO (Configuración desde Frontend)
+                # =======================================================
+                estado["etapa"] = "ubicacion"
+                
+                # Construir resumen de configuración
+                resumen_metrado = ""
+                if incluir_metrado and area_proyecto:
+                    resumen_metrado = f"\n✅ Metrado: **{area_proyecto} m²**"
+                
+                mensaje_bienvenida = f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**✅ DATOS DEL PROYECTO CONFIGURADOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Proyecto: **{proyecto_nombre or 'Sin Nombre'}**
+✅ Presupuesto: **{presupuesto_texto}**
+✅ Modalidad: **{complejidad_inicial} Fases (Pre-configurada)**{resumen_metrado}
+
+He cargado tu checklist de etapas activas ({len(etapas_activas) if etapas_activas else 0} seleccionadas).
+Comencemos definiendo el contexto geográfico.
+
+📍 **¿Dónde se realizará el proyecto?**
+_Ejemplo: Lima, Perú / Planta Industrial Callao_"""
+
+                return {
+                    'success': True, 
+                    'respuesta': mensaje_bienvenida, 
+                    'botones': None, 
+                    'estado': estado,
+                    'datos_generados': estado["estado_inicial"]
+                }
             
-            return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
+            else:
+                # =======================================================
+                # CASO 2: MODO CONVERSACIONAL (Preguntar complejidad)
+                # =======================================================
+                estado["etapa"] = "complejidad"
+                
+                return {'success': True, 'respuesta': f"""¡Hola! 👋 Soy **PILI**, tu asistente de proyectos eléctricos PMI.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **✅ DATOS RECIBIDOS DEL FORMULARIO**
@@ -142,7 +186,7 @@ Selecciona el nivel que mejor se adapte a tu proyecto.""", 'botones': [
                 {"text": "5 fases - Básico", "value": "5"},
                 {"text": "6 fases - Intermedio", "value": "6"},
                 {"text": "7 fases - Avanzado", "value": "7"}
-            ], 'estado': estado}
+            ], 'estado': estado, 'datos_generados': estado["estado_inicial"]}
         
         # ============================================
         # ETAPA: Complejidad (NUEVA)
@@ -182,10 +226,71 @@ _Ejemplo: Lima, Perú / Concepción, Chile_""", 'botones': None, 'estado': estad
         # ============================================
         # ETAPA: Ubicación
         # ============================================
+        # ============================================
+        # ETAPA: Ubicación
+        # ============================================
         elif etapa == "ubicacion":
             estado["ubicacion"] = mensaje
-            estado["etapa"] = "area"
-            return {'success': True, 'respuesta': f"""✅ Ubicación: **{mensaje}**
+            
+            # ✅ LÓGICA INTELIGENTE: Verificar si ya tenemos AREA definida (Frontend First)
+            # Si el área ya viene del formulario, NO preguntar por área.
+            area_definida = estado.get("area_proyecto")
+            if area_definida:
+                try:
+                    # 🔴 FIX CRÍTICO: Asegurar que el area_m2 se actualice con el valor del formulario
+                    estado["area_m2"] = float(str(area_definida).replace(',', ''))
+                except:
+                    estado["area_m2"] = 0
+                
+                # Ya tenemos área, saltamos al chequeo de alcance
+                alcance_inicial = estado.get("alcance_proyecto", "")
+                
+                if alcance_inicial and len(alcance_inicial) > 10:
+                    estado["etapa"] = "confirmar_alcance"
+                    
+                    return {'success': True, 'respuesta': f"""✅ Ubicación: **{mensaje}**
+                    
+━━━━━━━━━━━━━━━━━━━━━━━
+**CONFIRMACIÓN DE ALCANCE**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+He recibido la siguiente descripción inicial del proyecto:
+
+📝 **"{alcance_inicial}"**
+
+¿Esta información está completa o deseas agregar más detalles técnicos?
+_(Sistemas, equipos, especificaciones)_""", 'botones': [
+                        {"text": "✅ Es correcto, continuar", "value": "continuar"},
+                        {"text": "✏️ Agregar detalles", "value": "agregar"}
+                    ], 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_inicial}}
+                else:
+                    estado["etapa"] = "descripcion"
+                    # Obtener nombre del proyecto del formulario inicial
+                    nombre_proyecto = estado.get("proyecto_nombre", "")
+                    
+                    mensaje_descripcion = f"""✅ Ubicación: **{mensaje}**
+
+📝 **Descripción del proyecto:**"""
+                    
+                    if nombre_proyecto:
+                        mensaje_descripcion += f"""
+Veo que el proyecto es: **{nombre_proyecto}**
+
+¿Necesitas agregar más detalles técnicos? (sistemas, equipos, especificaciones)
+_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_
+
+Si no necesitas agregar más, simplemente escribe "No" o "Continuar"."""
+                    else:
+                        mensaje_descripcion += """
+_Incluye: tipo de instalación, sistemas, equipos principales, etc._
+_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_"""
+                    
+                    return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado}
+            
+            # Si NO hay área definida, procedemos el flujo normal
+            else:
+                estado["etapa"] = "area"
+                return {'success': True, 'respuesta': f"""✅ Ubicación: **{mensaje}**
 
 📐 **¿Área total del proyecto (m²)?**
 _Ejemplo: 5000_""", 'botones': None, 'estado': estado}
@@ -254,7 +359,7 @@ _Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, t
             
             # Caso 1: Confirmación directa
             if texto_usuario in ["continuar", "si", "sí", "correcto", "ok", "listo", "no", "ninguno"]:
-                estado["etapa"] = "entregables"
+                estado["etapa"] = "kpi_spi" # ✅ RESTAURADO: Flujo hacia KPIs
                 
                 # Obtener alcance confirmado para mostrar en respuesta
                 alcance_final = estado.get("alcance_proyecto", "")
@@ -265,11 +370,24 @@ Entendido. El alcance del proyecto se mantiene como:
 *"{alcance_final}"*
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**ENTREGABLES DEL PROYECTO**
+**KPIs DE GESTIÓN PMI**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-📦 **¿Cuáles son los entregables principales?**
-_Ejemplo: Planos As-Built, Memorias de cálculo, Dossier de calidad, Protocolos de pruebas_""", 'botones': None, 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_final}}
+Como proyecto complejo PMI, necesitamos definir los KPIs de gestión.
+Te ayudaré con valores recomendados según mejores prácticas.
+
+📊 **SPI (Schedule Performance Index)**
+_Mide el desempeño del cronograma_
+
+Valores:
+• **1.0** = En tiempo (recomendado)
+• > 1.0 = Adelantado
+• < 1.0 = Retrasado
+
+Rango válido: 0.8 - 1.2
+
+**¿Valor de SPI?**
+_Ejemplo: 1.0_""", 'botones': None, 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_final}}
             
             # Caso 2: Usuario decide agregar detalles (botón)
             elif texto_usuario == "agregar":
@@ -281,18 +399,23 @@ _Ejemplo: Planos As-Built, Memorias de cálculo, Dossier de calidad, Protocolos 
                  alcance_actual = estado.get("alcance_proyecto", "")
                  nuevo_alcance = f"{alcance_actual}\n\nDetalles adicionales: {mensaje}"
                  estado["alcance_proyecto"] = nuevo_alcance
-                 estado["etapa"] = "entregables"
+                 estado["etapa"] = "kpi_spi" # ✅ RESTAURADO: Flujo hacia KPIs
                  
                  return {'success': True, 'respuesta': f"""✅ **Datos guardados y actualizados correctamente.**
 
 He agregado la información adicional al alcance del proyecto.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**ENTREGABLES DEL PROYECTO**
+**KPIs DE GESTIÓN PMI**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-📦 **¿Cuáles son los entregables principales?**
-_Ejemplo: Planos As-Built, Memorias de cálculo, Dossier de calidad, Protocolos de pruebas_""", 'botones': None, 'estado': estado, 'datos_generados': {'alcance_proyecto': nuevo_alcance}}
+Como proyecto complejo PMI, necesitamos definir los KPIs de gestión.
+
+📊 **SPI (Schedule Performance Index)**
+_Mide el desempeño del cronograma_
+
+**¿Valor de SPI?**
+_Ejemplo: 1.0_""", 'botones': None, 'estado': estado, 'datos_generados': {'alcance_proyecto': nuevo_alcance}}
 
         # ============================================
         # ETAPA: Descripción
@@ -519,7 +642,7 @@ _Ejemplo: {sugerencia_ac}_""", 'botones': None, 'estado': estado}
             try:
                 ac = int(mensaje)
                 estado["ac_k"] = ac
-                estado["etapa"] = "dias_ingenieria"  # ✅ SALTAR ALCANCE (ya se captura en formulario)
+                estado["etapa"] = "procesar_gantt"  # ✅ SALTAR ALCANCE (ya se captura en formulario)
                 
                 return {'success': True, 'respuesta': f"""✅ AC: **${ac}K**
 
@@ -534,8 +657,15 @@ EV: ${estado.get('ev_k')}K | PV: ${estado.get('pv_k')}K | AC: ${ac}K
 **CRONOGRAMA GANTT**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-📅 **Duración de Ingeniería y Diseño (días):**
-_Ejemplo: 30_""", 'botones': None, 'estado': estado}
+📅 **Definición de Duración de Fases:**
+Usa el panel interactivo para ajustar los días.""", 'botones': None, 'estado': estado, 'datos_generados': {
+                    'spi': estado.get('spi'),
+                    'cpi': estado.get('cpi'),
+                    'ev_k': estado.get('ev_k'),
+                    'pv_k': estado.get('pv_k'),
+                    'ac_k': ac
+                }, 'formulario': {'tipo': 'gantt_dias'}}
+
             except:
                 return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número entero.", 'botones': None, 'estado': estado}
         
@@ -544,7 +674,7 @@ _Ejemplo: 30_""", 'botones': None, 'estado': estado}
         # ============================================
         elif etapa == "alcance":
             estado["alcance"] = mensaje
-            estado["etapa"] = "dias_ingenieria"
+            estado["etapa"] = "procesar_gantt"
             return {'success': True, 'respuesta': f"""✅ Alcance definido
 
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -561,13 +691,92 @@ El cronograma PMI tiene 6 fases:
 5. Pruebas y Puesta en Marcha: **8 días**
 6. Cierre: **5 días**
 
-Solo necesito que definas las fases variables.
-
-⏱️ **Días para Ingeniería y Diseño:**
-_Sugerencia: 20-30 días_""", 'botones': None, 'estado': estado}
+Usa el panel interactivo para ajustar las fases variables.""", 'botones': None, 'estado': estado, 'formulario': {'tipo': 'gantt_dias'}}
         
         # ============================================
-        # ETAPA: Días Ingeniería
+        # ETAPA: Procesar Gantt (NUEVA - Reemplaza dias individuales)
+        # ============================================
+        elif etapa == "procesar_gantt":
+            import re
+            try:
+                # Intentar parsear el texto del formulario estructurado
+                texto = mensaje.lower()
+                
+                # Valores por defecto (PMI estándar)
+                dias_fases = {
+                    "inicio": 5,
+                    "planificacion": 10,
+                    "riesgos": 5,
+                    "ingenieria": 25,
+                    "ejecucion": 45,
+                    "pruebas": 10,
+                    "cierre": 5
+                }
+                
+                # Extraer duración total del mensaje "Duración Total: X días"
+                match_total = re.search(r'duraci[oó]n total:\s*(\d+)', texto)
+                duracion_total = int(match_total.group(1)) if match_total else 105
+                
+                # Extraer Ingeniería y Ejecución para compatibilidad
+                match_ing = re.search(r'ingenier[ií]a.*?:\s*(\d+)', texto)
+                match_ejec = re.search(r'ejecuci[oó]n.*?:\s*(\d+)', texto)
+                
+                if match_ing: dias_fases["ingenieria"] = int(match_ing.group(1))
+                if match_ejec: dias_fases["ejecucion"] = int(match_ejec.group(1))
+                
+                # ✅ NUEVO: Extraer Configuración de Calendario
+                config_calendario = {
+                    "dias_semana": "LUN-SAB", # Default
+                    "horas_dia": 8
+                }
+                
+                match_cal = re.search(r'calendario:\s*([A-Z-]+)', texto, re.IGNORECASE)
+                match_horas = re.search(r'\((\d+)h/día\)', texto)
+                
+                if match_cal: config_calendario["dias_semana"] = match_cal.group(1)
+                if match_horas: config_calendario["horas_dia"] = int(match_horas.group(1))
+                
+                # Guardar en estado para uso posterior
+                estado["dias_ingenieria"] = dias_fases["ingenieria"]
+                estado["dias_ejecucion"] = dias_fases["ejecucion"]
+                estado["cronograma_fases"] = dias_fases
+                estado["duracion_total"] = duracion_total
+                estado["configuracion_calendario"] = config_calendario # ✅ Guardamos config
+                
+                estado["etapa"] = "riesgo1_desc"
+                return {'success': True, 'respuesta': f"""✅ Cronograma Maestro Configurado (7 Fases):
+• Ingeniería y Diseño: **{dias_fases['ingenieria']} días**
+• Ejecución y Obra: **{dias_fases['ejecucion']} días**
+• Calendario: **{config_calendario['dias_semana']} ({config_calendario['horas_dia']}h/día)**
+
+Duración Total Estimada: **{duracion_total} días hábiles**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**REGISTRO DE RIESGOS**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Según el nivel de complejidad seleccionado, identificaremos los riesgos principales.
+
+Para cada riesgo necesito:
+• Descripción
+• Probabilidad (Alta/Media/Baja)
+• Impacto (Alto/Medio/Bajo)
+• Plan de Mitigación
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**RIESGO 1 de {estado.get('complejidad', 7) - 2}**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 **Descripción del riesgo:**
+_Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estado': estado}
+            except Exception as e:
+                 # Fallback manual si falla el regex
+                print(f"Error parsing gantt: {e}")
+                estado["etapa"] = "dias_ingenieria"
+                return {'success': False, 'respuesta': "❌ No pude leer la configuración del Gantt completa. Por favor ingresa los días de Ingeniería manualmente.", 'botones': None, 'estado': estado}
+
+        # ============================================
+        # ETAPA: Días Ingeniería (Deprecated / Fallback)
         # ============================================
         elif etapa == "dias_ingenieria":
             try:
@@ -878,8 +1087,6 @@ Define el equipo profesional usando el formulario interactivo.""",
                         }
                     }
                 else:
-                    # Nivel Básico (5 fases): Texto simple, sin formularios
-                    estado["etapa"] = "recursos_texto"
                     return {
                         'success': True,
                         'respuesta': f"""✅ Plan de mitigación guardado
@@ -892,10 +1099,16 @@ Define el equipo profesional usando el formulario interactivo.""",
 **EQUIPO Y RECURSOS**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-👥 **Equipo profesional necesario (separados por coma):**
-_Ejemplo: Project Manager PMI, Ing. Residente, Ing. Eléctrico (2), Técnicos Electricistas (4)_""",
+Aunque es un proyecto básico, definamos el equipo principal.
+Usa el formulario interactivo para seleccionar roles.""",
                         'botones': None,
-                        'estado': estado
+                        'estado': estado,
+                        'formulario': {
+                            'tipo': 'profesionales',
+                            'tipoProyecto': 'electricidad-complejo',
+                            'presupuesto': estado.get('presupuesto'),
+                            'area': estado.get('area_m2')
+                        }
                     }
         
         return {'success': False, 'respuesta': "❌ Campo de riesgo no reconocido", 'botones': None, 'estado': estado}

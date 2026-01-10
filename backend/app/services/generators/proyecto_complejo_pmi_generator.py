@@ -133,14 +133,22 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
-        spi = self.datos.get('spi', '1.05')
-        cpi = self.datos.get('cpi', '0.98')
-        ev_k = self.datos.get('ev_k', '45')
-        pv_k = self.datos.get('pv_k', '43')
-        ac_k = self.datos.get('ac_k', '46')
+        # KPIs con valores por defecto robustos
+        # Intentar obtener de 'kpis' anidado o nivel superior, con fallback a valores seguros
+        kpis_data = self.datos.get('kpis', {})
+        # Asegurar que kpis_data sea dict
+        if not isinstance(kpis_data, dict):
+            kpis_data = {}
         
-        # ✅ Extraer moneda de OPCIONES (no de datos)
-        moneda = self.opciones.get('moneda', 'USD')
+        # Prioridad: kpis anidados > kpis nivel superior > valores por defecto
+        spi = kpis_data.get('spi') or self.datos.get('spi') or '1.0'
+        cpi = kpis_data.get('cpi') or self.datos.get('cpi') or '1.0'
+        ev_k = kpis_data.get('ev_k') or self.datos.get('ev_k') or '0'
+        pv_k = kpis_data.get('pv_k') or self.datos.get('pv_k') or '0'
+        ac_k = kpis_data.get('ac_k') or self.datos.get('ac_k') or '0'
+        
+        # ✅ Extraer moneda de OPCIONES o DATOS con fallback
+        moneda = self.opciones.get('moneda') or self.datos.get('moneda') or 'USD'
         simbolo_moneda = 'S/' if moneda == 'PEN' else '€' if moneda == 'EUR' else '$'
         
         table = self.doc.add_table(rows=3, cols=5)

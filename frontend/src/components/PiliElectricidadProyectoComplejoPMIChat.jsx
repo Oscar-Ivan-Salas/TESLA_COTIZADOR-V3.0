@@ -6,6 +6,7 @@ import { PiliAvatarLarge } from './PiliAvatar';
 import FormularioEntregablesPro from './FormularioEntregablesPro';
 import FormularioProfesionalesPro from './FormularioProfesionalesPro';
 import FormularioSuministrosPro from './FormularioSuministrosPro';
+import FormularioGanttDiasPro from './FormularioGanttDiasPro';
 
 const PiliElectricidadProyectoComplejoPMIChat = ({
     datosCliente,
@@ -24,7 +25,11 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     onFinish,
     // ✅ NUEVO: Props para memoria de chat
     chatMemory = { conversacion: [], conversationState: null, hasQuote: false },
-    onChatMemoryUpdate = () => { }
+    onChatMemoryUpdate = () => { },
+    complejidad, // ✅ NUEVO
+    etapasSeleccionadas, // ✅ NUEVO
+    incluirMetrado, // ✅ NUEVO: Metrado
+    areaMetrado // ✅ NUEVO: Metrado
 }) => {
     const [conversacion, setConversacion] = useState([]);
     const [inputValue, setInputValue] = useState('');
@@ -88,7 +93,13 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                     horario: datosCalendario.horario,
                     dias_habiles: datosCalendario.dias_habiles,
                     // ✅ NUEVO: Pasar el alcance inicial para saltar preguntas redundantes
-                    alcance_proyecto: descripcion_inicial || ''
+                    alcance_proyecto: descripcion_inicial || '',
+                    // ✅ NUEVO: Configuración de Alcance y Complejidad desde Formulario
+                    complejidad: complejidad || 7,
+                    etapas_seleccionadas: etapasSeleccionadas || [],
+                    // ✅ NUEVO: Configuración de Metrado
+                    incluir_metrado: incluirMetrado || false,
+                    area_proyecto: areaMetrado || null
                 })
             };
 
@@ -137,8 +148,13 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 })
             });
 
-            const data = await res.json();
+            if (!res.ok) {
+                console.error('❌ Error HTTP:', res.status, res.statusText);
+                throw new Error(`Error del servidor: ${res.status}`);
+            }
 
+            const data = await res.json();
+            console.log('📥 RESPUESTA CHATBOT:', data);
 
             if (data.success) {
                 // ✨ NUEVO: Detectar si viene formulario
@@ -148,15 +164,16 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                 if (data.datos_generados) {
                     // 🔍 DEBUG: Ver qué datos genera el chatbot backend
                     console.log('🔍 DEBUG CHAT PMI - datos_generados del backend:', data.datos_generados);
-                    console.log('  servicio:', data.datos_generados.servicio);
-                    console.log('  industria:', data.datos_generados.industria);
-
                     setHasQuote(true);
                     if (onDatosGenerados) onDatosGenerados(data.datos_generados);
                 }
+            } else {
+                console.warn('⚠️ Respuesta success: false', data);
+                addMessage('bot', data.respuesta || '❌ Error procesando respuesta.');
             }
         } catch (e) {
-            addMessage('bot', '❌ Error de conexión. Por favor intenta de nuevo.');
+            console.error('❌ Error capturado en enviarMensaje:', e);
+            addMessage('bot', `❌ Error de conexión: ${e.message}. Revisa la consola.`);
         } finally {
             setIsTyping(false);
         }
@@ -260,6 +277,22 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                                                 onSubmit={(suministros) => {
                                                     console.log('✅ Suministros seleccionados:', suministros);
                                                     const texto = suministros.map(s => `${s.nombre} (${s.cantidad} ${s.unidad})`).join(', ');
+                                                    addMessage('user', texto);
+                                                    setTimeout(() => enviarMensaje(texto), 100);
+                                                }}
+                                            />
+                                        )}
+                                        {msg.formulario.tipo === 'gantt_dias' && (
+                                            <FormularioGanttDiasPro
+                                                datosCalendario={datosCalendario}
+                                                maxDuracion={duracion_total}
+                                                onSubmit={(datos) => {
+                                                    console.log('✅ Gantt configurado:', datos);
+                                                    // Usar el resumen generado por el componente (ahora incluye calendario)
+                                                    const texto = datos.textoCompleto
+                                                        ? `✅ Cronograma Definido:\n${datos.textoCompleto}\n\nDuración Total: ${datos.total} días hábiles.\nFecha Fin: ${datos.fechaFin ? datos.fechaFin.toLocaleDateString() : 'Pendiente'}`
+                                                        : `✅ Cronograma Definido:\n${datos.textoResumen}\n\nDuración Total: ${datos.total} días hábiles.\nFecha Fin: ${datos.fechaFin ? datos.fechaFin.toLocaleDateString() : 'Pendiente'}`;
+
                                                     addMessage('user', texto);
                                                     setTimeout(() => enviarMensaje(texto), 100);
                                                 }}

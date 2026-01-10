@@ -1,6 +1,6 @@
 ﻿// @ts-nocheck
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail } from 'lucide-react';
+import { Upload, MessageSquare, FileText, Download, Zap, Send, Loader, Edit, Save, AlertCircle, CheckCircle, X, RefreshCw, Home, FolderOpen, Eye, EyeOff, Folder, Users, TrendingUp, Clock, BarChart3, FileCheck, Briefcase, ChevronDown, ChevronUp, Layout, Layers, BookOpen, Calculator, Calendar, Target, Archive, Settings, PieChart, Maximize2, Minimize2, Plus, Trash2, Building2, MapPin, Phone, Mail, CheckSquare } from 'lucide-react';
 import PiliAvatar from './components/PiliAvatar';
 import ChatIA from './components/ChatIA';
 import PiliITSEChat from './components/PiliITSEChat';
@@ -48,7 +48,15 @@ const CotizadorTesla30 = () => {
   const [descargando, setDescargando] = useState(null);
   const [logoBase64, setLogoBase64] = useState('');
   const [botonesContextuales, setBotonesContextuales] = useState([]);
-  const [datosCalendario, setDatosCalendario] = useState(null); // ✅ NUEVO: Datos del calendario profesional
+  const [datosCalendario, setDatosCalendario] = useState(null);
+  // ✅ NUEVO: Estado para configuración de Alcance PMI (Checklist)
+  const [complejidad, setComplejidad] = useState(7);
+  const [etapasSeleccionadas, setEtapasSeleccionadas] = useState([
+    'acta_constitucion', 'stakeholders', 'riesgos', 'cronograma', 'calidad', 'comunicaciones', 'cierre'
+  ]);
+  // ✅ NUEVO: Estado para Metrado (m2)
+  const [incluirMetrado, setIncluirMetrado] = useState(false);
+  const [areaMetrado, setAreaMetrado] = useState('');
 
   // Estados para vista previa HTML editable
   const [htmlPreview, setHtmlPreview] = useState('');
@@ -1755,7 +1763,7 @@ const CotizadorTesla30 = () => {
                 {esProyecto && (
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-6 border-2 border-blue-700 shadow-xl">
                     <h2 className="text-2xl font-bold mb-4 text-blue-400">📋 Información del Proyecto</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-6">
                       <div>
                         <label className="block text-blue-400 font-semibold mb-2">Nombre del Proyecto *</label>
                         <input
@@ -1766,17 +1774,8 @@ const CotizadorTesla30 = () => {
                           placeholder="Ej: Instalación Eléctrica Edificio Central"
                         />
                       </div>
-                      <div>
-                        <label className="block text-blue-400 font-semibold mb-2">Cliente *</label>
-                        <input
-                          type="text"
-                          value={datosCliente.nombre}
-                          onChange={(e) => setDatosCliente({ ...datosCliente, nombre: e.target.value })}
-                          className="w-full px-4 py-3 bg-gray-950 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white"
-                          placeholder="Ej: Constructora ABC S.A.C."
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
+
+                      <div className="grid grid-cols-3 gap-4">
                         <div className="col-span-2">
                           <label className="block text-blue-400 font-semibold mb-2">Presupuesto Estimado</label>
                           <input
@@ -1800,15 +1799,119 @@ const CotizadorTesla30 = () => {
                           </select>
                         </div>
                       </div>
-                      {/* ✅ CALENDARIO PROFESIONAL - Reemplaza input de duración */}
+
+                      {/* ✅ CALENDARIO PROFESIONAL - Persistencia corregida */}
                       <CalendarioProyecto
                         onChange={setDatosCalendario}
                         valoresIniciales={{
-                          fechaInicio: new Date(),
+                          fechaInicio: datosCalendario?.fechaInicio ? new Date(datosCalendario.fechaInicio) : new Date(),
                           duracionMeses: duracion_total || 4,
                           usarDiasHabiles: true
                         }}
                       />
+
+                      {/* ✅ NUEVO: CHECKLIST DE ALCANCE PMI (Solo para Proyecto Complejo) */}
+                      {tipoFlujo === 'proyecto-complejo' && (
+                        <>
+                          <div className="mt-6 border-t border-blue-800 pt-6">
+                            <h3 className="text-xl font-bold text-blue-300 mb-4 flex items-center gap-2">
+                              <CheckSquare className="w-5 h-5" />
+                              Definir Alcance del Proyecto
+                            </h3>
+
+                            {/* Selector de Complejidad Visual */}
+                            <div className="flex gap-4 mb-6">
+                              <button
+                                onClick={() => {
+                                  setComplejidad(5);
+                                  setEtapasSeleccionadas(['acta_constitucion', 'stakeholders', 'cronograma', 'cierre']);
+                                }}
+                                className={`flex-1 p-4 rounded-xl border-2 transition-all ${complejidad === 5 ? 'bg-blue-600 border-blue-400 text-white' : 'bg-gray-900 border-gray-700 text-gray-400'}`}
+                              >
+                                <div className="font-bold text-lg">5 Fases - Básico</div>
+                                <div className="text-xs opacity-80">Proyectos estándar</div>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setComplejidad(7);
+                                  setEtapasSeleccionadas(['acta_constitucion', 'stakeholders', 'riesgos', 'cronograma', 'calidad', 'comunicaciones', 'cierre']);
+                                }}
+                                className={`flex-1 p-4 rounded-xl border-2 transition-all ${complejidad === 7 ? 'bg-purple-600 border-purple-400 text-white' : 'bg-gray-900 border-gray-700 text-gray-400'}`}
+                              >
+                                <div className="font-bold text-lg">7 Fases - Avanzado</div>
+                                <div className="text-xs opacity-80">Gestión integral PMI</div>
+                              </button>
+                            </div>
+
+                            {/* Checklist Visual */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {[
+                                { id: 'acta_constitucion', label: 'Acta de Constitución' },
+                                { id: 'stakeholders', label: 'Interesados (Stakeholders)' },
+                                { id: 'riesgos', label: 'Gestión de Riesgos' },
+                                { id: 'cronograma', label: 'Cronograma Detallado' },
+                                { id: 'calidad', label: 'Plan de Calidad' },
+                                { id: 'comunicaciones', label: 'Plan de Comunicaciones' },
+                                { id: 'cierre', label: 'Informe de Cierre' }
+                              ].map(etapa => (
+                                <label key={etapa.id} className="flex items-center gap-3 p-3 bg-gray-950 rounded-lg border border-gray-800 cursor-pointer hover:border-blue-500 transition-colors">
+                                  <input
+                                    type="checkbox"
+                                    checked={etapasSeleccionadas.includes(etapa.id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) setEtapasSeleccionadas([...etapasSeleccionadas, etapa.id]);
+                                      else setEtapasSeleccionadas(etapasSeleccionadas.filter(id => id !== etapa.id));
+                                    }}
+                                    className="w-5 h-5 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-800"
+                                  />
+                                  <span className={etapasSeleccionadas.includes(etapa.id) ? 'text-white font-medium' : 'text-gray-500'}>
+                                    {etapa.label}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* ✅ NUEVO: CONFIGURACIÓN DE METRADO (m2) */}
+                          <div className="mt-6 border-t border-blue-800 pt-6">
+                            <h3 className="text-xl font-bold text-blue-300 mb-4 flex items-center gap-2">
+                              <TrendingUp className="w-5 h-5" />
+                              Metrado y Dimensiones
+                            </h3>
+
+                            <div className="bg-gray-950 rounded-xl p-4 border border-blue-900">
+                              <div className="flex items-center justify-between mb-4">
+                                <div>
+                                  <p className="font-semibold text-white">¿Definir Metrado Total?</p>
+                                  <p className="text-xs text-gray-400">Especificar área total del proyecto (m²)</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={incluirMetrado}
+                                    onChange={(e) => setIncluirMetrado(e.target.checked)}
+                                    className="sr-only peer"
+                                  />
+                                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                              </div>
+
+                              {incluirMetrado && (
+                                <div className="animate-fadeIn">
+                                  <label className="block text-blue-400 font-semibold mb-2">Área Total del Proyecto (m²)</label>
+                                  <input
+                                    type="number"
+                                    value={areaMetrado}
+                                    onChange={(e) => setAreaMetrado(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-900 border border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white text-lg font-bold"
+                                    placeholder="Ej: 150"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -2042,11 +2145,45 @@ const CotizadorTesla30 = () => {
                         datosCalendario={datosCalendario}
                         servicio={servicioSeleccionado}
                         industria={industriaSeleccionada}
-                        descripcion_inicial={contextoUsuario} // ✅ NUEVO: Pasar descripción detallada
+                        descripcion_inicial={contextoUsuario}
                         proyectoId={proyectoId}
                         chatMemory={chatMemory}
                         onChatMemoryUpdate={setChatMemory}
-                        onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO COMPLEJO PMI:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }}
+                        // ✅ NUEVO: Pasar configuración de alcance
+                        complejidad={complejidad}
+                        etapasSeleccionadas={etapasSeleccionadas}
+                        // ✅ NUEVO: Pasar configuración de Metrado
+                        incluirMetrado={incluirMetrado}
+                        areaMetrado={areaMetrado}
+                        onDatosGenerados={(datos) => {
+                          console.log('✅ DATOS PROYECTO COMPLEJO PMI (MERGE):', datos);
+
+                          // 🔄 TRANSFORMACIÓN DE DATOS: DICCIONARIO -> ARRAY VISUAL PARA GANTT
+                          let datosFinales = { ...datos };
+
+                          if (datos.cronograma_fases && !Array.isArray(datos.cronograma_fases)) {
+                            console.log('🔄 Transformando cronograma_fases de objeto a array visual...');
+                            const f = datos.cronograma_fases;
+                            const diasTotal = datos.duracion_total || 100; // Evitar división por cero
+
+                            // Función helper para calcular ancho %
+                            const getWidth = (dias) => Math.max(5, Math.round((dias / diasTotal) * 100)) + '%';
+
+                            datosFinales.cronograma_fases = [
+                              { label: '1. Inicio', width: getWidth(f.inicio || 5), dias: `${f.inicio || 5} días` },
+                              { label: '2. Planificación', width: getWidth(f.planificacion || 10), dias: `${f.planificacion || 10} días` },
+                              { label: '3. Riesgos y Calidad', width: getWidth(f.riesgos || 5), dias: `${f.riesgos || 5} días` },
+                              { label: '4. Ingeniería y Diseño', width: getWidth(f.ingenieria || 25), dias: `${f.ingenieria || 25} días` },
+                              { label: '5. Ejecución', width: getWidth(f.ejecucion || 45), dias: `${f.ejecucion || 45} días` },
+                              { label: '6. Pruebas (FAT/SAT)', width: getWidth(f.pruebas || 10), dias: `${f.pruebas || 10} días` },
+                              { label: '7. Cierre', width: getWidth(f.cierre || 5), dias: `${f.cierre || 5} días` }
+                            ];
+                          }
+
+                          setProyecto(prev => ({ ...prev, ...datosFinales }));
+                          setDatosEditables(prev => ({ ...prev, ...datosFinales }));
+                          setMostrarPreview(true);
+                        }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}

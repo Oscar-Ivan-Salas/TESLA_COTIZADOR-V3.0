@@ -71,49 +71,82 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
     };
     const colores = COLORES[esquemaColores] || COLORES['azul-tesla'];
 
-    // ✅ CRÍTICO: Sincronizar datos del chatbot cuando lleguen
+    // ✅ Sincronizar datos iniciales (Solo una vez o cuando cambian drásticamente)
     useEffect(() => {
         if (datos && Object.keys(datos).length > 0) {
+            setDatosEditables(prev => {
+                // Objeto con datos entrantes del chatbot
+                const nuevos = {};
 
-            setDatosEditables(prev => ({
-                ...prev,
-                // Sobrescribir SOLO los campos que vienen del chatbot
-                ...(datos.nombre_proyecto && { nombre_proyecto: datos.nombre_proyecto }),
-                ...(datos.codigo_proyecto && { codigo_proyecto: datos.codigo_proyecto }),
-                ...(datos.cliente && { cliente: datos.cliente }),
-                ...(datos.duracion_total && { duracion_total: datos.duracion_total }),
-                ...(datos.fecha_inicio && { fecha_inicio: datos.fecha_inicio }),
-                ...(datos.fecha_fin && { fecha_fin: datos.fecha_fin }),
-                ...(datos.presupuesto && { presupuesto: datos.presupuesto }),
-                ...(datos.spi && { spi: datos.spi }),
-                ...(datos.cpi && { cpi: datos.cpi }),
-                ...(datos.ev_k && { ev_k: datos.ev_k }),
-                ...(datos.pv_k && { pv_k: datos.pv_k }),
-                ...(datos.ac_k && { ac_k: datos.ac_k }),
-                ...(datos.alcance_proyecto && { alcance_proyecto: datos.alcance_proyecto }),
+                // Mapeo seguro de campos
+                if (datos.nombre_proyecto) nuevos.nombre_proyecto = datos.nombre_proyecto;
+                if (datos.codigo_proyecto) nuevos.codigo_proyecto = datos.codigo_proyecto;
+                if (datos.cliente) nuevos.cliente = datos.cliente;
+                if (datos.duracion_total) nuevos.duracion_total = datos.duracion_total;
+                if (datos.fecha_inicio) nuevos.fecha_inicio = datos.fecha_inicio;
+                if (datos.fecha_fin) nuevos.fecha_fin = datos.fecha_fin;
+                if (datos.presupuesto) nuevos.presupuesto = datos.presupuesto;
 
-                ...(datos.dias_ingenieria && { dias_ingenieria: datos.dias_ingenieria }),
-                ...(datos.dias_ejecucion && { dias_ejecucion: datos.dias_ejecucion }),
-                ...(datos.normativa_aplicable && { normativa_aplicable: datos.normativa_aplicable }),
-                ...(datos.subtitulo_normativa && { subtitulo_normativa: datos.subtitulo_normativa }),
-                ...(datos.stakeholders && { stakeholders: datos.stakeholders }),
-                ...(datos.riesgos && { riesgos: datos.riesgos }),
-                ...(datos.entregables && { entregables: datos.entregables }),
-                // ✅ CRÍTICO: Cronograma dinámico
-                ...(datos.cronograma_fases && { cronograma_fases: datos.cronograma_fases }),
-                ...(datos.raci_actividades && { raci_actividades: datos.raci_actividades }),
-                ...(datos.recursos_humanos && { recursos_humanos: datos.recursos_humanos }),
-                ...(datos.materiales && { materiales: datos.materiales }),
-                // ✅ NUEVO: Información del Proyecto
-                ...(datos.ubicacion && { ubicacion: datos.ubicacion }),
-                ...(datos.area_m2 && { area_m2: datos.area_m2 }),
-                // ✅ NUEVO: Datos completos del cliente
-                ...(datos.cliente && {
-                    cliente: typeof datos.cliente === 'string' ? { nombre: datos.cliente } : datos.cliente
-                })
-            }));
+                // KPIs
+                if (datos.spi) nuevos.spi = datos.spi;
+                if (datos.cpi) nuevos.cpi = datos.cpi;
+                if (datos.ev_k) nuevos.ev_k = datos.ev_k;
+                if (datos.pv_k) nuevos.pv_k = datos.pv_k;
+                if (datos.ac_k) nuevos.ac_k = datos.ac_k;
+
+                // Alcance y Técnica
+                if (datos.alcance_proyecto) nuevos.alcance_proyecto = datos.alcance_proyecto;
+                if (datos.dias_ingenieria) nuevos.dias_ingenieria = datos.dias_ingenieria;
+                if (datos.dias_ejecucion) nuevos.dias_ejecucion = datos.dias_ejecucion;
+                if (datos.normativa_aplicable) nuevos.normativa_aplicable = datos.normativa_aplicable;
+                if (datos.subtitulo_normativa) nuevos.subtitulo_normativa = datos.subtitulo_normativa;
+
+                // Arrays complejos
+                if (datos.stakeholders) nuevos.stakeholders = datos.stakeholders;
+                if (datos.riesgos) nuevos.riesgos = datos.riesgos;
+                if (datos.entregables) nuevos.entregables = datos.entregables;
+                if (datos.entregables) nuevos.entregables = datos.entregables;
+                // ✅ Soporte para array visual o diccionario (preferencia por array ya transformado)
+                if (datos.cronograma_fases) {
+                    nuevos.cronograma_fases = datos.cronograma_fases;
+                }
+                if (datos.raci_actividades) nuevos.raci_actividades = datos.raci_actividades;
+                if (datos.recursos_humanos) nuevos.recursos_humanos = datos.recursos_humanos;
+                if (datos.materiales) nuevos.materiales = datos.materiales;
+
+                // Infos Extra
+                if (datos.ubicacion) nuevos.ubicacion = datos.ubicacion;
+                if (datos.area_m2) nuevos.area_m2 = datos.area_m2;
+                if (datos.servicio) nuevos.servicio = datos.servicio;
+                if (datos.industria) nuevos.industria = datos.industria;
+
+                // Solo actualizar si hay alguna diferencia real
+                // (Evita bucles infinitos si la referencia es nueva pero el contenido igual)
+                if (JSON.stringify(nuevos) !== JSON.stringify(prev)) {
+                    return { ...prev, ...nuevos };
+                }
+                return prev;
+            });
         }
     }, [datos]);
+
+    // ❌ ELIMINADO: El useEffect que causaba el bucle infinito.
+    // La notificación al padre (onDatosChange) ahora dependerá EXCLUSIVAMENTE de los eventos de usuario (onChange en inputs).
+
+    const handleChange = (campo, valor) => {
+        const nuevosDatos = { ...datosEditables, [campo]: valor };
+        setDatosEditables(nuevosDatos);
+        if (onDatosChange) onDatosChange(nuevosDatos);
+    };
+
+    const handleKpiChange = (kpi, valor) => {
+        const nuevosDatos = {
+            ...datosEditables,
+            [kpi]: valor // Asumiendo que los KPIs son campos directos en datosEditables
+        };
+        setDatosEditables(nuevosDatos);
+        if (onDatosChange) onDatosChange(nuevosDatos);
+    };
 
 
     const getBadgeStyle = (nivel) => {
@@ -177,14 +210,20 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', margin: '25px 0' }}>
                 {[
                     { label: 'Cliente', value: typeof datosEditables.cliente === 'object' ? datosEditables.cliente?.nombre : datosEditables.cliente, field: 'cliente' },
-                    { label: 'Duración Total', value: `${datosEditables.duracion_total} días`, field: 'duracion_total' },
+                    { label: 'Duración Total', value: datosEditables.duracion_total, field: 'duracion_total', suffix: ' días' },
                     { label: 'Inicio', value: datosEditables.fecha_inicio, field: 'fecha_inicio' },
                     { label: 'Fin Estimado', value: datosEditables.fecha_fin, field: 'fecha_fin' }
                 ].map((card, i) => (
                     <div key={i} style={{ padding: '15px', background: '#F9FAFB', borderLeft: '4px solid #3B82F6', borderRadius: '4px' }}>
                         <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', textTransform: 'uppercase' }}>{card.label}</div>
-                        <div style={{ fontSize: '16px', color: colores.primario, fontWeight: 'bold', marginTop: '5px' }}>
-                            <input type="text" value={card.value} onChange={(e) => setDatosEditables({ ...datosEditables, [card.field]: e.target.value })} style={{ width: '100%', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: '14px' }} />
+                        <div style={{ fontSize: '16px', color: colores.primario, fontWeight: 'bold', marginTop: '5px', display: 'flex', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                value={card.value || ''}
+                                onChange={(e) => setDatosEditables({ ...datosEditables, [card.field]: e.target.value })}
+                                style={{ width: '100%', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: '14px' }}
+                            />
+                            {card.suffix && <span style={{ fontSize: '14px', color: '#6B7280', marginLeft: '4px', whiteSpace: 'nowrap' }}>{card.suffix}</span>}
                         </div>
                     </div>
                 ))}
@@ -297,12 +336,17 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                         { label: 'PV', value: `${moneda}${datosEditables.pv_k}K`, desc: 'Planned Value', field: 'pv_k' },
                         { label: 'AC', value: `${moneda}${datosEditables.ac_k}K`, desc: 'Actual Cost', field: 'ac_k' }
                     ].map((kpi, i) => (
-                        <div key={i} style={{ padding: '20px', background: 'white', border: `2px solid ${colores.claroBorde}`, borderRadius: '8px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '12px', color: '#6B7280', fontWeight: '600', marginBottom: '10px' }}>{kpi.label}</div>
-                            <div style={{ fontSize: i < 2 ? '28px' : '20px', color: colores.primario, fontWeight: 'bold' }}>
-                                <input type="text" value={kpi.value} onChange={(e) => setDatosEditables({ ...datosEditables, [kpi.field]: e.target.value.replace(/[^0-9.]/g, '') })} style={{ width: '80%', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: i < 2 ? '28px' : '20px', textAlign: 'center' }} />
+                        <div key={i} style={{ padding: '12px 10px', background: 'white', border: `2px solid ${colores.claroBorde}`, borderRadius: '8px', textAlign: 'center', minHeight: '100px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase' }}>{kpi.label}</div>
+                            <div style={{ fontSize: i < 2 ? '24px' : '18px', color: colores.primario, fontWeight: 'bold' }}>
+                                <input
+                                    type="text"
+                                    value={kpi.value}
+                                    onChange={(e) => setDatosEditables({ ...datosEditables, [kpi.field]: e.target.value })}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', color: colores.primario, fontWeight: 'bold', fontSize: i < 2 ? '24px' : '18px', textAlign: 'center', padding: 0 }}
+                                />
                             </div>
-                            <div style={{ fontSize: '9px', color: '#9CA3AF', marginTop: '5px' }}>{kpi.desc}</div>
+                            <div style={{ fontSize: '8px', color: '#9CA3AF', marginTop: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{kpi.desc}</div>
                         </div>
                     ))}
                 </div>
@@ -355,6 +399,18 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                         </div>
                     ))}
                 </div>
+                {/* ✅ TOTAL DE DÍAS - Resumen al pie del Gantt */}
+                <div style={{ padding: '10px 15px', background: `linear-gradient(to right, ${colores.claro}, white)`, borderLeft: `4px solid ${colores.primario}`, borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: colores.primario, textTransform: 'uppercase' }}>
+                        Duración Total Estimada
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#111827' }}>
+                        {datosEditables.cronograma_fases.reduce((acc, fase) => {
+                            const dias = parseInt(fase.dias) || 0;
+                            return acc + dias;
+                        }, 0)} días hábiles
+                    </div>
+                </div>
             </div>
 
             {/* STAKEHOLDERS */}
@@ -383,70 +439,72 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
             </div>
 
             {/* MATRIZ RACI - Solo si complejidad >= 6 */}
-            {complejidad >= 6 && (
-                <div style={{ margin: '30px 0' }}>
-                    <h2 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', paddingBottom: '8px', borderBottom: `3px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>Matriz RACI (Responsabilidades)
-                    </h2>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
-                        <thead style={{ background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white' }}>
-                            <tr>
-                                <th style={{ padding: '12px', textAlign: 'left' }}>Actividad</th>
-                                <th style={{ padding: '12px' }}>PM</th>
-                                <th style={{ padding: '12px' }}>Ing. Residente</th>
-                                <th style={{ padding: '12px' }}>Técnicos</th>
-                                <th style={{ padding: '12px' }}>Inspector QA</th>
-                                <th style={{ padding: '12px' }}>Cliente</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {datosEditables.raci_actividades.map((fila, i) => (
-                                <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#F9FAFB' }}>
-                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB' }}>
-                                        <input
-                                            type="text"
-                                            value={fila.actividad}
-                                            onChange={(e) => {
-                                                const nuevasActs = [...datosEditables.raci_actividades];
-                                                nuevasActs[i].actividad = e.target.value;
-                                                setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
-                                            }}
-                                            style={{ width: '100%', border: 'none', background: 'transparent' }}
-                                        />
-                                    </td>
-                                    {fila.roles.map((rol, j) => (
-                                        <td key={j} style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
+            {
+                complejidad >= 6 && (
+                    <div style={{ margin: '30px 0' }}>
+                        <h2 style={{ fontSize: '18px', color: colores.primario, marginBottom: '15px', paddingBottom: '8px', borderBottom: `3px solid ${colores.primario}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ width: '6px', height: '24px', background: colores.acento }}></span>Matriz RACI (Responsabilidades)
+                        </h2>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px' }}>
+                            <thead style={{ background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.secundario} 100%)`, color: 'white' }}>
+                                <tr>
+                                    <th style={{ padding: '12px', textAlign: 'left' }}>Actividad</th>
+                                    <th style={{ padding: '12px' }}>PM</th>
+                                    <th style={{ padding: '12px' }}>Ing. Residente</th>
+                                    <th style={{ padding: '12px' }}>Técnicos</th>
+                                    <th style={{ padding: '12px' }}>Inspector QA</th>
+                                    <th style={{ padding: '12px' }}>Cliente</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {datosEditables.raci_actividades.map((fila, i) => (
+                                    <tr key={i} style={{ background: i % 2 === 0 ? 'white' : '#F9FAFB' }}>
+                                        <td style={{ padding: '10px 12px', borderBottom: '1px solid #E5E7EB' }}>
                                             <input
                                                 type="text"
-                                                value={rol}
+                                                value={fila.actividad}
                                                 onChange={(e) => {
                                                     const nuevasActs = [...datosEditables.raci_actividades];
-                                                    nuevasActs[i].roles[j] = e.target.value.toUpperCase().slice(0, 1);
+                                                    nuevasActs[i].actividad = e.target.value;
                                                     setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
                                                 }}
-                                                style={{ width: '30px', textAlign: 'center', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #ddd', ...getRACIStyle(rol) }}
+                                                style={{ width: '100%', border: 'none', background: 'transparent' }}
                                             />
                                         </td>
-                                    ))}
-                                </tr>
+                                        {fila.roles.map((rol, j) => (
+                                            <td key={j} style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
+                                                <input
+                                                    type="text"
+                                                    value={rol}
+                                                    onChange={(e) => {
+                                                        const nuevasActs = [...datosEditables.raci_actividades];
+                                                        nuevasActs[i].roles[j] = e.target.value.toUpperCase().slice(0, 1);
+                                                        setDatosEditables({ ...datosEditables, raci_actividades: nuevasActs });
+                                                    }}
+                                                    style={{ width: '30px', textAlign: 'center', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid #ddd', ...getRACIStyle(rol) }}
+                                                />
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div style={{ marginTop: '15px', padding: '10px', background: '#F9FAFB', borderRadius: '4px', fontSize: '10px' }}>
+                            <strong>Leyenda:</strong>
+                            {['R', 'A', 'C', 'I'].map((letra, i) => (
+                                <span key={i} style={{ marginLeft: i > 0 ? '10px' : '5px' }}>
+                                    <span style={{ padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', ...getRACIStyle(letra) }}>{letra}</span>
+                                    {letra === 'R' && ' Responsable'}
+                                    {letra === 'A' && ' Aprobador'}
+                                    {letra === 'C' && ' Consultado'}
+                                    {letra === 'I' && ' Informado'}
+                                    {i < 3 && ' |'}
+                                </span>
                             ))}
-                        </tbody>
-                    </table>
-                    <div style={{ marginTop: '15px', padding: '10px', background: '#F9FAFB', borderRadius: '4px', fontSize: '10px' }}>
-                        <strong>Leyenda:</strong>
-                        {['R', 'A', 'C', 'I'].map((letra, i) => (
-                            <span key={i} style={{ marginLeft: i > 0 ? '10px' : '5px' }}>
-                                <span style={{ padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', ...getRACIStyle(letra) }}>{letra}</span>
-                                {letra === 'R' && ' Responsable'}
-                                {letra === 'A' && ' Aprobador'}
-                                {letra === 'C' && ' Consultado'}
-                                {letra === 'I' && ' Informado'}
-                                {i < 3 && ' |'}
-                            </span>
-                        ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* RECURSOS Y MATERIALES - Sección Nueva */}
             <div style={{ margin: '30px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -578,7 +636,7 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 <div style={{ fontWeight: 'bold', color: colores.primario, fontSize: '12px', marginBottom: '8px' }}>TESLA ELECTRICIDAD Y AUTOMATIZACIÓN S.A.C.</div>
                 <div>RUC: 20601138787 | Tel: 906 315 961 | Email: ingenieria.teslaelectricidad@gmail.com</div>
             </div>
-        </div>
+        </div >
     );
 };
 
