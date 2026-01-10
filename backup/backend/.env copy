@@ -1,0 +1,64 @@
+# ═══════════════════════════════════════════════════════════
+# TESLA COTIZADOR V3.0 - CONFIGURACIÓN DE ENTORNO (CORREGIDA)
+# ═══════════════════════════════════════════════════════════
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ⚙️ CONFIGURACIÓN GENERAL
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ESTE ES EL INTERRUPTOR:
+# "development" -> Usa SQLite (fácil, sin instalar nada)
+# "production"  -> Usa PostgreSQL (para el servidor final)
+ENVIRONMENT="development"
+DEBUG=True
+LOG_LEVEL="INFO"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🗄️ BASE DE DATOS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ¡IMPORTANTE! Solo definimos las URLs que pide config.py
+# Pydantic elegirá la correcta basado en 'ENVIRONMENT'
+
+# 1. Desarrollo (SQLite) - Esta es la que se usará ahora
+# (config.py crea la ruta completa automáticamente)
+DEV_DATABASE_URL="sqlite:///./database/tesla_cotizador.db"
+
+# 2. Producción (PostgreSQL) - Debe estar definida, aunque no se use
+PROD_DATABASE_URL="postgresql+asyncpg://postgres:tu_contraseña@localhost:5432/tesla_cotizador_prod"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🤖 GOOGLE GEMINI API
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GEMINI_API_KEY="AIzaSyC3iuSrOHHT06peS9kONPrggSZ4yq8KTbU"
+GEMINI_API_KEY="AIzaSyC3iuSrOHHT06peS9kONPrggSZ4yq8KTbU"
+GEMINI_MODEL="gemini-1.5-pro"
+MAX_TOKENS=8192
+TEMPERATURE=0.7
+EMBEDDING_MODEL="models/embedding-001"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🔒 SEGURIDAD
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECRET_KEY="tesla_secret_key_change_in_production_2025"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🌐 SERVIDOR
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BACKEND_HOST="0.0.0.0"
+BACKEND_PORT=8000
+FRONTEND_URL="http://localhost:3000"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 📁 RUTAS DE ALMACENAMIENTO (¡YA NO SE DEFINEN AQUÍ!)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# config.py ahora genera todas las rutas (UPLOAD_DIR, GENERATED_DIR,
+# CHROMA_PERSIST_DIRECTORY, etc.) automáticamente.
+# Esto previene el error 'backend/backend'.
+#
+# Dejamos estas variables por si algún helper antiguo las usa,
+# pero config.py NO las usará para sus rutas principales.
+ALLOWED_EXTENSIONS="pdf,docx,xlsx,txt,png,jpg,jpeg"
+MAX_UPLOAD_SIZE_MB=50
+STORAGE_PATH="./storage"
+TEMPLATES_PATH="./templates"
