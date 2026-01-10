@@ -671,7 +671,10 @@ Usa el panel interactivo para ajustar los días.""", 'botones': None, 'estado': 
                     'ev_k': estado.get('ev_k'),
                     'pv_k': estado.get('pv_k'),
                     'ac_k': ac
-                }, 'formulario': {'tipo': 'gantt_dias'}}
+                }, 'formulario': {
+                    'tipo': 'gantt_dias',
+                    'datosCalendario': self._extraer_datos_calendario(estado)
+                }}
 
             except:
                 return {'success': False, 'respuesta': "❌ Valor inválido. Ingresa un número entero.", 'botones': None, 'estado': estado}
@@ -705,56 +708,124 @@ Usa el panel interactivo para ajustar las fases variables.""", 'botones': None, 
         # ============================================
         elif etapa == "procesar_gantt":
             import re
+            import json
             try:
-                # Intentar parsear el texto del formulario estructurado
-                texto = mensaje.lower()
+                # ✅ NUEVO: Detectar si el mensaje contiene JSON embebido
+                if isinstance(mensaje, str) and mensaje.startswith("GANTT_DATA_JSON:"):
+                    # Extraer y parsear JSON embebido
+                    json_str = mensaje.replace("GANTT_DATA_JSON:", "", 1)
+                    datos_json = json.loads(json_str)
+                    print(f"✅ JSON embebido detectado y parseado: {datos_json}")
+                    mensaje = datos_json  # Reemplazar mensaje con objeto parseado
                 
-                # Valores por defecto (PMI estándar)
-                dias_fases = {
-                    "inicio": 5,
-                    "planificacion": 10,
-                    "riesgos": 5,
-                    "ingenieria": 25,
-                    "ejecucion": 45,
-                    "pruebas": 10,
-                    "cierre": 5
-                }
+                # ✅ Intentar procesar datos estructurados del formulario primero
+                if isinstance(mensaje, dict) and 'fases' in mensaje:
+                    # Datos estructurados del FormularioGanttDiasPro
+                    fases_array = mensaje.get('fases', [])
+                    duracion_total = mensaje.get('total', 105)
+                    config_calendario = mensaje.get('configuracionCalendario', {})
+                    
+                    # Convertir array de fases a diccionario
+                    dias_fases = {
+                        "inicio": 5,
+                        "planificacion": 10,
+                        "riesgos": 5,
+                        "ingenieria": 25,
+                        "ejecucion": 45,
+                        "pruebas": 10,
+                        "cierre": 5
+                    }
+                    
+                    # Mapear fases del formulario a claves del diccionario
+                    fase_map = {
+                        "Inicio": "inicio",
+                        "Planificación Detallada": "planificacion",
+                        "Gestión de Riesgos y Calidad": "riesgos",
+                        "Ingeniería y Diseño": "ingenieria",
+                        "Ejecución y Monitoreo": "ejecucion",
+                        "Pruebas Integrales (FAT/SAT)": "pruebas",
+                        "Cierre y Lecciones Aprendidas": "cierre"
+                    }
+                    
+                    for fase in fases_array:
+                        nombre = fase.get('nombre', '')
+                        duracion = fase.get('duracion', 0)
+                        if nombre in fase_map:
+                            dias_fases[fase_map[nombre]] = duracion
+                    
+                    # Configuración de calendario
+                    dias_laborables = config_calendario.get('diasLaborables', {})
+                    horas_dia = config_calendario.get('horasPorDia', 8)
+                    
+                    # Construir string de días laborables
+                    dias_activos = []
+                    dias_map = {'lun': 'LUN', 'mar': 'MAR', 'mie': 'MIE', 'jue': 'JUE', 'vie': 'VIE', 'sab': 'SAB', 'dom': 'DOM'}
+                    for dia, activo in dias_laborables.items():
+                        if activo and dia in dias_map:
+                            dias_activos.append(dias_map[dia])
+                    
+                    dias_semana = '-'.join(dias_activos) if dias_activos else 'LUN-SAB'
+                    
+                    config_calendario_final = {
+                        "dias_semana": dias_semana,
+                        "horas_dia": horas_dia
+                    }
+                    
+                    print(f"✅ Datos estructurados del Gantt procesados:")
+                    print(f"   Fases: {dias_fases}")
+                    print(f"   Total: {duracion_total} días")
+                    print(f"   Calendario: {config_calendario_final}")
+                    
+                else:
+                    # Fallback: Parsear texto con regex (compatibilidad con versión anterior)
+                    texto = str(mensaje).lower()
+                    
+                    # Valores por defecto (PMI estándar)
+                    dias_fases = {
+                        "inicio": 5,
+                        "planificacion": 10,
+                        "riesgos": 5,
+                        "ingenieria": 25,
+                        "ejecucion": 45,
+                        "pruebas": 10,
+                        "cierre": 5
+                    }
+                    
+                    # Extraer duración total del mensaje "Duración Total: X días"
+                    match_total = re.search(r'duraci[oó]n total:\s*(\d+)', texto)
+                    duracion_total = int(match_total.group(1)) if match_total else 105
+                    
+                    # Extraer Ingeniería y Ejecución para compatibilidad
+                    match_ing = re.search(r'ingenier[ií]a.*?:\s*(\d+)', texto)
+                    match_ejec = re.search(r'ejecuci[oó]n.*?:\s*(\d+)', texto)
+                    
+                    if match_ing: dias_fases["ingenieria"] = int(match_ing.group(1))
+                    if match_ejec: dias_fases["ejecucion"] = int(match_ejec.group(1))
+                    
+                    # Configuración de Calendario
+                    config_calendario_final = {
+                        "dias_semana": "LUN-SAB",
+                        "horas_dia": 8
+                    }
+                    
+                    match_cal = re.search(r'calendario:\s*([A-Z-]+)', texto, re.IGNORECASE)
+                    match_horas = re.search(r'\((\d+)h/día\)', texto)
+                    
+                    if match_cal: config_calendario_final["dias_semana"] = match_cal.group(1)
+                    if match_horas: config_calendario_final["horas_dia"] = int(match_horas.group(1))
                 
-                # Extraer duración total del mensaje "Duración Total: X días"
-                match_total = re.search(r'duraci[oó]n total:\s*(\d+)', texto)
-                duracion_total = int(match_total.group(1)) if match_total else 105
-                
-                # Extraer Ingeniería y Ejecución para compatibilidad
-                match_ing = re.search(r'ingenier[ií]a.*?:\s*(\d+)', texto)
-                match_ejec = re.search(r'ejecuci[oó]n.*?:\s*(\d+)', texto)
-                
-                if match_ing: dias_fases["ingenieria"] = int(match_ing.group(1))
-                if match_ejec: dias_fases["ejecucion"] = int(match_ejec.group(1))
-                
-                # ✅ NUEVO: Extraer Configuración de Calendario
-                config_calendario = {
-                    "dias_semana": "LUN-SAB", # Default
-                    "horas_dia": 8
-                }
-                
-                match_cal = re.search(r'calendario:\s*([A-Z-]+)', texto, re.IGNORECASE)
-                match_horas = re.search(r'\((\d+)h/día\)', texto)
-                
-                if match_cal: config_calendario["dias_semana"] = match_cal.group(1)
-                if match_horas: config_calendario["horas_dia"] = int(match_horas.group(1))
-                
-                # Guardar en estado para uso posterior
+                # ✅ Guardar en estado para uso posterior (común para ambos casos)
                 estado["dias_ingenieria"] = dias_fases["ingenieria"]
                 estado["dias_ejecucion"] = dias_fases["ejecucion"]
                 estado["cronograma_fases"] = dias_fases
                 estado["duracion_total"] = duracion_total
-                estado["configuracion_calendario"] = config_calendario # ✅ Guardamos config
+                estado["configuracion_calendario"] = config_calendario_final
                 
                 estado["etapa"] = "riesgo1_desc"
                 return {'success': True, 'respuesta': f"""✅ Cronograma Maestro Configurado (7 Fases):
 • Ingeniería y Diseño: **{dias_fases['ingenieria']} días**
 • Ejecución y Obra: **{dias_fases['ejecucion']} días**
-• Calendario: **{config_calendario['dias_semana']} ({config_calendario['horas_dia']}h/día)**
+• Calendario: **{config_calendario_final['dias_semana']} ({config_calendario_final['horas_dia']}h/día)**
 
 Duración Total Estimada: **{duracion_total} días hábiles**
 
@@ -777,8 +848,10 @@ Para cada riesgo necesito:
 📝 **Descripción del riesgo:**
 _Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estado': estado}
             except Exception as e:
-                 # Fallback manual si falla el regex
-                print(f"Error parsing gantt: {e}")
+                 # Fallback manual si falla el procesamiento
+                print(f"❌ Error procesando gantt: {e}")
+                import traceback
+                traceback.print_exc()
                 estado["etapa"] = "dias_ingenieria"
                 return {'success': False, 'respuesta': "❌ No pude leer la configuración del Gantt completa. Por favor ingresa los días de Ingeniería manualmente.", 'botones': None, 'estado': estado}
 
@@ -1388,4 +1461,43 @@ Haz clic en "Finalizar" para ver la vista previa y generar el PROJECT CHARTER en
             'botones': None,
             'estado': estado,
             'datos_generados': datos_generados
+        }
+    
+    def _extraer_datos_calendario(self, estado: Dict) -> Dict:
+        """Extrae y parsea datos del calendario del estado"""
+        import json
+        
+        # Intentar parsear datosCalendario si viene como JSON string
+        datos_calendario_str = estado.get('datosCalendario')
+        if datos_calendario_str and isinstance(datos_calendario_str, str):
+            try:
+                datos_calendario = json.loads(datos_calendario_str)
+            except:
+                datos_calendario = {}
+        else:
+            datos_calendario = {}
+        
+        # Extraer datos del calendario
+        fecha_inicio = datos_calendario.get('fecha_inicio') or estado.get('fecha_inicio')
+        fecha_fin = datos_calendario.get('fecha_fin') or estado.get('fecha_fin')
+        duracion_dias = datos_calendario.get('duracion_dias') or estado.get('duracion_dias')
+        
+        # Extraer configuración de días laborables y horario
+        dias_habiles = datos_calendario.get('dias_habiles', ['lun', 'mar', 'mie', 'jue', 'vie', 'sab'])
+        horario = datos_calendario.get('horario', '8h/día')
+        
+        # Parsear horario para extraer horas por día
+        horas_dia = 8
+        if horario and 'h' in str(horario):
+            try:
+                horas_dia = int(str(horario).split('h')[0])
+            except:
+                horas_dia = 8
+        
+        return {
+            'fecha_inicio': fecha_inicio,
+            'fecha_fin': fecha_fin,
+            'duracion_dias': duracion_dias,
+            'dias_laborables': dias_habiles,
+            'horas_dia': horas_dia
         }

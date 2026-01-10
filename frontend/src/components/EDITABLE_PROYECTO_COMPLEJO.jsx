@@ -385,8 +385,8 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 </h2>
                 <div style={{ margin: '20px 0' }}>
                     {datosEditables.cronograma_fases.map((fase, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', margin: '10px 0', fontSize: '11px' }}>
-                            <div style={{ width: '200px', fontWeight: '600', color: '#374151' }}>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', margin: '10px 0', fontSize: '10px', gap: '10px' }}>
+                            <div style={{ width: '280px', fontWeight: '600', color: '#374151' }}>
                                 <input
                                     type="text"
                                     value={fase.label}
@@ -395,22 +395,24 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                                         nuevasFases[i].label = e.target.value;
                                         setDatosEditables({ ...datosEditables, cronograma_fases: nuevasFases });
                                     }}
-                                    style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 'bold' }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: '600', fontSize: '10px', fontFamily: fuenteDocumento }}
                                 />
                             </div>
                             <div style={{ flex: 1, height: '30px', background: '#F3F4F6', borderRadius: '4px', position: 'relative', overflow: 'hidden' }}>
-                                <div style={{ width: fase.width, height: '100%', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.acento} 100%)`, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: '600' }}>
-                                    <input
-                                        type="text"
-                                        value={fase.dias}
-                                        onChange={(e) => {
-                                            const nuevasFases = [...datosEditables.cronograma_fases];
-                                            nuevasFases[i].dias = e.target.value;
-                                            setDatosEditables({ ...datosEditables, cronograma_fases: nuevasFases });
-                                        }}
-                                        style={{ width: '100%', border: 'none', background: 'transparent', color: 'white', textAlign: 'center', fontWeight: 'bold' }}
-                                    />
+                                <div style={{ width: fase.width, height: '100%', background: `linear-gradient(135deg, ${colores.primario} 0%, ${colores.acento} 100%)`, borderRadius: '4px' }}>
                                 </div>
+                            </div>
+                            <div style={{ width: '60px', textAlign: 'left', fontWeight: '700', fontSize: '11px', color: colores.primario }}>
+                                <input
+                                    type="text"
+                                    value={fase.dias}
+                                    onChange={(e) => {
+                                        const nuevasFases = [...datosEditables.cronograma_fases];
+                                        nuevasFases[i].dias = e.target.value;
+                                        setDatosEditables({ ...datosEditables, cronograma_fases: nuevasFases });
+                                    }}
+                                    style={{ width: '100%', border: 'none', background: 'transparent', color: colores.primario, textAlign: 'left', fontWeight: '700', fontSize: '11px', fontFamily: fuenteDocumento }}
+                                />
                             </div>
                         </div>
                     ))}

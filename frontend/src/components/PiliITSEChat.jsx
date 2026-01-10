@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
+import { PiliAvatarLarge } from './PiliAvatar';
 
 /**
  * 🎯 PiliITSEChat - Componente profesional para PILI especialista en ITSE
@@ -167,7 +168,7 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
 
     return (
         <div style={{
-            minHeight: '600px',
+            height: '100%',
             background: `linear-gradient(135deg, ${colors.dark} 0%, ${colors.primary} 60%, ${colors.light_red} 100%)`,
             borderRadius: '20px',
             fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -187,19 +188,7 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                 justifyContent: 'space-between'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${colors.secondary}, ${colors.gold_highlight})`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 0 15px rgba(212, 175, 55, 0.4)',
-                        border: `2px solid ${colors.dark}`
-                    }}>
-                        <Zap size={32} color={colors.dark} strokeWidth={2.5} fill={colors.dark} />
-                    </div>
+                    <PiliAvatarLarge showCrown={false} />
                     <div>
                         <h1 style={{
                             color: 'white',
@@ -209,7 +198,10 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                             letterSpacing: '0.5px',
                             textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                         }}>
-                            Pili - Especialista ITSE
+                            <span style={{ position: 'relative', display: 'inline-block' }}>
+                                P
+                                <span style={{ position: 'absolute', top: '-16px', left: '-8px', fontSize: '20px', animation: 'bounce 1s infinite', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>👑</span>
+                            </span>ILI - Especialista ITSE
                         </h1>
                         <p style={{
                             color: colors.secondary,
@@ -231,7 +223,8 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                 padding: '20px',
                 background: '#fff',
                 backgroundImage: `radial-gradient(${colors.secondary}20 1px, transparent 1px)`,
-                backgroundSize: '20px 20px'
+                backgroundSize: '20px 20px',
+                maxHeight: '400px'
             }}>
                 {conversacion.map((msg, index) => (
                     <div key={index} style={{

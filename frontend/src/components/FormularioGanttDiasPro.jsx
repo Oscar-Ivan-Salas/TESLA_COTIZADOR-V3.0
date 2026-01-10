@@ -27,14 +27,40 @@ const FormularioGanttDiasPro = ({ onSubmit, datosCalendario, maxDuracion }) => {
     const limiteDias = maxDuracion ? parseInt(maxDuracion) : 999;
     const excedeLimite = duracionTotal > limiteDias;
 
+    // ✅ NUEVO: Pre-llenar con datos del calendario inicial
+    useEffect(() => {
+        if (datosCalendario) {
+            // Pre-llenar días laborables si vienen del backend
+            if (datosCalendario.dias_laborables && Array.isArray(datosCalendario.dias_laborables)) {
+                const nuevosDias = {
+                    lun: false, mar: false, mie: false, jue: false, vie: false, sab: false, dom: false
+                };
+                datosCalendario.dias_laborables.forEach(dia => {
+                    if (nuevosDias.hasOwnProperty(dia)) {
+                        nuevosDias[dia] = true;
+                    }
+                });
+                setDiasLaborables(nuevosDias);
+                console.log('✅ Días laborables pre-llenados:', nuevosDias);
+            }
+
+            // Pre-llenar horas por día
+            if (datosCalendario.horas_dia) {
+                setHorasPorDia(datosCalendario.horas_dia);
+                console.log('✅ Horas por día pre-llenadas:', datosCalendario.horas_dia);
+            }
+        }
+    }, [datosCalendario]);
+
     // Actualizar cálculos cuando cambian las fases o la config del calendario
     useEffect(() => {
         const total = fases.reduce((acc, fase) => acc + fase.duracion, 0);
         setDuracionTotal(total);
 
         // Lógica de cálculo de fecha fin dentro del efecto para evitar errores de linter/scope
-        if (datosCalendario?.fechaInicio) {
-            const fecha = new Date(datosCalendario.fechaInicio);
+        if (datosCalendario?.fechaInicio || datosCalendario?.fecha_inicio) {
+            const fechaInicioStr = datosCalendario.fechaInicio || datosCalendario.fecha_inicio;
+            const fecha = new Date(fechaInicioStr);
             let diasAgregados = 0;
             const mapDias = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
 

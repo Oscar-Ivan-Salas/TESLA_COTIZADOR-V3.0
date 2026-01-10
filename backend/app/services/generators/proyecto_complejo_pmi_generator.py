@@ -201,44 +201,128 @@ class ProyectoComplejoPMIGenerator(BaseDocumentGenerator):
         self.doc.add_paragraph()
     
     def _agregar_cronograma_gantt(self):
-        """Agrega cronograma Gantt"""
+        """Agrega cronograma Gantt con barras visuales"""
         p_titulo = self.doc.add_paragraph()
         run_titulo = p_titulo.add_run('CRONOGRAMA DEL PROYECTO (Diagrama Gantt)')
         run_titulo.font.size = Pt(18)
         run_titulo.font.bold = True
         run_titulo.font.color.rgb = self.COLOR_PRIMARIO
         
+        self.doc.add_paragraph()  # Espacio
+        
         # ✅ USAR DATOS DINÁMICOS
         fases = self.datos.get('cronograma_fases', [])
+        duracion_total = self.datos.get('duracion_total', 0)
         
         if not fases:
             # Fallback por si acaso
             dias_ing = self.datos.get('dias_ingenieria', 15)
             dias_ejec = self.datos.get('dias_ejecucion', 25)
             fases = [
-                {'label': '1. Inicio y Planificación', 'dias': '10 días'},
-                {'label': '2. Gestión Stakeholders', 'dias': '3 días'},
-                {'label': '3. Ingeniería y Diseño', 'dias': f'{dias_ing} días'},
-                {'label': '4. Ejecución', 'dias': f'{dias_ejec} días'},
-                {'label': '5. Pruebas y Puesta en Marcha', 'dias': '8 días'},
-                {'label': '6. Cierre', 'dias': '5 días'}
+                {'label': '1. Inicio y Planificación', 'dias': '10 días', 'width': '15%'},
+                {'label': '2. Gestión Stakeholders', 'dias': '3 días', 'width': '8%'},
+                {'label': '3. Ingeniería y Diseño', 'dias': f'{dias_ing} días', 'width': '25%'},
+                {'label': '4. Ejecución', 'dias': f'{dias_ejec} días', 'width': '40%'},
+                {'label': '5. Pruebas y Puesta en Marcha', 'dias': '8 días', 'width': '10%'},
+                {'label': '6. Cierre', 'dias': '5 días', 'width': '7%'}
             ]
+            duracion_total = 10 + 3 + dias_ing + dias_ejec + 8 + 5
         
-        for item in fases:
+        # Calcular duración total si no está disponible
+        if duracion_total == 0:
+            for fase in fases:
+                dias_str = fase.get('dias', '0')
+                dias_num = int(''.join(filter(str.isdigit, str(dias_str)))) if dias_str else 0
+                duracion_total += dias_num
+        
+        # ✅ CREAR TABLA CON BARRAS VISUALES
+        # Tabla de 3 columnas: Nombre | Barra Visual | Días
+        table = self.doc.add_table(rows=len(fases), cols=3)
+        table.style = 'Light Grid Accent 1'
+        
+        for i, item in enumerate(fases):
             # Manejar tanto formato diccionario como tupla
             if isinstance(item, dict):
                 label = item.get('label', item.get('nombre', ''))
                 dias = item.get('dias', '')
+                width_percent = item.get('width', '10%')
             elif isinstance(item, (list, tuple)) and len(item) >= 2:
                 label, dias = item[0], item[1]
+                width_percent = '10%'
             else:
                 continue
-
-            p_fase = self.doc.add_paragraph()
-            run_fase = p_fase.add_run(f'{label}: {dias}')
-            run_fase.font.size = Pt(11)
-            run_fase.font.bold = True
-            run_fase.font.color.rgb = RGBColor(55, 65, 81)
+            
+            # Extraer número de días
+            dias_num = int(''.join(filter(str.isdigit, str(dias)))) if dias else 0
+            
+            # Calcular porcentaje de ancho de la barra
+            if duracion_total > 0:
+                bar_width_percent = int((dias_num / duracion_total) * 100)
+            else:
+                bar_width_percent = 10
+            
+            # Fila de la tabla
+            row = table.rows[i]
+            
+            # Columna 1: Nombre de la fase
+            cell_nombre = row.cells[0]
+            cell_nombre.width = Inches(2.5)
+            p_nombre = cell_nombre.paragraphs[0]
+            run_nombre = p_nombre.add_run(label)
+            run_nombre.font.size = Pt(10)
+            run_nombre.font.bold = False
+            run_nombre.font.color.rgb = RGBColor(55, 65, 81)
+            
+            # Columna 2: Barra visual
+            cell_barra = row.cells[1]
+            cell_barra.width = Inches(3.5)
+            
+            # Crear tabla interna para la barra (10 celdas = 100%)
+            inner_table = cell_barra.add_table(rows=1, cols=10)
+            inner_table.autofit = False
+            
+            # Calcular cuántas celdas colorear
+            cells_to_color = max(1, min(10, int(bar_width_percent / 10)))
+            
+            for j in range(10):
+                inner_cell = inner_table.rows[0].cells[j]
+                inner_cell.width = Inches(0.35)
+                
+                # Colorear celdas según el porcentaje
+                if j < cells_to_color:
+                    # Aplicar color de fondo usando el color primario
+                    shading_elm = OxmlElement('w:shd')
+                    color_hex = self._rgb_to_hex(self.COLOR_PRIMARIO)
+                    shading_elm.set(qn('w:fill'), color_hex)
+                    inner_cell._element.get_or_add_tcPr().append(shading_elm)
+                else:
+                    # Celdas vacías con patrón de líneas diagonales semi-transparentes
+                    shading_elm = OxmlElement('w:shd')
+                    shading_elm.set(qn('w:fill'), 'F9FAFB')  # Gris muy claro
+                    shading_elm.set(qn('w:val'), 'thinDiagStripe')  # Patrón de líneas diagonales
+                    shading_elm.set(qn('w:color'), 'E5E7EB')  # Color de las líneas (gris medio)
+                    inner_cell._element.get_or_add_tcPr().append(shading_elm)
+                
+                # Ajustar altura de celda
+                inner_cell.height = Inches(0.25)
+            
+            # Columna 3: Días
+            cell_dias = row.cells[2]
+            cell_dias.width = Inches(0.8)
+            p_dias = cell_dias.paragraphs[0]
+            run_dias = p_dias.add_run(dias)
+            run_dias.font.size = Pt(11)
+            run_dias.font.bold = True
+            run_dias.font.color.rgb = self.COLOR_PRIMARIO
+        
+        # ✅ Agregar duración total estimada
+        if duracion_total > 0:
+            self.doc.add_paragraph()  # Espacio
+            p_total = self.doc.add_paragraph()
+            run_total = p_total.add_run(f'DURACIÓN TOTAL ESTIMADA: {duracion_total} días hábiles')
+            run_total.font.size = Pt(12)
+            run_total.font.bold = True
+            run_total.font.color.rgb = self.COLOR_ACENTO
         
         self.doc.add_paragraph()
 

@@ -288,13 +288,27 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                                                 maxDuracion={duracion_total}
                                                 onSubmit={(datos) => {
                                                     console.log('✅ Gantt configurado:', datos);
-                                                    // Usar el resumen generado por el componente (ahora incluye calendario)
-                                                    const texto = datos.textoCompleto
+
+                                                    // Mensaje visual para el usuario
+                                                    const textoVisual = datos.textoCompleto
                                                         ? `✅ Cronograma Definido:\n${datos.textoCompleto}\n\nDuración Total: ${datos.total} días hábiles.\nFecha Fin: ${datos.fechaFin ? datos.fechaFin.toLocaleDateString() : 'Pendiente'}`
                                                         : `✅ Cronograma Definido:\n${datos.textoResumen}\n\nDuración Total: ${datos.total} días hábiles.\nFecha Fin: ${datos.fechaFin ? datos.fechaFin.toLocaleDateString() : 'Pendiente'}`;
 
-                                                    addMessage('user', texto);
-                                                    setTimeout(() => enviarMensaje(texto), 100);
+                                                    // Mostrar mensaje visual al usuario
+                                                    addMessage('user', textoVisual);
+
+                                                    // ✅ CORREGIDO: Enviar string con JSON embebido que el backend pueda parsear
+                                                    const mensajeBackend = `GANTT_DATA_JSON:${JSON.stringify({
+                                                        fases: datos.fases,
+                                                        total: datos.total,
+                                                        fechaFin: datos.fechaFin ? datos.fechaFin.toISOString() : null,
+                                                        textoResumen: datos.textoResumen,
+                                                        configuracionCalendario: datos.configuracionCalendario,
+                                                        textoCompleto: datos.textoCompleto
+                                                    })}`;
+
+                                                    console.log('📤 Enviando al backend:', mensajeBackend.substring(0, 100) + '...');
+                                                    setTimeout(() => enviarMensaje(mensajeBackend), 100);
                                                 }}
                                             />
                                         )}

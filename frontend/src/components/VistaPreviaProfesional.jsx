@@ -182,7 +182,7 @@ const VistaPreviaProfesional = forwardRef((props, ref) => {
   };
 
   return (
-    <div className="vista-previa-container" style={{ width: '100%', height: '100%' }}>
+    <div className="vista-previa-container overflow-y-auto" style={{ width: '100%', height: '100%', maxHeight: '100vh' }}>
       {/* DOCUMENTO PROFESIONAL */}
       <div className="cotizacion-profesional" ref={documentoRef} style={{
         background: 'white',
