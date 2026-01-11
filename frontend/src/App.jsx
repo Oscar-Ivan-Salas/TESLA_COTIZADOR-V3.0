@@ -2119,15 +2119,56 @@ const CotizadorTesla30 = () => {
                         <X className="w-6 h-6" />
                       </button>
                       <div className="flex-1 overflow-y-auto p-6">
-                        {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' && (
-                          <PiliITSEChat
-                            onDatosGenerados={(datos) => { console.log(' DATOS RECIBIDOS DE ITSE:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                        {/* Copiar TODOS los chats del grid */}
+                        {servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
+                          <PiliElectricidadProyectoComplejoPMIChat
+                            datosCliente={datosCliente}
+                            nombre_proyecto={nombre_proyecto}
+                            presupuesto={presupuesto}
+                            moneda={moneda}
+                            duracion_total={duracion_total}
+                            datosCalendario={datosCalendario}
+                            servicio={servicioSeleccionado}
+                            industria={industriaSeleccionada}
+                            descripcion_inicial={contextoUsuario}
+                            proyectoId={proyectoId}
+                            chatMemory={chatMemory}
+                            onChatMemoryUpdate={setChatMemory}
+                            complejidad={complejidad}
+                            etapasSeleccionadas={etapasSeleccionadas}
+                            incluirMetrado={incluirMetrado}
+                            areaMetrado={areaMetrado}
+                            onDatosGenerados={(datos) => {
+                              console.log('✅ DATOS PROYECTO COMPLEJO PMI (MERGE):', datos);
+                              let datosFinales = { ...datos };
+                              if (datos.cronograma_fases && !Array.isArray(datos.cronograma_fases)) {
+                                const f = datos.cronograma_fases;
+                                const diasTotal = datos.duracion_total || 100;
+                                const getWidth = (dias) => Math.max(5, Math.round((dias / diasTotal) * 100)) + '%';
+                                datosFinales.cronograma_fases = [
+                                  { label: '1. Inicio', width: getWidth(f.inicio || 5), dias: `${f.inicio || 5} días` },
+                                  { label: '2. Planificación', width: getWidth(f.planificacion || 10), dias: `${f.planificacion || 10} días` },
+                                  { label: '3. Riesgos y Calidad', width: getWidth(f.riesgos || 5), dias: `${f.riesgos || 5} días` },
+                                  { label: '4. Ingeniería y Diseño', width: getWidth(f.ingenieria || 25), dias: `${f.ingenieria || 25} días` },
+                                  { label: '5. Ejecución', width: getWidth(f.ejecucion || 45), dias: `${f.ejecucion || 45} días` },
+                                  { label: '6. Pruebas (FAT/SAT)', width: getWidth(f.pruebas || 10), dias: `${f.pruebas || 10} días` },
+                                  { label: '7. Cierre', width: getWidth(f.cierre || 5), dias: `${f.cierre || 5} días` }
+                                ];
+                              }
+                              setProyecto(prev => ({ ...prev, ...datosFinales }));
+                              setDatosEditables(prev => ({ ...prev, ...datosFinales }));
+                              setMostrarPreview(true);
+                            }}
                             onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                             onBack={() => setPaso(1)}
                             onFinish={() => setPaso(3)}
                           />
+                        ) : (
+                          <div className="text-white text-center py-20">
+                            <p className="text-2xl mb-4">Chat no disponible en modal</p>
+                            <p className="text-gray-400">Usa Vista Dividida para ver este chat</p>
+                          </div>
                         )}
-                        {/* Agregar otros chats aquí según servicioSeleccionado */}
                       </div>
                     </div>
                   </div>
