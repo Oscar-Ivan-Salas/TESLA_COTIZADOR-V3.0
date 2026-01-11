@@ -147,9 +147,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
             <div className="bg-gradient-to-r from-green-800 to-green-900 p-4 border-b-2 border-orange-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                            <Zap className="w-7 h-7 text-green-900" />
-                        </div>
+                        <PiliAvatarLarge showCrown={false} />
                         <div>
                             <h3 className="text-xl font-bold text-orange-400">PILI Puesta a Tierra</h3>
                             <p className="text-xs text-green-200">Especialista en Sistemas de Puesta a Tierra</p>

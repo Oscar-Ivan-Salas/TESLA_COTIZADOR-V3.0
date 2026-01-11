@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Video, Phone, MapPin, Clock } from 'lucide-react';
+import ViewToggleButtons from './ViewToggleButtons';
+import { PiliAvatarLarge } from './PiliAvatar';
 
 const PiliCCTVChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
     viewMode,
@@ -37,10 +39,10 @@ const PiliCCTVChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
             <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 border-b-2 border-cyan-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center shadow-lg"><Video className="w-7 h-7 text-gray-900" /></div>
+                        <PiliAvatarLarge showCrown={false} />
                         <div><h3 className="text-xl font-bold text-cyan-400">PILI CCTV</h3><p className="text-xs text-gray-200">Especialista en Videovigilancia</p></div>
                     </div>
-                    {onBack && <button onClick={onBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} /> {onBack &&                     <button onClick={onBack} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
                 </div>
             </div>
 

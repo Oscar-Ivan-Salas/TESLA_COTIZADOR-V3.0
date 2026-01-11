@@ -114,9 +114,7 @@ const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, on
             <div className="bg-gradient-to-r from-red-800 to-red-900 p-4 border-b-2 border-orange-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                            <Flame className="w-7 h-7 text-red-900" />
-                        </div>
+                        <PiliAvatarLarge showCrown={false} />
                         <div>
                             <h3 className="text-xl font-bold text-orange-400">PILI Contra Incendios</h3>
                             <p className="text-xs text-red-200">Especialista en Sistemas Contra Incendios</p>

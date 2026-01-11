@@ -12,9 +12,9 @@ import ViewToggleButtons from './ViewToggleButtons';
  * - Botones interactivos con hover
  * - Conectado con backend Python (/api/chat/pili-electricidad)
  */
-const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish,
     viewMode,
-    setViewMode}) => {
+    setViewMode }) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',
@@ -170,6 +170,7 @@ const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotone
                             <p className="text-xs text-blue-200">Especialista en Instalaciones Eléctricas</p>
                         </div>
                     </div>
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
                     {onBack && (
                         <button onClick={onBack} className="text-white hover:text-yellow-400 transition-colors">
                             <ArrowLeft className="w-6 h-6" />

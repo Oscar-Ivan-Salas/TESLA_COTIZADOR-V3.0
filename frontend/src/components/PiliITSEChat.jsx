@@ -217,6 +217,7 @@ const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate,
                         </p>
                     </div>
                 </div>
+                <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
             </div>
 
             {/* Chat Container */}

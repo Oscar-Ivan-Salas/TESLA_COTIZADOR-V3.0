@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Network, Phone, MapPin, Clock } from 'lucide-react';
+import ViewToggleButtons from './ViewToggleButtons';
+import { PiliAvatarLarge } from './PiliAvatar';
 
 const PiliRedesChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
     viewMode,
@@ -37,10 +39,10 @@ const PiliRedesChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
             <div className="bg-gradient-to-r from-indigo-800 to-indigo-900 p-4 border-b-2 border-blue-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg"><Network className="w-7 h-7 text-indigo-900" /></div>
+                        <PiliAvatarLarge showCrown={false} />
                         <div><h3 className="text-xl font-bold text-blue-400">PILI Redes</h3><p className="text-xs text-indigo-200">Especialista en Redes de Datos</p></div>
                     </div>
-                    {onBack && <button onClick={onBack} className="px-4 py-2 bg-indigo-700 hover:bg-indigo-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} /> {onBack &&                     <button onClick={onBack} className="px-4 py-2 bg-indigo-700 hover:bg-indigo-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
                 </div>
             </div>
 

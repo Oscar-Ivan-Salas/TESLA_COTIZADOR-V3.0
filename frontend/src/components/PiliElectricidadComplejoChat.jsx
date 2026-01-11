@@ -65,7 +65,7 @@ const PiliElectricidadComplejoChat = ({ onDatosGenerados, onBotonesUpdate, onBac
                             <p className="text-xs text-blue-200">Cotización Técnica Detallada</p>
                         </div>
                     </div>
-                    {onBack && <button onClick={onBack} className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} /> {onBack &&                     <button onClick={onBack} className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
                 </div>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-950 to-black custom-scrollbar scrollbar-gold">

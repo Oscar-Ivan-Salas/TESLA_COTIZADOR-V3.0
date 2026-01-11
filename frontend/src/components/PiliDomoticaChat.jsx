@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Home, Phone, MapPin, Clock } from 'lucide-react';
+import ViewToggleButtons from './ViewToggleButtons';
+import { PiliAvatarLarge } from './PiliAvatar';
 
 const PiliDomoticaChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
     viewMode,
@@ -70,15 +72,13 @@ const PiliDomoticaChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish 
             <div className="bg-gradient-to-r from-purple-800 to-purple-900 p-4 border-b-2 border-pink-500 shadow-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                            <Home className="w-7 h-7 text-purple-900" />
-                        </div>
+                        <PiliAvatarLarge showCrown={false} />
                         <div>
                             <h3 className="text-xl font-bold text-pink-400">PILI Domótica</h3>
                             <p className="text-xs text-purple-200">Especialista en Automatización del Hogar</p>
                         </div>
                     </div>
-                    {onBack && <button onClick={onBack} className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} /> {onBack &&                     <button onClick={onBack} className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg font-semibold transition-all">← Volver</button>}
                 </div>
             </div>
 
