@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
+import ViewToggleButtons from './ViewToggleButtons';
 
-const PiliElectricidadComplejoChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliElectricidadComplejoChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([{ sender: 'bot', text: `¡Hola! 👋 **Pili** - Electricidad **COMPLEJA**\n\n⚡ **COTIZACIÓN TÉCNICA DETALLADA**\n✅ Cálculo de cargas\n✅ Dimensionamiento cables\n✅ Cronograma 4 fases\n\n**¿Tipo de instalación?**`, buttons: [{ text: '🏠 Residencial', value: 'RESIDENCIAL' }, { text: '🏪 Comercial', value: 'COMERCIAL' }, { text: '🏭 Industrial', value: 'INDUSTRIAL' }], timestamp: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) }]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);

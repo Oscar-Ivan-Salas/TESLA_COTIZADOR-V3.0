@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Network, Phone, MapPin, Clock } from 'lucide-react';
 
-const PiliRedesChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliRedesChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([{ sender: 'bot', text: `¡Hola! 👋 Soy **Pili**, tu especialista en redes de **Tesla Electricidad**.\n\n🌐 Servicios disponibles:\n✅ Red estructurada Cat6\n✅ Fibra óptica\n✅ WiFi empresarial\n\n**¿Qué necesitas?**`, buttons: [{ text: '🔌 Red Cat6', value: 'ESTRUCTURADA' }, { text: '💡 Fibra Óptica', value: 'FIBRA' }, { text: '📶 WiFi', value: 'WIFI' }], timestamp: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) }]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
+import ViewToggleButtons from './ViewToggleButtons';
 
 /**
  * 🎯 PiliITSEChat - Componente profesional para PILI especialista en ITSE
@@ -11,7 +12,9 @@ import { PiliAvatarLarge } from './PiliAvatar';
  * - Botones interactivos con hover
  * - Conectado con backend Python (/api/chat/chat-contextualizado)
  */
-const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliITSEChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',

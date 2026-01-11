@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, FileText, Phone, MapPin, Clock } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
+import ViewToggleButtons from './ViewToggleButtons';
 
 const PiliElectricidadProyectoSimpleChat = ({
   datosCliente,
@@ -12,7 +13,9 @@ const PiliElectricidadProyectoSimpleChat = ({
   onBotonesUpdate,
   onBack,
   onFinish
-}) => {
+,
+    viewMode,
+    setViewMode}) => {
   const [conversacion, setConversacion] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -104,7 +107,8 @@ const PiliElectricidadProyectoSimpleChat = ({
               <p className="text-xs text-cyan-200">Electricidad • Experta IA</p>
             </div>
           </div>
-          {onBack && (
+          <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
+                            {onBack && (
             <button onClick={onBack} className="px-4 py-2 bg-cyan-700/50 hover:bg-cyan-600/70 text-white rounded-lg font-semibold transition-all backdrop-blur-sm">
               ← Volver
             </button>

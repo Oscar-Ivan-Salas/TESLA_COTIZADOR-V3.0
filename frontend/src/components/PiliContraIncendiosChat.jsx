@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Flame, Phone, MapPin, Clock } from 'lucide-react';
 
-const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',
@@ -118,7 +120,8 @@ const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, on
                             <p className="text-xs text-red-200">Especialista en Sistemas Contra Incendios</p>
                         </div>
                     </div>
-                    {onBack && (
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
+                            {onBack && (
                         <button onClick={onBack} className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-lg font-semibold transition-all">
                             ← Volver
                         </button>

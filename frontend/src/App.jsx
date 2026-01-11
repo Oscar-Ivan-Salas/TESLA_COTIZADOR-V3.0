@@ -2129,6 +2129,8 @@ const CotizadorTesla30 = () => {
                             onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                             onBack={() => setPaso(1)}
                             onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                           />
                         ) : (
                           <div className="text-white text-center py-20">
@@ -2182,6 +2184,8 @@ const CotizadorTesla30 = () => {
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                       />
                     </div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-simple' ? (
@@ -2191,6 +2195,8 @@ const CotizadorTesla30 = () => {
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                       />
                     </div>
                   ) : servicioSeleccionado === 'puesta-tierra' && tipoFlujo === 'cotizacion-simple' ? (
@@ -2200,6 +2206,8 @@ const CotizadorTesla30 = () => {
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                       />
                     </div>
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-simple' ? (
@@ -2209,6 +2217,8 @@ const CotizadorTesla30 = () => {
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                       />
                     </div>
                   ) : servicioSeleccionado === 'domotica' && tipoFlujo === 'cotizacion-simple' ? (
@@ -2218,6 +2228,8 @@ const CotizadorTesla30 = () => {
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                       />
                     </div>
                   ) : servicioSeleccionado === 'cctv' && tipoFlujo === 'cotizacion-simple' ? (

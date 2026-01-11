@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Video, Phone, MapPin, Clock } from 'lucide-react';
 
-const PiliCCTVChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliCCTVChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([{ sender: 'bot', text: `¡Hola! 👋 Soy **Pili**, tu especialista en sistemas CCTV de **Tesla Electricidad**.\n\n📹 Sistemas disponibles:\n✅ Analógico HD (económico, calidad Full HD)\n✅ IP en Red (alta resolución, acceso remoto)\n✅ Híbrido (combina analógico + IP)\n\n**¿Qué sistema necesitas?**`, buttons: [{ text: '📹 Analógico HD', value: 'ANALOGICO' }, { text: '🌐 IP (Red)', value: 'IP' }, { text: '🔄 Híbrido', value: 'HIBRIDO' }], timestamp: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) }]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);

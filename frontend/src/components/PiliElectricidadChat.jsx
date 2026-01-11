@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock, ArrowLeft } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
+import ViewToggleButtons from './ViewToggleButtons';
 
 /**
  * 🔌 PiliElectricidadChat - Componente para PILI especialista en Electricidad
@@ -11,7 +12,9 @@ import { PiliAvatarLarge } from './PiliAvatar';
  * - Botones interactivos con hover
  * - Conectado con backend Python (/api/chat/pili-electricidad)
  */
-const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliElectricidadChat = ({ onCotizacionGenerada, onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',

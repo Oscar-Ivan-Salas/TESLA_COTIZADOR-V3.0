@@ -4,7 +4,9 @@ import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
 /**
  * 🌍 PiliPuestaTierraChat - Componente para PILI especialista en Puesta a Tierra
  */
-const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',
@@ -151,7 +153,8 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
                             <p className="text-xs text-green-200">Especialista en Sistemas de Puesta a Tierra</p>
                         </div>
                     </div>
-                    {onBack && (
+                    <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
+                            {onBack && (
                         <button
                             onClick={onBack}
                             className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg font-semibold transition-all"

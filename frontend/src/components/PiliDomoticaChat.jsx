@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Home, Phone, MapPin, Clock } from 'lucide-react';
 
-const PiliDomoticaChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish }) => {
+const PiliDomoticaChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+    viewMode,
+    setViewMode}) => {
     const [conversacion, setConversacion] = useState([{
         sender: 'bot',
         text: `¡Hola! 👋 Soy **Pili**, tu especialista en domótica de **Tesla Electricidad**.
