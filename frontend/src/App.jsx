@@ -2072,41 +2072,6 @@ const CotizadorTesla30 = () => {
             {/* PASO 2: CHAT + VISTA PREVIA SPLIT-SCREEN */}
             {paso === 2 && (
               <div className="max-w-full mx-auto h-[calc(100vh-200px)] overflow-hidden flex flex-col">
-                {/* ✅ NUEVO: Botones Toggle de Vista */}
-                <div className="flex-shrink-0 mb-4 flex justify-center gap-2 p-3 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50">
-                  <button
-                    onClick={() => setViewMode('chat')}
-                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${viewMode === 'chat'
-                      ? 'bg-yellow-600/20 border-2 border-yellow-600 text-yellow-400 shadow-lg shadow-yellow-600/20'
-                      : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'
-                      }`}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Chat Completo
-                  </button>
-
-                  <button
-                    onClick={() => setViewMode('split')}
-                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${viewMode === 'split'
-                      ? 'bg-yellow-600/20 border-2 border-yellow-600 text-yellow-400 shadow-lg shadow-yellow-600/20'
-                      : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'
-                      }`}
-                  >
-                    <Layout className="w-4 h-4" />
-                    Vista Dividida
-                  </button>
-
-                  <button
-                    onClick={() => setViewMode('preview')}
-                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${viewMode === 'preview'
-                      ? 'bg-yellow-600/20 border-2 border-yellow-600 text-yellow-400 shadow-lg shadow-yellow-600/20'
-                      : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'
-                      }`}
-                  >
-                    <Eye className="w-4 h-4" />
-                    Preview Completo
-                  </button>
-                </div>
 
                 {/* 🔥 MODAL: Chat Pantalla Completa */}
                 {viewMode === 'chat' && (
@@ -2159,6 +2124,8 @@ const CotizadorTesla30 = () => {
                               setDatosEditables(prev => ({ ...prev, ...datosFinales }));
                               setMostrarPreview(true);
                             }}
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
                             onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                             onBack={() => setPaso(1)}
                             onFinish={() => setPaso(3)}
@@ -2324,6 +2291,8 @@ const CotizadorTesla30 = () => {
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
                         onBack={() => setPaso(1)}
                         onFinish={() => setPaso(3)}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
                       />
                     </div>
                   ) : (

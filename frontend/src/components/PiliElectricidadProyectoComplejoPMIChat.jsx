@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, FileText, Phone, MapPin, Clock, Award, TrendingUp, Users } from 'lucide-react';
+import { Send, FileText, Phone, MapPin, Clock, Award, TrendingUp, Users, MessageSquare, Layout, Eye, Maximize2 } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
 
 // ✨ IMPORTAR FORMULARIOS PRO
@@ -29,7 +29,10 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
     complejidad, // ✅ NUEVO
     etapasSeleccionadas, // ✅ NUEVO
     incluirMetrado, // ✅ NUEVO: Metrado
-    areaMetrado // ✅ NUEVO: Metrado
+    areaMetrado, // ✅ NUEVO: Metrado
+    // 🔥 NUEVO: Props para toggle de vistas
+    viewMode,
+    setViewMode
 }) => {
     const [conversacion, setConversacion] = useState([]);
     const [inputValue, setInputValue] = useState('');
@@ -207,14 +210,51 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                                 <p className="text-sm text-purple-300/80">Electricidad • Metodología PMI PMBOK 7th</p>
                             </div>
                         </div>
-                        {onBack && (
-                            <button
-                                onClick={onBack}
-                                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all backdrop-blur-sm border border-white/20 hover:scale-105 transform shadow-lg"
-                            >
-                                ← Volver
-                            </button>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {/* 🔥 BOTONES TOGGLE PROFESIONALES */}
+                            {viewMode && setViewMode && (
+                                <div className="flex items-center gap-1.5 bg-white/5 backdrop-blur-md rounded-lg p-1 border border-white/10">
+                                    <button
+                                        onClick={() => setViewMode('chat')}
+                                        title="Chat Pantalla Completa"
+                                        className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'chat'
+                                                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/30'
+                                                : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('split')}
+                                        title="Vista Dividida"
+                                        className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'split'
+                                                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/30'
+                                                : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        <Layout className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('preview')}
+                                        title="Preview Pantalla Completa"
+                                        className={`p-2 rounded-md transition-all duration-200 ${viewMode === 'preview'
+                                                ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/30'
+                                                : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                            {onBack && (
+                                <button
+                                    onClick={onBack}
+                                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all backdrop-blur-sm border border-white/20 hover:scale-105 transform shadow-lg"
+                                >
+                                    ← Volver
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
