@@ -1,5 +1,8 @@
+```
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
+import { PiliAvatarLarge } from './PiliAvatar';
+import ViewToggleButtons from './ViewToggleButtons';
 
 /**
  * 🌍 PiliPuestaTierraChat - Componente para PILI especialista en Puesta a Tierra
@@ -10,7 +13,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',
-            text: `¡Hola! 👋 Soy **Pili**, tu especialista en sistemas de puesta a tierra de **Tesla Electricidad - Huancayo**.
+            text: `¡Hola! 👋 Soy ** Pili **, tu especialista en sistemas de puesta a tierra de ** Tesla Electricidad - Huancayo **.
 
 🔌 Te ayudo a cotizar tu sistema de puesta a tierra con:
 ✅ Pozos de tierra profesionales
@@ -18,7 +21,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
 ✅ Medición de resistividad incluida
 ✅ Certificado de conformidad
 
-**¿Qué tipo de instalación necesitas?**`,
+    **¿Qué tipo de instalación necesitas ?** `,
             buttons: [
                 { text: '🏠 Residencial', value: 'RESIDENCIAL' },
                 { text: '🏪 Comercial', value: 'COMERCIAL' },
@@ -88,7 +91,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${ response.status } `);
             }
 
             const data = await response.json();
@@ -168,13 +171,14 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-green-950 to-black">
                 {conversacion.map((msg, index) => (
-                    <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[80%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
+                    <div key={index} className={`flex ${ msg.sender === 'user' ? 'justify-end' : 'justify-start' } `}>
+                        <div className={`max - w - [80 %] ${ msg.sender === 'user' ? 'order-2' : 'order-1' } `}>
                             <div
-                                className={`rounded-2xl p-4 shadow-lg ${msg.sender === 'user'
-                                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-green-900'
-                                        : 'bg-gradient-to-br from-green-800 to-green-900 text-white border-2 border-green-600'
-                                    }`}
+                                className={`rounded - 2xl p - 4 shadow - lg ${
+    msg.sender === 'user'
+    ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-green-900'
+    : 'bg-gradient-to-br from-green-800 to-green-900 text-white border-2 border-green-600'
+} `}
                             >
                                 <div
                                     className="prose prose-sm max-w-none"
@@ -203,7 +207,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
                                 </div>
                             )}
 
-                            <div className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-right text-green-300' : 'text-left text-green-400'}`}>
+                            <div className={`text - xs mt - 1 ${ msg.sender === 'user' ? 'text-right text-green-300' : 'text-left text-green-400' } `}>
                                 {msg.timestamp}
                             </div>
                         </div>

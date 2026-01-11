@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Flame, Phone, MapPin, Clock } from 'lucide-react';
+import { PiliAvatarLarge } from './PiliAvatar';
+import ViewToggleButtons from './ViewToggleButtons';
 
-const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish,
     viewMode,
-    setViewMode}) => {
+    setViewMode }) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',
@@ -121,7 +123,7 @@ const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, on
                         </div>
                     </div>
                     <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
-                            {onBack && (
+                    {onBack && (
                         <button onClick={onBack} className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-lg font-semibold transition-all">
                             ← Volver
                         </button>
@@ -135,8 +137,8 @@ const PiliContraIncendiosChat = ({ onDatosGenerados, onBotonesUpdate, onBack, on
                     <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%]`}>
                             <div className={`rounded-2xl p-4 shadow-lg ${msg.sender === 'user'
-                                    ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-red-900'
-                                    : 'bg-gradient-to-br from-red-800 to-red-900 text-white border-2 border-red-600'
+                                ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-red-900'
+                                : 'bg-gradient-to-br from-red-800 to-red-900 text-white border-2 border-red-600'
                                 }`}>
                                 <div
                                     dangerouslySetInnerHTML={{
