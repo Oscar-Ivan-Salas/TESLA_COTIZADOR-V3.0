@@ -1,4 +1,3 @@
-```
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Zap, Phone, MapPin, Clock } from 'lucide-react';
 import { PiliAvatarLarge } from './PiliAvatar';
@@ -7,9 +6,9 @@ import ViewToggleButtons from './ViewToggleButtons';
 /**
  * 🌍 PiliPuestaTierraChat - Componente para PILI especialista en Puesta a Tierra
  */
-const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish ,
+const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFinish,
     viewMode,
-    setViewMode}) => {
+    setViewMode }) => {
     const [conversacion, setConversacion] = useState([
         {
             sender: 'bot',
@@ -91,7 +90,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${ response.status } `);
+                throw new Error(`HTTP error! status: ${response.status} `);
             }
 
             const data = await response.json();
@@ -157,7 +156,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
                         </div>
                     </div>
                     <ViewToggleButtons viewMode={viewMode} setViewMode={setViewMode} />
-                            {onBack && (
+                    {onBack && (
                         <button
                             onClick={onBack}
                             className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg font-semibold transition-all"
@@ -171,14 +170,13 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-green-950 to-black">
                 {conversacion.map((msg, index) => (
-                    <div key={index} className={`flex ${ msg.sender === 'user' ? 'justify-end' : 'justify-start' } `}>
-                        <div className={`max - w - [80 %] ${ msg.sender === 'user' ? 'order-2' : 'order-1' } `}>
+                    <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
                             <div
-                                className={`rounded - 2xl p - 4 shadow - lg ${
-    msg.sender === 'user'
-    ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-green-900'
-    : 'bg-gradient-to-br from-green-800 to-green-900 text-white border-2 border-green-600'
-} `}
+                                className={`rounded-2xl p-4 shadow-lg ${msg.sender === 'user'
+                                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-green-900'
+                                        : 'bg-gradient-to-br from-green-800 to-green-900 text-white border-2 border-green-600'
+                                    } `}
                             >
                                 <div
                                     className="prose prose-sm max-w-none"
@@ -207,7 +205,7 @@ const PiliPuestaTierraChat = ({ onDatosGenerados, onBotonesUpdate, onBack, onFin
                                 </div>
                             )}
 
-                            <div className={`text - xs mt - 1 ${ msg.sender === 'user' ? 'text-right text-green-300' : 'text-left text-green-400' } `}>
+                            <div className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-right text-green-300' : 'text-left text-green-400'}`}>
                                 {msg.timestamp}
                             </div>
                         </div>
