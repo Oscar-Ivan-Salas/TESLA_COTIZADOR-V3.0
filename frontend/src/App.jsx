@@ -93,6 +93,9 @@ const CotizadorTesla30 = () => {
   const [formatoInforme, setFormatoInforme] = useState('word');
   const [incluirGraficos, setIncluirGraficos] = useState(true);
 
+  // ✅ NUEVO: Estado para toggle de vistas (chat/split/preview)
+  const [viewMode, setViewMode] = useState('split'); // 'chat' | 'split' | 'preview'
+
   // ✅ Estados universales de cliente (para todos los 6 tipos de documentos)
   const [datosCliente, setDatosCliente] = useState({
     nombre: '',
@@ -2068,13 +2071,104 @@ const CotizadorTesla30 = () => {
 
             {/* PASO 2: CHAT + VISTA PREVIA SPLIT-SCREEN */}
             {paso === 2 && (
-              <div className="max-w-full mx-auto h-[calc(100vh-200px)] overflow-hidden">
-                <div className="grid grid-cols-12 h-full gap-4">
+              <div className="max-w-full mx-auto h-[calc(100vh-200px)] overflow-hidden flex flex-col">
+                {/* ✅ NUEVO: Botones Toggle de Vista */}
+                <div className="flex-shrink-0 mb-4 flex justify-center gap-2 p-3 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50">
+                  <button
+                    onClick={() => setViewMode('chat')}
+                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${viewMode === 'chat'
+                      ? 'bg-yellow-600/20 border-2 border-yellow-600 text-yellow-400 shadow-lg shadow-yellow-600/20'
+                      : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'
+                      }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Chat Completo
+                  </button>
+
+                  <button
+                    onClick={() => setViewMode('split')}
+                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${viewMode === 'split'
+                      ? 'bg-yellow-600/20 border-2 border-yellow-600 text-yellow-400 shadow-lg shadow-yellow-600/20'
+                      : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'
+                      }`}
+                  >
+                    <Layout className="w-4 h-4" />
+                    Vista Dividida
+                  </button>
+
+                  <button
+                    onClick={() => setViewMode('preview')}
+                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${viewMode === 'preview'
+                      ? 'bg-yellow-600/20 border-2 border-yellow-600 text-yellow-400 shadow-lg shadow-yellow-600/20'
+                      : 'bg-gray-800/50 border border-gray-700 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600'
+                      }`}
+                  >
+                    <Eye className="w-4 h-4" />
+                    Preview Completo
+                  </button>
+                </div>
+
+                {/* 🔥 MODAL: Chat Pantalla Completa */}
+                {viewMode === 'chat' && (
+                  <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="relative w-full h-full max-w-7xl bg-gray-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                      <button
+                        onClick={() => setViewMode('split')}
+                        className="absolute top-4 right-4 z-10 p-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-all shadow-lg"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                      <div className="flex-1 overflow-y-auto p-6">
+                        {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' && (
+                          <PiliITSEChat
+                            onDatosGenerados={(datos) => { console.log(' DATOS RECIBIDOS DE ITSE:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
+                            onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
+                            onBack={() => setPaso(1)}
+                            onFinish={() => setPaso(3)}
+                          />
+                        )}
+                        {/* Agregar otros chats aquí según servicioSeleccionado */}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 🔥 MODAL: Preview Pantalla Completa */}
+                {viewMode === 'preview' && (
+                  <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="relative w-full h-full max-w-7xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                      <button
+                        onClick={() => setViewMode('split')}
+                        className="absolute top-4 right-4 z-10 p-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-all shadow-lg"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                      <div className="flex-1 overflow-y-auto p-6">
+                        <VistaPreviaProfesional
+                          cotizacion={cotizacion || proyecto || informe || datosEditables}
+                          onGenerarDocumento={handleDescargar}
+                          onDatosChange={handleDatosChange}
+                          tipoDocumento={tipoFlujo}
+                          htmlPreview={htmlPreview}
+                          esquemaColores={esquemaColores}
+                          logoBase64={logoBase64}
+                          fuenteDocumento={fuenteDocumento}
+                          ocultarIGV={ocultarIGV}
+                          ocultarPreciosUnitarios={ocultarPreciosUnitarios}
+                          ocultarTotalesPorItem={ocultarTotalesPorItem}
+                          modoEdicion={modoEdicion}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex-1 overflow-hidden grid grid-cols-12 h-full gap-4">
 
 
                   {/* CHAT (IZQUIERDA) */}
                   {servicioSeleccionado === 'itse' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0">
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}>
                       <PiliITSEChat
                         onDatosGenerados={(datos) => { console.log(' DATOS RECIBIDOS DE ITSE:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -2083,7 +2177,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0">
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}>
                       <PiliElectricidadChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS RECIBIDOS DE ELECTRICIDAD:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -2092,7 +2186,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'puesta-tierra' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0">
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}>
                       <PiliPuestaTierraChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS RECIBIDOS DE PUESTA A TIERRA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -2101,7 +2195,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0">
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}>
                       <PiliContraIncendiosChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -2110,7 +2204,7 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'domotica' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0">
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}>
                       <PiliDomoticaChat
                         onDatosGenerados={(datos) => { console.log('✅ DATOS DOMÓTICA:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -2119,25 +2213,25 @@ const CotizadorTesla30 = () => {
                       />
                     </div>
                   ) : servicioSeleccionado === 'cctv' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliCCTVChat onDatosGenerados={(datos) => { console.log('✅ DATOS CCTV:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'redes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliRedesChat onDatosGenerados={(datos) => { console.log('✅ DATOS REDES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliAutomatizacionChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'expedientes' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliExpedientesChat onDatosGenerados={(datos) => { console.log('✅ DATOS EXPEDIENTES:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'saneamiento' && tipoFlujo === 'cotizacion-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliSaneamientoChat onDatosGenerados={(datos) => { console.log('✅ DATOS SANEAMIENTO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliElectricidadComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS ELECTRICIDAD COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'automatizacion-industrial' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliAutomatizacionComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS AUTOMATIZACIÓN COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'contra-incendios' && tipoFlujo === 'cotizacion-compleja' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliContraIncendiosComplejoChat onDatosGenerados={(datos) => { console.log('✅ DATOS CONTRA INCENDIOS COMPLEJO:', datos); setCotizacion(datos); setDatosEditables(datos); setMostrarPreview(true); actualizarVistaPrevia(); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-simple' ? (
-                    <div className="col-span-6 h-full min-h-0"><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}><PiliElectricidadProyectoSimpleChat datosCliente={datosCliente} nombre_proyecto={nombre_proyecto} presupuesto={presupuesto} moneda={moneda} duracion_total={duracion_total} onDatosGenerados={(datos) => { console.log('✅ DATOS PROYECTO SIMPLE:', datos); setProyecto(datos); setDatosEditables(datos); setMostrarPreview(true); }} onBotonesUpdate={(botones) => setBotonesContextuales(botones)} onBack={() => setPaso(1)} onFinish={() => setPaso(3)} /></div>
                   ) : servicioSeleccionado === 'electricidad' && tipoFlujo === 'proyecto-complejo' ? (
-                    <div className="col-span-6 h-full min-h-0">
+                    <div className={`${viewMode === 'preview' ? 'hidden' : viewMode === 'chat' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 overflow-y-auto`}>
                       <PiliElectricidadProyectoComplejoPMIChat
                         datosCliente={datosCliente}
                         nombre_proyecto={nombre_proyecto}
@@ -2348,7 +2442,7 @@ const CotizadorTesla30 = () => {
                   )}
 
                   {/* VISTA PREVIA (DERECHA) */}
-                  <div className="col-span-6 h-full min-h-0 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+                  <div className={`${viewMode === 'chat' ? 'hidden' : viewMode === 'preview' ? 'col-span-12' : 'col-span-6'} h-full min-h-0 bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden`}>
                     <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 shrink-0 flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <Eye className="w-6 h-6 text-white" />
