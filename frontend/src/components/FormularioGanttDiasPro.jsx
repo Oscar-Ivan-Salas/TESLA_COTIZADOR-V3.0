@@ -52,23 +52,90 @@ const FormularioGanttDiasPro = ({ onSubmit, datosCalendario, maxDuracion }) => {
         }
     }, [datosCalendario]);
 
-    // Actualizar cálculos cuando cambian las fases o la config del calendario
+    // ✅ ALGORITMO AUTO-FIT (Estilo MS Project)
+    const ajustarFasesAlLimite = (limite) => {
+        if (!limite || limite >= 999) return fases;
+
+        console.log(`⚖️ Ajustando cronograma (Auto-Fit) a ${limite} días...`);
+
+        // 1. Calcular proporciones originales
+        const totalOriginal = fases.reduce((acc, f) => acc + f.duracion, 0);
+
+        // 2. Escalar cada fase
+        let sumaNueva = 0;
+        const fasesAjustadas = fases.map(f => {
+            const nuevaDuracion = Math.max(1, Math.floor((f.duracion / totalOriginal) * limite));
+            sumaNueva += nuevaDuracion;
+            return { ...f, duracion: nuevaDuracion };
+        });
+
+        // 3. Distribuir el remanente (por redondeo) a las fases más largas (Ejecución/Ingeniería)
+        let remanente = limite - sumaNueva;
+
+        if (remanente > 0) {
+            // Priorizar fases más largas para asignar días extra
+            const indicesPrioridad = [4, 3, 1, 5, 2, 6, 0]; // IDs 5(Ejecución), 4(Ingeniería), etc. (indices array: ID-1)
+
+            let i = 0;
+            while (remanente > 0 && i < indicesPrioridad.length) {
+                const index = indicesPrioridad[i];
+                if (fasesAjustadas[index]) {
+                    fasesAjustadas[index].duracion += 1;
+                    remanente -= 1;
+                }
+                i++;
+            }
+        }
+
+        return fasesAjustadas;
+    };
+
+    // ✅ EFECTO: Ajuste inicial automático si hay límite definido
+    useEffect(() => {
+        const limite = maxDuracion ? parseInt(maxDuracion) : 999;
+        const totalActual = fases.reduce((acc, f) => acc + f.duracion, 0);
+
+        // Solo ajustar si la diferencia es significativa o si excede el límite
+        // Y aseguramos que solo corra una vez si es necesario para no sobreescribir ediciones manuales posteriores
+        if (limite < totalActual && limite > 0) {
+            const fasesAjustadas = ajustarFasesAlLimite(limite);
+            setFases(fasesAjustadas);
+        }
+    }, []); // Solo al montar (o podríamos depender de maxDuracion si cambia dinámicamente)
+
+    // Actualizar cálculos
     useEffect(() => {
         const total = fases.reduce((acc, fase) => acc + fase.duracion, 0);
         setDuracionTotal(total);
 
-        // Lógica de cálculo de fecha fin dentro del efecto para evitar errores de linter/scope
+        // Lógica de cálculo de fecha fin...
         if (datosCalendario?.fechaInicio || datosCalendario?.fecha_inicio) {
-            const fechaInicioStr = datosCalendario.fechaInicio || datosCalendario.fecha_inicio;
-            const fecha = new Date(fechaInicioStr);
+            // ✅ FIX: Manejo robusto de fechas (DD/MM/YYYY o ISO)
+            const fechaStr = datosCalendario.fechaInicio || datosCalendario.fecha_inicio;
+            let fecha;
+
+            if (fechaStr.includes('/')) {
+                const [dia, mes, anio] = fechaStr.split('/');
+                fecha = new Date(`${anio}-${mes}-${dia}`); // Convertir a ISO
+            } else {
+                fecha = new Date(fechaStr);
+            }
+
+            // Validar si la fecha es válida
+            if (isNaN(fecha.getTime())) {
+                console.warn('⚠️ Fecha inválida en Gantt:', fechaStr);
+                setFechaFinEstimada(null);
+                return;
+            }
+
             let diasAgregados = 0;
             const mapDias = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
-
-            // Limitamos el loop para evitar infinitos si no hay días seleccionados
             const hayDiasLaborables = Object.values(diasLaborables).some(v => v);
 
             if (hayDiasLaborables) {
-                while (diasAgregados < total) {
+                let safetyCounter = 0;
+                // Safety break: 5 años * 365 días = ~1825 iteraciones. 5000 es super seguro.
+                while (diasAgregados < total && safetyCounter < 5000) {
                     fecha.setDate(fecha.getDate() + 1);
                     const diaSemana = fecha.getDay(); // 0-6
                     const keyDia = mapDias[diaSemana];
@@ -76,10 +143,15 @@ const FormularioGanttDiasPro = ({ onSubmit, datosCalendario, maxDuracion }) => {
                     if (diasLaborables[keyDia]) {
                         diasAgregados++;
                     }
+                    safetyCounter++;
+                }
+
+                if (safetyCounter >= 5000) {
+                    console.error('❌ Loop infinito detectado en cálculo de fechas');
                 }
                 setFechaFinEstimada(fecha);
             } else {
-                setFechaFinEstimada(null); // No hay días laborables configurados
+                setFechaFinEstimada(null);
             }
         }
     }, [fases, datosCalendario, diasLaborables]);

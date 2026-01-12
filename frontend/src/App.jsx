@@ -383,7 +383,54 @@ const CotizadorTesla30 = () => {
     }
   };
 
-  // Manejar cambios en el formulario de cliente
+  /**
+   * ✅ MANEJAR CAMBIOS DESDE LA VISTA PREVIA (Bidireccional)
+   * Recibe el objeto completo de datos actualizado desde VistaPreviaProfesional
+   */
+  const handleDatosChange = (nuevosDatos) => {
+    // 0. Sincronización inmediata de Referencia y Estado Local (Vital para descargas)
+    setDatosEditables(nuevosDatos);
+    datosEditablesRef.current = nuevosDatos;
+
+    console.log('🔄 Sincronizando desde Preview:', nuevosDatos);
+
+    // 1. Identificar qué estamos editando
+    const esProyectoComplejo = tipoFlujo === 'proyecto-complejo';
+    const esCotizacionCompleja = tipoFlujo === 'cotizacion-compleja';
+
+    // 2. Actualizar el estado principal correspondiente (Source of Truth)
+    // 2. Actualizar el estado principal correspondiente (Source of Truth)
+    if (esProyectoComplejo) {
+      setProyecto(nuevosDatos);
+
+      // ✅ Sincronizar estados primitivos que usa el Chatbot
+      if (nuevosDatos.duracion_total) setDuracion_total(nuevosDatos.duracion_total);
+      if (nuevosDatos.presupuesto) setPresupuesto(nuevosDatos.presupuesto);
+      if (nuevosDatos.nombre_proyecto) setNombre_proyecto(nuevosDatos.nombre_proyecto);
+      if (nuevosDatos.moneda) setMoneda(nuevosDatos.moneda);
+
+    } else if (esCotizacionCompleja) {
+      setCotizacion(nuevosDatos);
+    } else if (tipoFlujo === 'informe-tecnico') {
+      setInforme(nuevosDatos);
+    }
+
+    // 3. Sincronizar Datos del Cliente (hacia atrás - Sidebar)
+    // Si editamos el cliente en el Preview, que se refleje en la izquierda
+    if (nuevosDatos.cliente) {
+      const c = nuevosDatos.cliente;
+      setDatosCliente(prev => ({
+        ...prev,
+        nombre: c.nombre || prev.nombre,
+        ruc: c.ruc || prev.ruc,
+        direccion: c.direccion || prev.direccion,
+        telefono: c.telefono || prev.telefono,
+        email: c.email || prev.email
+      }));
+    }
+  };
+
+  // Manejar cambios en el formulario de cliente (Sidebar Izquierdo)
   const handleClienteChange = (e) => {
     const { name, value } = e.target;
     setDatosCliente(prev => ({
@@ -394,22 +441,23 @@ const CotizadorTesla30 = () => {
 
   // ✅ NUEVO: Sincronizar datosCliente con datosEditables automáticamente
   useEffect(() => {
-    // Solo sincronizar si hay datos de cliente y datosEditables existe
+    // Solo sincronizar si hay datos de cliente
     if (datosCliente && (datosCliente.nombre || datosCliente.ruc)) {
       setDatosEditables(prev => {
-        // Si no hay datosEditables aún, no hacer nada
-        if (!prev) return prev;
+        const prevSafe = prev || {};
 
-        // Actualizar solo la sección de cliente
+        // Actualizar solo la sección de cliente, preservando el resto
         return {
-          ...prev,
+          ...prevSafe,
           cliente: {
             nombre: datosCliente.nombre || '',
             ruc: datosCliente.ruc || '',
             direccion: datosCliente.direccion || '',
             telefono: datosCliente.telefono || '',
             email: datosCliente.email || ''
-          }
+          },
+          // Asegurar que cliente_nombre también esté sincronizado (algunos componentes viajan planos)
+          cliente_nombre: datosCliente.nombre || ''
         };
       });
     }
@@ -1065,11 +1113,7 @@ const CotizadorTesla30 = () => {
   // FUNCIONES DE DESCARGA
   // ============================================
 
-  // ✅ NUEVO: Manejar cambios desde la vista previa editable
-  const handleDatosChange = (nuevosDatos) => {
-    setDatosEditables(nuevosDatos);
-    datosEditablesRef.current = nuevosDatos; // Sincronización inmediata para handleDescargar
-  };
+
 
   const handleDescargar = async (formato) => {
     const tipoDocumento = tipoFlujo.includes('cotizacion') ? 'cotizacion' :
@@ -1805,12 +1849,25 @@ const CotizadorTesla30 = () => {
                         </div>
                       </div>
 
-                      {/* ✅ CALENDARIO PROFESIONAL - Persistencia corregida */}
+                      {/* ✅ CALENDARIO PROFESIONAL - Persistencia corregida y Sincronizada */}
                       <CalendarioProyecto
-                        onChange={setDatosCalendario}
+                        onChange={(datos) => {
+                          setDatosCalendario(datos);
+                          // 🔥 CRÍTICO: Solo actualizar duración si NO existe valor previo
+                          // Esto previene que el calendario sobrescriba entrada manual del usuario
+                          if (datos && datos.duracion_dias) {
+                            // Solo actualizar si duracion_total está vacío o es el default del calendario
+                            if (!duracion_total || duracion_total === datos.duracion_dias) {
+                              console.log('🔄 Sincronizando duración desde calendario:', datos.duracion_dias);
+                              setDuracion_total(datos.duracion_dias);
+                            } else {
+                              console.log('⚠️ Preservando duración manual del usuario:', duracion_total, '(calendario sugiere:', datos.duracion_dias, ')');
+                            }
+                          }
+                        }}
                         valoresIniciales={{
                           fechaInicio: datosCalendario?.fechaInicio ? new Date(datosCalendario.fechaInicio) : new Date(),
-                          duracionMeses: duracion_total || 4,
+                          duracionMeses: 4, // Valor por defecto visual, el real viene del cálculo
                           usarDiasHabiles: true
                         }}
                       />
@@ -2202,32 +2259,98 @@ const CotizadorTesla30 = () => {
                         incluirMetrado={incluirMetrado}
                         areaMetrado={areaMetrado}
                         onDatosGenerados={(datos) => {
-                          console.log('✅ DATOS PROYECTO COMPLEJO PMI (MERGE):', datos);
+                          console.log('✅ DATOS PROYECTO COMPLEJO PMI (SMART MERGE):', datos);
 
-                          // 🔄 TRANSFORMACIÓN DE DATOS: DICCIONARIO -> ARRAY VISUAL PARA GANTT
-                          let datosFinales = { ...datos };
+                          // 🔄 SMART MERGE: Proteger datos existentes
+                          setProyecto(prev => {
+                            const prevSafe = prev || {};
+                            const datosProtegidos = { ...datos };
 
-                          if (datos.cronograma_fases && !Array.isArray(datos.cronograma_fases)) {
-                            console.log('🔄 Transformando cronograma_fases de objeto a array visual...');
-                            const f = datos.cronograma_fases;
-                            const diasTotal = datos.duracion_total || 100; // Evitar división por cero
+                            // Lista de campos VIP que NO deben ser sobrescritos por null/vacío
+                            // 🛡️ DEEP MERGE PARA CLIENTE
+                            if (datosProtegidos.cliente || prevSafe.cliente) {
+                              const clientePrev = prevSafe.cliente || {};
+                              const clienteNew = datosProtegidos.cliente || {};
 
-                            // Función helper para calcular ancho %
-                            const getWidth = (dias) => Math.max(5, Math.round((dias / diasTotal) * 100)) + '%';
+                              datosProtegidos.cliente = {
+                                ...clientePrev,
+                                ...clienteNew,
+                                // Restaurar valores si vienen vacíos usando FALLBACKS jerárquicos:
+                                // 1. Nuevo dato del Chatbot
+                                // 2. Dato previo del Proyecto
+                                // 3. Dato "en vivo" de la barra lateral (datosCliente)
+                                ruc: clienteNew.ruc || clientePrev.ruc || datosCliente.ruc,
+                                direccion: clienteNew.direccion || clientePrev.direccion || datosCliente.direccion,
+                                telefono: clienteNew.telefono || clientePrev.telefono || datosCliente.telefono,
+                                email: clienteNew.email || clientePrev.email || datosCliente.email,
+                                isPerson: clienteNew.isPerson || clientePrev.isPerson,
+                                nombre: clienteNew.nombre || clientePrev.nombre || datosCliente.nombre
+                              };
+                            }
 
-                            datosFinales.cronograma_fases = [
-                              { label: '1. Inicio', width: getWidth(f.inicio || 5), dias: `${f.inicio || 5} días` },
-                              { label: '2. Planificación', width: getWidth(f.planificacion || 10), dias: `${f.planificacion || 10} días` },
-                              { label: '3. Riesgos y Calidad', width: getWidth(f.riesgos || 5), dias: `${f.riesgos || 5} días` },
-                              { label: '4. Ingeniería y Diseño', width: getWidth(f.ingenieria || 25), dias: `${f.ingenieria || 25} días` },
-                              { label: '5. Ejecución', width: getWidth(f.ejecucion || 45), dias: `${f.ejecucion || 45} días` },
-                              { label: '6. Pruebas (FAT/SAT)', width: getWidth(f.pruebas || 10), dias: `${f.pruebas || 10} días` },
-                              { label: '7. Cierre', width: getWidth(f.cierre || 5), dias: `${f.cierre || 5} días` }
+                            // 🛡️ Verificar otros campos VIP planos
+                            const camposVIP = ['duracion_total', 'fecha_inicio', 'fecha_fin'];
+                            camposVIP.forEach(campo => {
+                              if (!datosProtegidos[campo] && prevSafe[campo]) {
+                                console.log(`🛡️ Protegiendo dato ${campo}: ${prevSafe[campo]}`);
+                                datosProtegidos[campo] = prevSafe[campo];
+                              }
+                            });
+
+                            // Transformación Gantt (si es necesario)
+                            if (datosProtegidos.cronograma_fases && !Array.isArray(datosProtegidos.cronograma_fases)) {
+                              console.log('🔄 Transformando cronograma_fases de objeto a array visual...');
+                              const f = datosProtegidos.cronograma_fases;
+                              const diasTotal = datosProtegidos.duracion_total || 100;
+                              const getWidth = (dias) => Math.max(5, Math.round((dias / diasTotal) * 100)) + '%';
+
+                              datosProtegidos.cronograma_fases = [
+                                { label: '1. Inicio', width: getWidth(f.inicio || 5), dias: `${f.inicio || 5} días` },
+                                { label: '2. Planificación', width: getWidth(f.planificacion || 10), dias: `${f.planificacion || 10} días` },
+                                { label: '3. Riesgos y Calidad', width: getWidth(f.riesgos || 5), dias: `${f.riesgos || 5} días` },
+                                { label: '4. Ingeniería y Diseño', width: getWidth(f.ingenieria || 25), dias: `${f.ingenieria || 25} días` },
+                                { label: '5. Ejecución', width: getWidth(f.ejecucion || 45), dias: `${f.ejecucion || 45} días` },
+                                { label: '6. Pruebas (FAT/SAT)', width: getWidth(f.pruebas || 10), dias: `${f.pruebas || 10} días` },
+                                { label: '7. Cierre', width: getWidth(f.cierre || 5), dias: `${f.cierre || 5} días` }
+                              ];
+                            }
+
+                            return { ...prevSafe, ...datosProtegidos };
+                          });
+
+                          setDatosEditables(prev => {
+                            const prevSafe = prev || {};
+                            const datosProtegidos = { ...datos };
+                            const camposVIP = [
+                              'cliente', 'cliente_nombre', 'cliente_ruc', 'cliente_direccion', 'cliente_telefono', 'cliente_email',
+                              'ubicacion', 'area_m2', 'fecha_inicio', 'fecha_fin', 'duracion_total'
                             ];
-                          }
+                            camposVIP.forEach(campo => {
+                              if (!datosProtegidos[campo] && prevSafe[campo]) {
+                                datosProtegidos[campo] = prevSafe[campo];
+                              }
+                            });
 
-                          setProyecto(prev => ({ ...prev, ...datosFinales }));
-                          setDatosEditables(prev => ({ ...prev, ...datosFinales }));
+                            // Misma lógica Gantt para datosEditables
+                            if (datosProtegidos.cronograma_fases && !Array.isArray(datosProtegidos.cronograma_fases)) {
+                              const f = datosProtegidos.cronograma_fases;
+                              const diasTotal = datosProtegidos.duracion_total || 100;
+                              const getWidth = (dias) => Math.max(5, Math.round((dias / diasTotal) * 100)) + '%';
+
+                              datosProtegidos.cronograma_fases = [
+                                { label: '1. Inicio', width: getWidth(f.inicio || 5), dias: `${f.inicio || 5} días` },
+                                { label: '2. Planificación', width: getWidth(f.planificacion || 10), dias: `${f.planificacion || 10} días` },
+                                { label: '3. Riesgos y Calidad', width: getWidth(f.riesgos || 5), dias: `${f.riesgos || 5} días` },
+                                { label: '4. Ingeniería y Diseño', width: getWidth(f.ingenieria || 25), dias: `${f.ingenieria || 25} días` },
+                                { label: '5. Ejecución', width: getWidth(f.ejecucion || 45), dias: `${f.ejecucion || 45} días` },
+                                { label: '6. Pruebas (FAT/SAT)', width: getWidth(f.pruebas || 10), dias: `${f.pruebas || 10} días` },
+                                { label: '7. Cierre', width: getWidth(f.cierre || 5), dias: `${f.cierre || 5} días` }
+                              ];
+                            }
+
+                            return { ...prevSafe, ...datosProtegidos };
+                          });
+
                           setMostrarPreview(true);
                         }}
                         onBotonesUpdate={(botones) => setBotonesContextuales(botones)}
@@ -2439,7 +2562,13 @@ const CotizadorTesla30 = () => {
                         // ✅ RENDERIZAR VistaPreviaProfesional en Paso 2
                         return (
                           <VistaPreviaProfesional
-                            cotizacion={cotizacion || proyecto || informe || datosEditables}
+                            // ✅ FIX CRÍTICO: Selección explícita de datos para evitar conflictos de estado
+                            cotizacion={
+                              esCotizacion ? cotizacion :
+                                esProyecto ? proyecto :
+                                  esInforme ? informe :
+                                    datosEditables
+                            }
                             onGenerarDocumento={handleDescargar}
                             onDatosChange={handleDatosChange} // ✅ Conectar callback
                             tipoDocumento={tipoFlujo}

@@ -97,7 +97,12 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 // Mapeo seguro de campos
                 if (datos.nombre_proyecto) nuevos.nombre_proyecto = datos.nombre_proyecto;
                 if (datos.codigo_proyecto) nuevos.codigo_proyecto = datos.codigo_proyecto;
-                if (datos.cliente) nuevos.cliente = datos.cliente;
+                if (datos.cliente) {
+                    nuevos.cliente = datos.cliente;
+                } else if (datos.cliente_nombre) {
+                    // ✅ FALLBACK ROBUSTO: Si viene plano
+                    nuevos.cliente = datos.cliente_nombre;
+                }
                 if (datos.duracion_total) nuevos.duracion_total = datos.duracion_total;
                 if (datos.fecha_inicio) nuevos.fecha_inicio = datos.fecha_inicio;
                 if (datos.fecha_fin) nuevos.fecha_fin = datos.fecha_fin;
@@ -136,8 +141,24 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
                 if (datos.servicio) nuevos.servicio = datos.servicio;
                 if (datos.industria) nuevos.industria = datos.industria;
 
-                // Solo actualizar si hay alguna diferencia real
-                // (Evita bucles infinitos si la referencia es nueva pero el contenido igual)
+                // ✅ AUTOCORRECCIÓN DE GANTT (AL CARGAR):
+                // Si la duración total (ej: 120) no coincide con la suma de fases (ej: 66), recalcular.
+                const total = parseInt(nuevos.duracion_total) || 0;
+                const sumaFases = (nuevos.cronograma_fases || []).reduce((acc, f) => acc + (parseInt(f.dias) || 0), 0);
+
+                if (total > 0 && Math.abs(total - sumaFases) > 2) {
+                    // console.log('🔄 Recalculando cronograma al cargar por discrepancia:', { total, sumaFases });
+                    const porcentajes = [5, 15, 5, 25, 35, 10, 5];
+                    nuevos.cronograma_fases = (nuevos.cronograma_fases || []).map((fase, i) => {
+                        const diasFase = Math.max(1, Math.round((total * (porcentajes[i] || 10)) / 100));
+                        return {
+                            ...fase,
+                            dias: `${diasFase} días`,
+                            width: `${(diasFase / total) * 100}%`
+                        };
+                    });
+                }
+
                 if (JSON.stringify(nuevos) !== JSON.stringify(prev)) {
                     return { ...prev, ...nuevos };
                 }
@@ -146,11 +167,30 @@ const EDITABLE_PROYECTO_COMPLEJO = ({ datos = {}, esquemaColores = 'azul-tesla',
         }
     }, [datos]);
 
-    // ❌ ELIMINADO: El useEffect que causaba el bucle infinito.
-    // La notificación al padre (onDatosChange) ahora dependerá EXCLUSIVAMENTE de los eventos de usuario (onChange en inputs).
+    // ✅ Helper para recalcular cronograma dinámicamente
+    const recalcularCronograma = (nuevoTotal, datosActuales) => {
+        const total = parseInt(nuevoTotal) || 0;
+        if (total <= 0) return datosActuales.cronograma_fases;
+
+        const porcentajes = [5, 15, 5, 25, 35, 10, 5];
+        return datosActuales.cronograma_fases.map((fase, i) => {
+            const diasFase = Math.max(1, Math.round((total * (porcentajes[i] || 10)) / 100));
+            return {
+                ...fase,
+                dias: `${diasFase} días`,
+                width: `${(diasFase / total) * 100}%`
+            };
+        });
+    };
 
     const handleChange = (campo, valor) => {
-        const nuevosDatos = { ...datosEditables, [campo]: valor };
+        let nuevosDatos = { ...datosEditables, [campo]: valor };
+
+        // ✅ Si cambia la duración total, recalcular fases automáticamente
+        if (campo === 'duracion_total') {
+            nuevosDatos.cronograma_fases = recalcularCronograma(valor, datosEditables);
+        }
+
         setDatosEditables(nuevosDatos);
         if (onDatosChange) onDatosChange(nuevosDatos);
     };

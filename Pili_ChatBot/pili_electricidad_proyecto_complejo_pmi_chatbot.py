@@ -35,6 +35,14 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
         if etapa == "inicial":
             # Auto-detectar datos del frontend
             cliente_nombre = estado.get("cliente_nombre")
+            # ✅ Fallback: Buscar en 'cliente' si 'cliente_nombre' no existe
+            if not cliente_nombre:
+                cliente_obj = estado.get("cliente")
+                if isinstance(cliente_obj, dict):
+                    cliente_nombre = cliente_obj.get("nombre")
+                elif isinstance(cliente_obj, str):
+                    cliente_nombre = cliente_obj
+
             proyecto_nombre = estado.get("nombre_proyecto")
             presupuesto = estado.get("presupuesto")
             moneda = estado.get("moneda", "PEN")
@@ -57,16 +65,49 @@ class PILIElectricidadProyectoComplejoPMIChatBot:
                 estado["servicio"] = servicio
             if industria:
                 estado["industria"] = industria
+
+            # ✅ NUEVO: Extraer campos faltantes del cliente (RUC, etc.)
+            # El frontend los envía como 'cliente_ruc', 'cliente_direccion', etc.
+            if "cliente_ruc" in estado:
+                estado["cliente_ruc"] = estado["cliente_ruc"]
+            if "cliente_direccion" in estado:
+                estado["cliente_direccion"] = estado["cliente_direccion"]
+            if "cliente_telefono" in estado:
+                estado["cliente_telefono"] = estado["cliente_telefono"]
+            if "cliente_email" in estado:
+                estado["cliente_email"] = estado["cliente_email"]
+            
+            # ✅ CORRECCIÓN CRÍTICA: Desempaquetar datosCalendario si existen (Frontend envía objeto anidado)
+            # Esto asegura que fecha_inicio y fecha_fin estén disponibles globalmente
+            datos_calendario = estado.get("datosCalendario")
+            if datos_calendario and isinstance(datos_calendario, dict):
+                # Extraer fechas y duración
+                if "fecha_inicio" in datos_calendario:
+                    estado["fecha_inicio"] = datos_calendario["fecha_inicio"]
+                if "fecha_fin" in datos_calendario:
+                    estado["fecha_fin"] = datos_calendario["fecha_fin"]
+                if "duracion_dias" in datos_calendario:
+                    estado["duracion_dias"] = datos_calendario["duracion_dias"]
+                
+                # Extraer configuración de días laborables si existe
+                if "dias_habiles" in datos_calendario:
+                    estado["dias_laborables"] = datos_calendario["dias_habiles"]
+                if "horario" in datos_calendario:
+                    estado["horario_laboral"] = datos_calendario["horario"]
             
             # ✅ NUEVO: Guardar estado inicial completo para preservar servicio/industria
             estado["estado_inicial"] = {
                 "servicio": servicio,
                 "industria": industria,
                 "cliente_nombre": cliente_nombre,
+                # ✅ CORRECCIÓN FINAL: Mapeo explícito para frontend (Preview)
+                "cliente": cliente_nombre, 
                 "nombre_proyecto": proyecto_nombre,
                 "presupuesto": presupuesto,
                 "moneda": moneda,
-                "duracion_total": duracion_total
+                "duracion_total": duracion_total,
+                "fecha_inicio": estado.get("fecha_inicio"),
+                "fecha_fin": estado.get("fecha_fin")
             }
             
             # ✅ FLUJO ADAPTATIVO: Router de Inicio (Frontend First)
@@ -232,21 +273,30 @@ _Ejemplo: Lima, Perú / Concepción, Chile_""", 'botones': None, 'estado': estad
         elif etapa == "ubicacion":
             estado["ubicacion"] = mensaje
             
+            # ✅ DATOS BASE: Siempre devolver ubicación actualizada
+            datos_update = {'ubicacion': mensaje}
+            if estado.get("cliente_nombre"):
+                datos_update["cliente_nombre"] = estado["cliente_nombre"]
+            
             # ✅ LÓGICA INTELIGENTE: Verificar si ya tenemos AREA definida (Frontend First)
-            # Si el área ya viene del formulario, NO preguntar por área.
             area_definida = estado.get("area_proyecto")
+            
             if area_definida:
+                # CASO A: Tenemos Área del formulario -> Validar y saltar a Alcance o Descripción
                 try:
-                    # 🔴 FIX CRÍTICO: Asegurar que el area_m2 se actualice con el valor del formulario
-                    estado["area_m2"] = float(str(area_definida).replace(',', ''))
+                    area_val = float(str(area_definida).replace(',', ''))
+                    estado["area_m2"] = area_val
+                    datos_update["area_m2"] = area_val # Actualizar frontend
                 except:
                     estado["area_m2"] = 0
                 
-                # Ya tenemos área, saltamos al chequeo de alcance
+                # Siguiente paso: Verificar si tenemos descripción/alcance
                 alcance_inicial = estado.get("alcance_proyecto", "")
                 
                 if alcance_inicial and len(alcance_inicial) > 10:
+                    # Tenemos todo: Saltar a confirmación final
                     estado["etapa"] = "confirmar_alcance"
+                    datos_update["alcance_proyecto"] = alcance_inicial
                     
                     return {'success': True, 'respuesta': f"""✅ Ubicación: **{mensaje}**
                     
@@ -262,10 +312,11 @@ He recibido la siguiente descripción inicial del proyecto:
 _(Sistemas, equipos, especificaciones)_""", 'botones': [
                         {"text": "✅ Es correcto, continuar", "value": "continuar"},
                         {"text": "✏️ Agregar detalles", "value": "agregar"}
-                    ], 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_inicial}}
+                    ], 'estado': estado, 'datos_generados': datos_update}
+                
                 else:
+                    # Tenemos Área pero falta Descripción -> Pedir Descripción
                     estado["etapa"] = "descripcion"
-                    # Obtener nombre del proyecto del formulario inicial
                     nombre_proyecto = estado.get("proyecto_nombre", "")
                     
                     mensaje_descripcion = f"""✅ Ubicación: **{mensaje}**
@@ -280,20 +331,63 @@ Veo que el proyecto es: **{nombre_proyecto}**
 _Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_
 
 Si no necesitas agregar más, simplemente escribe "No" o "Continuar"."""
-                    else:
-                        mensaje_descripcion += """
-_Incluye: tipo de instalación, sistemas, equipos principales, etc._
-_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_"""
                     
-                    return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado}
-            
-            # Si NO hay área definida, procedemos el flujo normal
-            else:
-                estado["etapa"] = "area"
-                return {'success': True, 'respuesta': f"""✅ Ubicación: **{mensaje}**
+                    return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado, 'datos_generados': datos_update}
 
-📐 **¿Área total del proyecto (m²)?**
-_Ejemplo: 5000_""", 'botones': None, 'estado': estado}
+            else:
+                # CASO B: NO tenemos Área -> Pedir Área
+                estado["etapa"] = "area"
+                return {
+                    'success': True,
+                    'respuesta': f"""✅ Ubicación: **{mensaje}**
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**ALCANCE DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Ahora definamos las dimensiones físicas del proyecto.
+
+📏 **¿Cuál es el área aproximada de intervención en m²?**
+_Ejemplo: 150_""",
+                    'botones': None,
+                    'estado': estado,
+                    'datos_generados': datos_update
+                }
+            # ============================================
+            # ETAPA: Recepción de Stakeholders (NUEVA)
+            # ============================================
+        elif etapa == "form_stakeholders":
+            if mensaje.startswith("STAKEHOLDERS_DATA:"):
+                import json
+                try:
+                    json_str = mensaje.replace("STAKEHOLDERS_DATA:", "")
+                    stakeholders = json.loads(json_str)
+                    estado["stakeholders"] = stakeholders
+                    
+                    # Continuar con el flujo normal (Área/Alcance)
+                    estado["etapa"] = "area"
+                    
+                    return {
+                        'success': True,
+                        'respuesta': f"""✅ **Registro de Interesados completado.**
+                        
+Se han identificado **{len(stakeholders)} stakeholders** clave para el proyecto.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+**ALCANCE DEL PROYECTO**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Ahora definamos las dimensiones físicas del proyecto.
+
+📏 **¿Cuál es el área aproximada de intervención en m²?**
+_Ejemplo: 150_""",
+                        'botones': None,
+                        'estado': estado
+                    }
+                except Exception as e:
+                    return {'success': False, 'respuesta': f"❌ Error procesando stakeholders: {str(e)}", 'botones': None, 'estado': estado}
+            else:
+                return {'success': False, 'respuesta': "⚠️ Por favor utiliza el formulario para guardar los stakeholders.", 'botones': None, 'estado': estado}
         
         # ============================================
         # ETAPA: Área
@@ -303,11 +397,17 @@ _Ejemplo: 5000_""", 'botones': None, 'estado': estado}
                 area = float(mensaje.replace(',', ''))
                 estado["area_m2"] = area
                 
+                # ✅ DATOS BASE: Devolver area actualizada
+                datos_update = {'area_m2': area}
+                if estado.get("cliente_nombre"):
+                    datos_update["cliente_nombre"] = estado["cliente_nombre"]
+                
                 # ✅ LÓGICA INTELIGENTE: Verificar si ya tenemos descripción inicial
                 alcance_inicial = estado.get("alcance_proyecto", "")
                 
                 if alcance_inicial and len(alcance_inicial) > 10:
                     estado["etapa"] = "confirmar_alcance"
+                    datos_update["alcance_proyecto"] = alcance_inicial
                     
                     return {'success': True, 'respuesta': f"""✅ Área: **{area:,.0f} m²**
 
@@ -323,7 +423,7 @@ He recibido la siguiente descripción inicial del proyecto:
 _(Sistemas, equipos, especificaciones)_""", 'botones': [
                         {"text": "✅ Es correcto, continuar", "value": "continuar"},
                         {"text": "✏️ Agregar detalles", "value": "agregar"}
-                    ], 'estado': estado, 'datos_generados': {'alcance_proyecto': alcance_inicial}}
+                    ], 'estado': estado, 'datos_generados': datos_update}
                 else:
                     estado["etapa"] = "descripcion"
                     
@@ -342,14 +442,11 @@ Veo que el proyecto es: **{nombre_proyecto}**
 _Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_
 
 Si no necesitas agregar más, simplemente escribe "No" o "Continuar"."""
-                    else:
-                        mensaje_descripcion += """
-_Incluye: tipo de instalación, sistemas, equipos principales, etc._
-_Ejemplo: Sistema eléctrico industrial completo con subestación de 1000 KVA, tableros de distribución, sistema de automatización SCADA, iluminación LED, sistema de respaldo UPS_"""
                     
-                    return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado}
+                    return {'success': True, 'respuesta': mensaje_descripcion, 'botones': None, 'estado': estado, 'datos_generados': datos_update}
             except:
-                return {'success': False, 'respuesta': "❌ Área inválida. Por favor ingresa solo números.", 'botones': None, 'estado': estado}
+                 return {'success': False, 'respuesta': "❌ Por favor ingresa un número válido para el área (m²).", 'botones': None, 'estado': estado}
+
         
         # ============================================
         # ETAPA: Confirmar Alcance (NUEVA)
@@ -935,96 +1032,138 @@ _Ejemplo: Retrasos en entrega de equipos importados_""", 'botones': None, 'estad
         # ============================================
         # ETAPA: Selección de Profesionales
         # ============================================
+        # ============================================
+        # ETAPA: Recepción Profesionales (Formulario)
+        # ============================================
         elif etapa == "form_profesionales":
-            # Procesar respuesta (llega texto desde el formulario)
-            estado["recursos_humanos"] = [r.strip() for r in mensaje.split(',') if r.strip()]
+            # Procesar texto o JSON de profesionales
+            texto_profesionales = mensaje
             
-            complejidad = estado.get('complejidad', 7)
+            # Continuar a Entregables
+            estado["etapa"] = "form_entregables"
             
-            if complejidad >= 7:
-                # Nivel Avanzado: Continuar con formulario de entregables
-                estado["etapa"] = "form_entregables"
-                
-                return {
-                    'success': True,
-                    'respuesta': f"""✅ Equipo registrado correctamente.
+            return {
+                'success': True, 
+                'respuesta': f"""✅ **Equipo Profesional registrado.**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 **ENTREGABLES DEL PROYECTO**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-Ahora define los entregables clave que se comprometen con el cliente.
-He precargado una lista estándar según PMI. Selecciona los que apliquen.""",
-                    'botones': None,
-                    'estado': estado,
-                    'formulario': {
-                        'tipo': 'entregables',
-                        'tipoProyecto': 'electricidad-complejo',
-                        'presupuesto': estado.get('presupuesto'),
-                        'area': estado.get('area_m2')
-                    }
-                }
-            else:
-                # Nivel Intermedio (6 fases): Pedir materiales como texto y generar
-                estado["etapa"] = "materiales_texto"
-                return {'success': True, 'respuesta': f"""✅ Equipo profesional registrado.
-
-🔧 **Materiales principales (separados por coma):**
-_Ejemplo: Tableros eléctricos, Cables THW, Protecciones termomagnéticas, Sistema de puesta a tierra_""", 'botones': None, 'estado': estado}
+Definamos qué documentos y planos se entregarán al cliente.
+Usa el formulario para seleccionar los entregables.""", 
+                'botones': None, 
+                'formulario': {
+                    'tipo': 'entregables',
+                    'tipoProyecto': 'electricidad-complejo',
+                    'presupuesto': estado.get('presupuesto'),
+                    'area': estado.get('area_m2')
+                }, 
+                'estado': estado
+            }
 
         # ============================================
-        # ETAPA: Selección de Entregables
+        # ETAPA: Recepción Entregables (Formulario)
         # ============================================
         elif etapa == "form_entregables":
-            estado["entregables_seleccionados"] = [e.strip() for e in mensaje.split(',') if e.strip()]
-            
+            # Procesar entregables
             estado["etapa"] = "form_suministros"
             
+            # Guardar entregables recibidos (simulación)
+            estado["entregables_texto"] = mensaje
+            
             return {
-                'success': True,
-                'respuesta': f"""✅ Entregables registrados.
+                'success': True, 
+                'respuesta': f"""✅ **Entregables registrados.**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-**SUMINISTROS Y MATERIALES**
+**SUMINISTROS PRINCIPALES**
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-Finalmente, selecciona los suministros principales para calcular el presupuesto detallado.""",
-                'botones': None,
-                'estado': estado,
+Selecciona los materiales y equipos principales para el proyecto.""", 
+                'botones': None, 
                 'formulario': {
                     'tipo': 'suministros',
                     'tipoProyecto': 'electricidad-complejo',
                     'presupuesto': estado.get('presupuesto'),
                     'area': estado.get('area_m2')
-                }
+                }, 
+                'estado': estado
             }
 
         # ============================================
-        # ETAPA: Selección de Suministros
+        # ETAPA: Recepción Suministros (Formulario)
         # ============================================
         elif etapa == "form_suministros":
-            estado["materiales"] = [m.strip() for m in mensaje.split(',') if m.strip()]
-            return self._generar_proyecto(estado)
-        
-        # ============================================
-        # ETAPA: Recursos Texto (Para complejidad 5 - Básico)
-        # ============================================
-        elif etapa == "recursos_texto":
-            recursos = [r.strip() for r in mensaje.split(',') if r.strip()]
-            estado["recursos_humanos"] = recursos
-            estado["etapa"] = "materiales_texto"
-            return {'success': True, 'respuesta': f"""✅ Equipo: **{len(recursos)} roles** definidos
+            # Procesar suministros
+            texto_suministros = mensaje 
+            estado["suministros_texto"] = mensaje
+            
+            # ✅ NUEVO FLUJO: De Suministros -> Matriz RACI
+            estado["etapa"] = "form_raci"
+            
+            return {
+                'success': True, 
+                'respuesta': f"""✅ **Suministros registrados correctamente.**
 
-🔧 **Materiales principales (separados por coma):**
-_Ejemplo: Tableros eléctricos, Cables THW, Protecciones termomagnéticas, Sistema de puesta a tierra_""", 'botones': None, 'estado': estado}
-        
+━━━━━━━━━━━━━━━━━━━━━━━
+**MATRIZ DE ASIGNACIÓN DE RESPONSABILIDADES (RACI)**
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Como paso final, definiremos quién es Responsable, Aprobador, Consultado e Informado para cada actividad clave.
+
+👉 **Configura la Matriz RACI en el siguiente formulario interactivo:**""",
+                'botones': None, 
+                'formulario': {
+                    'tipo': 'raci',
+                },
+                'estado': estado
+            }
+
         # ============================================
-        # ETAPA: Materiales Texto (Para complejidad 5 - Básico)
+        # ETAPA: Recepción RACI (NUEVA)
         # ============================================
-        elif etapa == "materiales_texto":
-            materiales = [m.strip() for m in mensaje.split(',') if m.strip()]
-            estado["materiales"] = materiales
-            return self._generar_proyecto(estado)
+        elif etapa == "form_raci":
+            if mensaje.startswith("RACI_DATA:"):
+                import json
+                try:
+                    json_str = mensaje.replace("RACI_DATA:", "")
+                    raci_data = json.loads(json_str)
+                    estado["raci_actividades"] = raci_data # Guardar datos
+                    
+                    # AHORA SÍ: Generar Proyecto Final
+                    resultado_proyecto = self._generar_proyecto(estado)
+                    
+                    # Respuesta final con Project Charter
+                    return {
+                        'success': True,
+                        'respuesta': f"""✅ **Matriz RACI configurada correctamente.**
+
+🎉 **¡FELICIDADES! HEMOS COMPLETADO LA PLANIFICACIÓN PMI.**
+
+He generado el **Project Charter** completo con todos los datos validados:
+✅ Alcance y KPIs
+✅ Interesados (Stakeholders)
+✅ Cronograma y Fases
+✅ Riesgos y Mitigación
+✅ Recursos y Suministros
+✅ Matriz RACI
+
+📄 **Acta de Constitución del Proyecto (Project Charter):**
+{resultado_proyecto['respuesta']}
+
+⚠️ **IMPORTANTE:**
+Revisa el documento generado y descárgalo o imprímelo desde el panel de opciones.""",
+                        'botones': [
+                           {'text': '🔄 Reiniciar Conversación', 'value': '/reiniciar'}
+                        ],
+                        'estado': estado,
+                        'datos_generados': resultado_proyecto
+                    }
+                except Exception as e:
+                    return {'success': False, 'respuesta': f"❌ Error procesando RACI: {str(e)}", 'botones': None, 'estado': estado}
+            else:
+                return {'success': False, 'respuesta': "⚠️ Por favor confirma la Matriz RACI en el formulario para finalizar.", 'botones': None, 'estado': estado}
     
     def _procesar_riesgo(self, mensaje: str, estado: Dict) -> Dict:
         """Procesa el loop de 5 riesgos"""
@@ -1192,6 +1331,8 @@ Usa el formulario interactivo para seleccionar roles.""",
                     }
         
         return {'success': False, 'respuesta': "❌ Campo de riesgo no reconocido", 'botones': None, 'estado': estado}
+
+
     
     def _calcular_severidad(self, probabilidad: str, impacto: str) -> str:
         """Calcula la severidad del riesgo según probabilidad e impacto"""
@@ -1270,27 +1411,30 @@ Usa el formulario interactivo para seleccionar roles.""",
         dias_ingenieria = estado.get("dias_ingenieria", 25)
         dias_ejecucion = estado.get("dias_ejecucion", 50)
         
-        # Stakeholders (siempre los 3 básicos)
-        stakeholders = [
-            {
-                "nombre": cliente,
-                "rol": "Cliente / Patrocinador Principal",
-                "poder": "Alto",
-                "interes": "Alto"
-            },
-            {
-                "nombre": "Jefe de Proyecto",
-                "rol": "Project Manager / Responsable de Ejecución",
-                "poder": "Alto",
-                "interes": "Alto"
-            },
-            {
-                "nombre": "Equipo Técnico",
-                "rol": "Ingenieros y Técnicos Instaladores",
-                "poder": "Medio",
-                "interes": "Alto"
-            }
-        ]
+        # Stakeholders - ✅ CORREGIDO: Usar datos del formulario si existen
+        stakeholders = estado.get("stakeholders")
+        if not stakeholders or not isinstance(stakeholders, list):
+            # Fallback a los 3 básicos si no hay datos
+            stakeholders = [
+                {
+                    "nombre": cliente,
+                    "rol": "Cliente / Patrocinador Principal",
+                    "poder": "Alto",
+                    "interes": "Alto"
+                },
+                {
+                    "nombre": "Jefe de Proyecto",
+                    "rol": "Project Manager / Responsable de Ejecución",
+                    "poder": "Alto",
+                    "interes": "Alto"
+                },
+                {
+                    "nombre": "Equipo Técnico",
+                    "rol": "Ingenieros y Técnicos Instaladores",
+                    "poder": "Medio",
+                    "interes": "Alto"
+                }
+            ]
         
         # Riesgos
         riesgos = estado.get("riesgos", [])
@@ -1325,34 +1469,98 @@ Usa el formulario interactivo para seleccionar roles.""",
         else:
             # Fallback: Generar cronograma por defecto según complejidad
             cronograma_fases = []
-        
+            
+            # 1. Definir pesos base según complejidad (para distribución proporcional)
             if complejidad == 5:
-                cronograma_fases = [
-                    {"label": "1. Inicio y Planificación", "dias": "5 días", "width": "20%"},
-                    {"label": "2. Ingeniería Básica", "dias": f"{int(dias_ingenieria/2)} días", "width": "15%"},
-                    {"label": "3. Ejecución", "dias": f"{dias_ejecucion} días", "width": "40%"},
-                    {"label": "4. Pruebas", "dias": "5 días", "width": "15%"},
-                    {"label": "5. Cierre", "dias": "2 días", "width": "10%"}
+                # Total base relativo: 5+12+25+5+2 = 49 (aprox) - Se ajustará
+                fases_base = [
+                    {"label": "1. Inicio y Planificación", "peso": 10},
+                    {"label": "2. Ingeniería Básica", "peso": 20},
+                    {"label": "3. Ejecución", "peso": 50},
+                    {"label": "4. Pruebas", "peso": 15},
+                    {"label": "5. Cierre", "peso": 5}
                 ]
             elif complejidad == 6:
-                cronograma_fases = [
-                    {"label": "1. Inicio y Planificación", "dias": "10 días", "width": "15%"},
-                    {"label": "2. Gestión Stakeholders", "dias": "3 días", "width": "10%"},
-                    {"label": "3. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
-                    {"label": "4. Ejecución", "dias": f"{dias_ejecucion} días", "width": "35%"},
-                    {"label": "5. Pruebas y Puesta en Marcha", "dias": "8 días", "width": "12%"},
-                    {"label": "6. Cierre", "dias": "5 días", "width": "8%"}
+                fases_base = [
+                    {"label": "1. Inicio y Planificación", "peso": 10},
+                    {"label": "2. Gestión Stakeholders", "peso": 5},
+                    {"label": "3. Ingeniería y Diseño", "peso": 20},
+                    {"label": "4. Ejecución", "peso": 45},
+                    {"label": "5. Pruebas y Puesta en Marcha", "peso": 15},
+                    {"label": "6. Cierre", "peso": 5}
                 ]
             else: # 7 Fases
-                cronograma_fases = [
-                    {"label": "1. Inicio", "dias": "5 días", "width": "10%"},
-                    {"label": "2. Planificación Detallada", "dias": "10 días", "width": "15%"},
-                    {"label": "3. Gestión de Riesgos y Calidad", "dias": "5 días", "width": "10%"},
-                    {"label": "4. Ingeniería y Diseño", "dias": f"{dias_ingenieria} días", "width": "20%"},
-                    {"label": "5. Ejecución y Monitoreo", "dias": f"{dias_ejecucion} días", "width": "30%"},
-                    {"label": "6. Pruebas Integrales (FAT/SAT)", "dias": "10 días", "width": "10%"},
-                    {"label": "7. Cierre y Lecciones Aprendidas", "dias": "5 días", "width": "5%"}
+                fases_base = [
+                    {"label": "1. Inicio", "peso": 5},
+                    {"label": "2. Planificación Detallada", "peso": 10},
+                    {"label": "3. Gestión de Riesgos y Calidad", "peso": 5},
+                    {"label": "4. Ingeniería y Diseño", "peso": 25},
+                    {"label": "5. Ejecución y Monitoreo", "peso": 40},
+                    {"label": "6. Pruebas Integrales (FAT/SAT)", "peso": 10},
+                    {"label": "7. Cierre y Lecciones Aprendidas", "peso": 5}
                 ]
+
+            # 2. Obtener duración objetivo (Verdad Absoluta del Usuario)
+            # Prioridad: duracion_dias (Root) > duracion_dias (Calendario) > duracion_total (Root) > 66
+            
+            # Busqueda exhaustiva
+            # Busqueda exhaustiva
+            d1 = estado.get("duracion_dias")
+            d2 = None
+            if isinstance(estado.get("datosCalendario"), dict):
+                d2 = estado.get("datosCalendario").get("duracion_dias")
+            d3 = estado.get("duracion_total")
+            
+            # 📝 LOGGING A ARCHIVO para depuración real
+            with open("backend_debug_gantt.log", "a") as f:
+                f.write(f"\n[DEBUG] _generar_proyecto CALLED at {datetime.now()}\n")
+                f.write(f"[DEBUG] Inputs: duracion_dias={d1} ({type(d1)}), calendario_dias={d2}, duracion_total={d3} ({type(d3)})\n")
+
+            # Lógica de Prioridad Mejorada:
+            # 1. Si d1 (duracion_dias explícito) existe y es > 0, usarlo.
+            # 2. Si d3 (duracion_total input manual) existe y es numérico, usarlo.
+            # 3. Fallback a d2 (calendario).
+            # 4. Fallback a 66.
+            
+            val_final = 66
+            
+            def safe_int(v):
+                try: return int(v)
+                except: return 0
+
+            if safe_int(d3) > 0: val_final = safe_int(d3) # Prioridad 1: Manual Input (duracion_total)
+            elif safe_int(d1) > 0: val_final = safe_int(d1) # Prioridad 2: Calendar Derived (duracion_dias)
+            elif safe_int(d2) > 0: val_final = safe_int(d2) # Prioridad 3: Fallback Calendar Struct
+            
+            duracion_objetivo = val_final
+            
+            with open("backend_debug_gantt.log", "a") as f:
+                f.write(f"[DEBUG] DECISION FINAL: duracion_objetivo = {duracion_objetivo}\n")
+                
+            print(f"✅ DEBUG GANTT FINAL: Usando {duracion_objetivo} días para el cálculo.")
+                
+            # 3. Calcular duraciones reales escaladas
+            suma_pesos = sum(f['peso'] for f in fases_base)
+            dias_asignados = 0
+            
+            for i, fase in enumerate(fases_base):
+                # Regla de tres: (Peso / TotalPesos) * DuracionObjetivo
+                if i == len(fases_base) - 1:
+                    # Última fase: Asignar lo que sobra para cuadrar exacto
+                    dias_fase = max(1, duracion_objetivo - dias_asignados)
+                else:
+                    dias_fase = max(1, int((fase['peso'] / suma_pesos) * duracion_objetivo))
+                    dias_asignados += dias_fase
+                
+                # Calcular porcentaje visual (width)
+                width_pct = max(5, int((dias_fase / duracion_objetivo) * 100))
+                
+                cronograma_fases.append({
+                    "label": fase['label'],
+                    "dias": f"{dias_fase} días",
+                    "width": f"{width_pct}%"
+                })
+
             
         # ✅ NUEVO: Generar RACI por defecto según complejidad
         raci_actividades = estado.get("raci_actividades", [])

@@ -167,17 +167,10 @@ try:
     logger.info("✅ PILI SANEAMIENTO OK")
 except: pili_saneamiento_bot = None
 
-# ═══════════════════════════════════════════════════════════════
-# 📊 PILI PROYECTO COMPLEJO PMI - IMPORTAR CAJA NEGRA
-# ═══════════════════════════════════════════════════════════════
+# (Bloque duplicado eliminado para evitar conflictos de importación)
+# La instancia pili_electricidad_proyecto_complejo_pmi_bot se inicializa correctamente 
+# en la sección de ENDPOINTS PROYECTO COMPLEJO PMI (líneas ~5180)
 
-try:
-    from Pili_ChatBot.pili_electricidad_proyecto_complejo_pmi_chatbot import PILIElectricidadProyectoComplejoPMIChatBot
-    pili_electricidad_proyecto_complejo_pmi_bot = PILIElectricidadProyectoComplejoPMIChatBot()
-    logger.info("✅ PILI PROYECTO COMPLEJO PMI OK - v1.2 (Final Currency Fix)")  # ✅ Forzar reload
-except Exception as e:
-    logger.error(f"❌ Error importando PILI PROYECTO COMPLEJO PMI: {e}")
-    pili_electricidad_proyecto_complejo_pmi_bot = None
 
 # ═══════════════════════════════════════════════════════════════
 # 🤖 PILI - CONTEXTOS DE SERVICIOS INTELIGENTES v3.0

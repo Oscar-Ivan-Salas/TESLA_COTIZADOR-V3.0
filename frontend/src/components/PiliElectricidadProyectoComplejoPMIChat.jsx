@@ -8,6 +8,8 @@ import FormularioEntregablesPro from './FormularioEntregablesPro';
 import FormularioProfesionalesPro from './FormularioProfesionalesPro';
 import FormularioSuministrosPro from './FormularioSuministrosPro';
 import FormularioGanttDiasPro from './FormularioGanttDiasPro';
+import FormularioStakeholdersPro from './FormularioStakeholdersPro'; // ✅ NUEVO
+import FormularioRACIPro from './FormularioRACIPro'; // ✅ NUEVO
 
 const PiliElectricidadProyectoComplejoPMIChat = ({
     datosCliente,
@@ -127,6 +129,33 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
         }
     }, []);
 
+    // ✅ CRÍTICO: Mantener sincronizado el estado del chat con los cambios del formulario en tiempo real
+    useEffect(() => {
+        if (conversationState) {
+            setConversationState(prev => ({
+                ...prev,
+                // Actualizar datos clave si cambian en el padre
+                duracion_total: duracion_total ? parseInt(duracion_total) : prev.duracion_total,
+                cliente_nombre: datosCliente?.nombre || prev.cliente_nombre,
+                cliente_ruc: datosCliente?.ruc || prev.cliente_ruc,
+                cliente_direccion: datosCliente?.direccion || prev.cliente_direccion,
+                cliente_email: datosCliente?.email || prev.cliente_email,
+                cliente_telefono: datosCliente?.telefono || prev.cliente_telefono,
+                presupuesto: presupuesto ? parseFloat(presupuesto) : prev.presupuesto,
+                area_proyecto: areaMetrado || prev.area_proyecto,
+
+                // Actualizar datos de calendario si existen
+                ...(datosCalendario ? {
+                    fecha_inicio: datosCalendario.fecha_inicio,
+                    fecha_fin: datosCalendario.fecha_fin,
+                    duracion_dias: datosCalendario.duracion_dias,
+                    dias_habiles: datosCalendario.dias_habiles
+                } : {})
+            }));
+            console.log('🔄 Estado del chat actualizado con nuevos datos del formulario:', { duracion: duracion_total, cliente: datosCliente?.nombre });
+        }
+    }, [duracion_total, datosCliente, presupuesto, datosCalendario, areaMetrado]);
+
     const addMessage = (sender, text, buttons = null, formulario = null) => {
         setConversacion(prev => [...prev, {
             sender,
@@ -142,13 +171,34 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
         if (isTyping) return;
         setIsTyping(true);
 
+        // ✅ CRÍTICO: Forzar la inyección de datos "vivos" del formulario antes de enviar
+        // Esto asegura que aunque el estado interno sea viejo, al backend siempre le llegue la verdad
+        const estadoBase = estadoCustom || conversationState;
+        const liveState = {
+            ...estadoBase,
+            duracion_total: duracion_total ? parseInt(duracion_total) : estadoBase?.duracion_total,
+            cliente_nombre: datosCliente?.nombre || estadoBase?.cliente_nombre,
+            cliente_ruc: datosCliente?.ruc || estadoBase?.cliente_ruc,
+            cliente_direccion: datosCliente?.direccion || estadoBase?.cliente_direccion,
+            cliente_email: datosCliente?.email || estadoBase?.cliente_email,
+            cliente_telefono: datosCliente?.telefono || estadoBase?.cliente_telefono,
+            presupuesto: presupuesto ? parseFloat(presupuesto) : estadoBase?.presupuesto,
+            area_proyecto: areaMetrado || estadoBase?.area_proyecto,
+            ...(datosCalendario ? {
+                fecha_inicio: datosCalendario.fecha_inicio,
+                fecha_fin: datosCalendario.fecha_fin,
+                duracion_dias: datosCalendario.duracion_dias, // 🔥 Prioridad 1 para Backend
+                dias_habiles: datosCalendario.dias_habiles
+            } : {})
+        };
+
         try {
             const res = await fetch('http://localhost:8000/api/chat/pili-electricidad-proyecto-complejo-pmi', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     mensaje,
-                    conversation_state: estadoCustom || conversationState
+                    conversation_state: liveState
                 })
             });
 
@@ -250,6 +300,31 @@ const PiliElectricidadProyectoComplejoPMIChat = ({
                                 {/* ✨ NUEVO: Renderizar formularios Pro */}
                                 {msg.formulario && (
                                     <div className="mt-4">
+                                        {msg.formulario.tipo === 'stakeholders' && (
+                                            <FormularioStakeholdersPro
+                                                valoresIniciales={msg.formulario.datosPrevios} // Opcional, si el backend manda defaults
+                                                onSubmit={(stakeholders) => {
+                                                    console.log('✅ Stakeholders definidos:', stakeholders);
+                                                    addMessage('user', `✅ ${stakeholders.length} Stakeholders definidos`);
+
+                                                    // Enviar JSON al backend
+                                                    const jsonStr = `STAKEHOLDERS_DATA:${JSON.stringify(stakeholders)}`;
+                                                    setTimeout(() => enviarMensaje(jsonStr), 100);
+                                                }}
+                                            />
+                                        )}
+                                        {msg.formulario.tipo === 'raci' && (
+                                            <FormularioRACIPro
+                                                complejidad={complejidad}
+                                                onSubmit={(raci) => {
+                                                    console.log('✅ Matriz RACI definida:', raci);
+                                                    addMessage('user', '✅ Matriz RACI completada');
+
+                                                    const jsonStr = `RACI_DATA:${JSON.stringify(raci)}`;
+                                                    setTimeout(() => enviarMensaje(jsonStr), 100);
+                                                }}
+                                            />
+                                        )}
                                         {msg.formulario.tipo === 'profesionales' && (
                                             <FormularioProfesionalesPro
                                                 tipoProyecto={msg.formulario.tipoProyecto}
